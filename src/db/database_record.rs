@@ -11,7 +11,7 @@ use crate::{AragogServiceError, Record, Validate, DatabaseConnectionPool, Authen
 ///
 /// The document of type `T` mut implement Serialize, DeserializeOwned, Clone and [`Record`]
 ///
-/// [`Record`]: ../../record/trait.Record.html
+/// [`Record`]: trait.Record.html
 #[derive(Debug)]
 pub struct DatabaseRecord<T> {
     /// The Document unique and indexed key
@@ -37,11 +37,11 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// * [`UnprocessableEntity`] on data corruption
     /// * [`ValidationError`] on failed field validations
     ///
-    /// [`Validate`]: ../../validate/trait.Validate.html
-    /// [`AragogServiceError`]: ../../error/enum.AragogServiceError.html
-    /// [`Conflict`]: ../../error/enum.AragogServiceError.html#variant.Conflict
-    /// [`UnprocessableEntity`]: ../../error/enum.AragogServiceError.html#variant.UnprocessableEntity
-    /// [`ValidationError`]: ../../error/enum.AragogServiceError.html#variant.ValidationError
+    /// [`Validate`]: trait.Validate.html
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`Conflict`]: enum.AragogServiceError.html#variant.Conflict
+    /// [`UnprocessableEntity`]: enum.AragogServiceError.html#variant.UnprocessableEntity
+    /// [`ValidationError`]: enum.AragogServiceError.html#variant.ValidationError
     pub async fn save(&mut self, db_pool: &DatabaseConnectionPool) -> Result<(), AragogServiceError> where T: Validate {
         self.record.validate()?;
         let new_record = database_service::update_record(self.record.clone(), &self.key, &db_pool, &T::collection_name()).await?;
@@ -63,9 +63,9 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
-    /// [`AragogServiceError`]: ../../error/enum.AragogServiceError.html
-    /// [`NotFound`]: ../../error/enum.AragogServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: ../../error/enum.AragogServiceError.html#variant.UnprocessableEntity
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`NotFound`]: enum.AragogServiceError.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.AragogServiceError.html#variant.UnprocessableEntity
     pub async fn delete(&self, db_pool: &DatabaseConnectionPool) -> Result<(), AragogServiceError> {
         database_service::remove_record::<T>(&self.key, &db_pool, &T::collection_name()).await
     }
@@ -84,9 +84,9 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
-    /// [`AragogServiceError`]: ../../error/enum.AragogServiceError.html
-    /// [`NotFound`]: ../../error/enum.AragogServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: ../../error/enum.AragogServiceError.html#variant.UnprocessableEntity
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`NotFound`]: enum.AragogServiceError.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.AragogServiceError.html#variant.UnprocessableEntity
     pub async fn find(key: &str, db_pool: &DatabaseConnectionPool) -> Result<Self, AragogServiceError> {
         database_service::retrieve_record(key, &db_pool, &T::collection_name()).await
     }
@@ -122,10 +122,10 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// User::find_by(condition, &db_pool).await.unwrap();
     /// ```
     ///
-    /// [`find_where`]: ./struct.DatabaseRecord.html#method.find_where
-    /// [`AragogServiceError`]: ../../error/enum.AragogServiceError.html
-    /// [`NotFound`]: ../../error/enum.AragogServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: ../../error/enum.AragogServiceError.html#variant.UnprocessableEntity
+    /// [`find_where`]: struct.DatabaseRecord.html#method.find_where
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`NotFound`]: enum.AragogServiceError.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.AragogServiceError.html#variant.UnprocessableEntity
     pub async fn find_by(condition: &str, db_pool: &DatabaseConnectionPool) -> Result<Self, AragogServiceError> {
         let mut map = Vec::new();
         map.push(condition);
@@ -165,10 +165,10 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// User::find_where(conditions, &db_pool).await.unwrap();
     /// ```
     ///
-    /// [`get_where`]: ./struct.DatabaseRecord.html#method.get_where
-    /// [`AragogServiceError`]: ../../error/enum.AragogServiceError.html
-    /// [`NotFound`]: ../../error/enum.AragogServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: ../../error/enum.AragogServiceError.html#variant.UnprocessableEntity
+    /// [`get_where`]: struct.DatabaseRecord.html#method.get_where
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`NotFound`]: enum.AragogServiceError.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.AragogServiceError.html#variant.UnprocessableEntity
     pub async fn find_where(conditions: Vec<&str>, db_pool: &DatabaseConnectionPool) -> Result<Self, AragogServiceError> {
         let not_found = format!("{} Not found", T::collection_name());
         let values = Self::get_where(conditions.clone(), &db_pool).await?;
@@ -214,9 +214,9 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// User::get_where(conditions, &db_pool).await.unwrap();
     /// ```
     ///
-    /// [`AragogServiceError`]: ../../error/enum.AragogServiceError.html
-    /// [`NotFound`]: ../../error/enum.AragogServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: ../../error/enum.AragogServiceError.html#variant.UnprocessableEntity
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`NotFound`]: enum.AragogServiceError.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.AragogServiceError.html#variant.UnprocessableEntity
     pub async fn get_where(conditions: Vec<&str>, db_pool: &DatabaseConnectionPool) -> Result<Vec<Self>, AragogServiceError> {
         let not_found = format!("{} Not found", T::collection_name());
         let query = FilterQuery::from(conditions);
@@ -296,8 +296,8 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// On failure a [`AragogServiceError`] is returned:
     /// * [`UnprocessableEntity`] on data corruption
     ///
-    /// [`AragogServiceError`]: ../../error/enum.AragogServiceError.html
-    /// [`UnprocessableEntity`]: ../../error/enum.AragogServiceError.html#variant.UnprocessableEntity
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`UnprocessableEntity`]: enum.AragogServiceError.html#variant.UnprocessableEntity
     pub async fn create(record: T, db_pool: &DatabaseConnectionPool) -> Result<Self, AragogServiceError> where T: Validate {
         record.validate()?;
         database_service::create_record(record, &db_pool, &T::collection_name()).await
@@ -307,8 +307,8 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// It will return the filled `DatabaseRecord` on success or will return
     /// a [`AragogServiceError`]::[`UnprocessableEntity`] on failure
     ///
-    /// [`AragogServiceError`]: ../../error/enum.AragogServiceError.html
-    /// [`UnprocessableEntity`]: ../../error/enum.AragogServiceError.html#variant.UnprocessableEntity
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`UnprocessableEntity`]: enum.AragogServiceError.html#variant.UnprocessableEntity
     pub fn from(doc_response: DocumentResponse<T>) -> Result<Self, AragogServiceError> {
         let header = match doc_response.header() {
             Some(value) => { value }
@@ -337,9 +337,9 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// On success `()` is returned, on failure it will return a [`AragogServiceError`] according to
     /// the Authenticate implementation
     ///
-    /// [`AragogServiceError`]: ../../error/enum.AragogServiceError.html
-    /// [`Authenticate`]: ../../authenticate/trait.Authenticate.html
-    /// [`authenticate method`]: ../../authenticate/trait.Authenticate.html#tymethod.authenticate
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`Authenticate`]: trait.Authenticate.html
+    /// [`authenticate method`]: trait.Authenticate.html#tymethod.authenticate
     pub fn authenticate(&self, password: &str) -> Result<(), AragogServiceError> where T: Authenticate {
         self.record.authenticate(password)
     }

@@ -4,15 +4,15 @@ use crate::AragogServiceError;
 /// This trait provides the possibility to validate an instance or its fields formats or logic. Its main use
 /// it to validate a new or updated [`Record`] model instance before saving it.
 ///
-/// [`Record`]: ../record/trait.Record.html
+/// [`Record`]: record/trait.Record.html
 pub trait Validate {
     /// Validates the object field formats, logic or anything. Calls the [`validations`] method
     /// and will render a complete [`AragogServiceError`]::[`ValidationError`] on validation failure.
     /// On success returns `()`
     ///
-    /// [`validations`]: ./trait.Validate.html#tymethod.validations
-    /// [`AragogServiceError`]: ../error/enum.AragogServiceError.html
-    /// [`ValidationError`]: ../error/enum.AragogServiceError.html#variant.ValidationError
+    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`ValidationError`]: enum.AragogServiceError.html#variant.ValidationError
     fn validate(&self) -> Result<(), AragogServiceError>
     {
         let mut errors: Vec<String> = Vec::new();
@@ -45,7 +45,7 @@ pub trait Validate {
     ///
     /// `true` if `field` is `Some<T>` on failure, `false` is returned and `errors` stored a new message
     ///
-    /// [`validations`]: ./trait.Validate.html#tymethod.validations
+    /// [`validations`]: trait.Validate.html#tymethod.validations
     fn validate_field_presence<T>(field_name: &str, field: &Option<T>, errors: &mut Vec<String>) -> bool {
         match field {
             Some(_value) => { true }

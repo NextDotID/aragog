@@ -18,7 +18,7 @@ pub struct DatabaseConnectionPool {
     db_host: String,
     db_user: String,
     db_name: String,
-    /// Map between Model and DbCollection
+    /// Map between a collection name and a `DatabaseCollection` instance
     pub collections: HashMap<String, DatabaseCollection>,
     /// The database accessor
     pub database: Database<ReqwestClient>,

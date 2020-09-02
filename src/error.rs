@@ -3,33 +3,46 @@ use thiserror::Error;
 /// Error enum used for the Arango ORM mapped as potential Http errors
 #[derive(Error, Debug)]
 pub enum AragogServiceError {
-    /// code 500 internal error
+    /// Unhandled error
+    /// Can be interpreted as a HTTP code `500` internal error
     #[error("Internal error")]
     InternalError,
-    /// code 400 bad request
+    /// Validations failed (see model validation as implemented in [`Validate`].
+    /// Can be interpreted as a HTTP code `400` bad request.
+    ///
+    /// [`Validate`]: trait.Validate.html
     #[error("Validations failed: `{0}`")]
     ValidationError(String),
-    /// code 408 Request timeout
+    /// A query/request timed out.
+    /// Can be interpreted as a HTTP code `408` Request timeout.
     #[error("Timeout")]
     Timeout,
-    /// Code 404 not found
+    /// A record could not be found (see record query as implemented in [`Record`]).
+    /// Can be interpreted as a HTTP code `404` not found.
+    ///
+    /// [`Record`]: trait.Record.html
     #[error("`{0}` not found")]
     NotFound(String),
-    /// code 422 unprocessable entity
+    /// An operation on a document failed due to format or data issue.
+    /// Can be interpreted as a HTTP code `422` unprocessable entity.
     #[error("Unprocessable entity")]
     UnprocessableEntity,
-    /// code 401 unauthorized
+    /// The operation is refused due to lack of authentication.
+    /// Can be interpreted as a HTTP code `401` unauthorized.
     #[error("Unauthorized")]
     Unauthorized,
-    /// code 403 forbidden
+    /// The operation is refused and authentication cannot resolve it.
+    /// Can be interpreted as a HTTP code `403` forbidden.
     #[error("Forbidden")]
     Forbidden,
-    /// code 409 conflict
+    /// The operation fails due to a conflict, for example a unique index was not respected.
+    /// Can be interpreted as a HTTP code `409` conflict.
     #[error("Conflict")]
     Conflict,
 }
 
 impl AragogServiceError {
+    /// Retrieves the matching HTTP code as a string.
     pub fn http_code(&self) -> String {
         match self {
             AragogServiceError::NotFound(_str) => "404".to_string(),
