@@ -4,15 +4,15 @@ use crate::AragogServiceError;
 /// This trait provides the possibility to validate an instance or its fields formats or logic. Its main use
 /// it to validate a new or updated [`Record`] model instance before saving it.
 ///
-/// [`Record`]: ../record/trait.Record.html
+/// [`Record`]: /aragog/record/trait.Record.html
 pub trait Validate {
     /// Validates the object field formats, logic or anything. Calls the [`validations`] method
     /// and will render a complete [`AragogServiceError`]::[`ValidationError`] on validation failure.
     /// On success returns `()`
     ///
     /// [`validations`]: ./trait.Validate.html#tymethod.validations
-    /// [`AragogServiceError`]: ../error/enum.AragogServiceError.html
-    /// [`ValidationError`]: ../error/enum.AragogServiceError.html#variant.ValidationError
+    /// [`AragogServiceError`]: /aragog/error/enum.AragogServiceError.html
+    /// [`ValidationError`]: /aragog/error/enum.AragogServiceError.html#variant.ValidationError
     fn validate(&self) -> Result<(), AragogServiceError>
     {
         let mut errors: Vec<String> = Vec::new();

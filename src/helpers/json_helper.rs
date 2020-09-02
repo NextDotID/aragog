@@ -36,7 +36,7 @@ pub fn load_json_string(element: &Value) -> Result<String, String> {
 #[allow(dead_code)]
 /// Retrieves an environment varirable from a json string
 ///
-/// The function uses [`load_json_string_key`] to retrieve a key string then [`get_env_var`] for the
+/// The function uses [`load_json_string_key`] to retrieve a key and then gets the associated
 /// environment variable value.
 ///
 /// # Arguments:
@@ -46,14 +46,13 @@ pub fn load_json_string(element: &Value) -> Result<String, String> {
 ///
 /// # Panics
 ///
-/// The function panics if the env var doesn't exist. see [`get_env_var`] for more information.
+/// The function panics if the env var doesn't exist.
 ///
 /// # Returns
 ///
 /// Returns the env var value on success,  returns a String error message on failure.
 ///
 /// [`load_json_string_key`]: ./fn.load_json_string_key.html
-/// [`get_env_var`]: ../toolbox/fn.get_env_var.html
 pub fn load_json_string_as_env(element :&Value, key: &str) -> Result<String, String> {
     let str = load_json_string_key(&element, &key)?;
     Ok(std::env::var(&str).unwrap_or(format!("{} is not set in environment", key)))

@@ -10,7 +10,7 @@ use crate::AragogServiceError;
 pub struct DatabaseCollection {
     /// String name of the collection, exactly as defined in database
     pub collection_name: String,
-    /// The collection wrapper accessor of Arangors crate driver
+    /// The collection wrapper accessor of `arangors` crate driver
     pub collection: Collection<ReqwestClient>,
 }
 
