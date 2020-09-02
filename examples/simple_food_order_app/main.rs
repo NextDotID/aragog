@@ -1,0 +1,61 @@
+use aragorn::{DatabaseConnectionPool, New, DatabaseRecord, Update, AragornServiceError};
+use crate::models::order::Order;
+use crate::models::dish::{Dish, DishDTO};
+
+mod models;
+
+#[tokio::main]
+async fn main() {
+    std::env::set_var("SCHEMA_PATH", "./schema.json");
+
+    let db_host = "http://localhost:8529";
+    let db_user = "user";
+    let db_password = "password";
+    let db_name = "dishesAndOrders";
+
+    // Connect to database and generates collections and indexes
+    let db_pool = DatabaseConnectionPool::new(db_host, db_name, db_user, db_password).await;
+
+    // Instantiate a new dish
+    let dish = Dish::new(DishDTO {
+        name: "Pizza Regina".to_string(),
+        description: "Tomato base, Ham, Mozzarella, egg".to_string(),
+        price: 10
+    }).unwrap();
+    // Creates a database record
+    let mut dish_record = DatabaseRecord::create(dish, &db_pool).await.unwrap();
+
+    // New empty order
+    let mut order = Order::new();
+    // Add a dish
+    order.add(&dish_record.record);
+    // Creates a database record
+    let mut order_record = DatabaseRecord::create(order, &db_pool).await.unwrap();
+    // Update dish
+    dish_record.record.update(&DishDTO {
+        name: "Pizza Mozzarella".to_string(),
+        description: "Tomato base, Mozzarella".to_string(),
+        price: 7
+    }).unwrap();
+    // Add the updated dish to the order
+    order_record.record.add(&dish_record.record);
+    // Save the order record
+    order_record.save(&db_pool).await.unwrap();
+
+    // Checking
+    assert_eq!(order_record.record.dishes.len(), 2);
+    assert_eq!(order_record.record.total_price, 17);
+    assert_eq!(db_pool.collections["Dishes"].record_count().await.unwrap(), 1);
+
+    // Making validation fail
+    dish_record.record.price = 0;
+    match dish_record.save(&db_pool).await {
+        Ok(()) => panic!("Validations should have failed"),
+        Err(error) => match error {
+            AragornServiceError::ValidationError(msg) => {
+                assert_eq!(msg, String::from("price should be above zero"))
+            },
+            _ => panic!("Wrong error returned")
+        }
+    }
+}
