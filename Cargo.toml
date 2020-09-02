@@ -7,7 +7,7 @@ authors = [
 ]
 edition = "2018"
 description = "A simple lightweight object-document mapper for ArangoDB"
-keywords = ["ArangoDB", "Aragog", "Arangorn", "Arangorm", "Arango", "Aragorm", "Aragorn"]
+keywords = ["ArangoDB", "Arango"]
 categories = ["web-programming"]
 exclude =  ["examples", "tests"]
 license-file = "LICENSE"
