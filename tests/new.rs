@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use aragorn::{New, AragornServiceError};
+use aragog::{New, AragogServiceError};
 
 pub mod common;
 
@@ -19,7 +19,7 @@ pub struct DishForm {
 }
 
 impl New<DishForm> for Dish {
-    fn new(form: DishForm) -> Result<Self, AragornServiceError> {
+    fn new(form: DishForm) -> Result<Self, AragogServiceError> {
         let res = Dish {
             name: form.form_name,
             description: form.form_description,
@@ -27,7 +27,7 @@ impl New<DishForm> for Dish {
             created_at: 1000
         };
         if res.price == 0 {
-            return Err(AragornServiceError::ValidationError(String::from("Wrong price")));
+            return Err(AragogServiceError::ValidationError(String::from("Wrong price")));
         }
         Ok(res)
     }

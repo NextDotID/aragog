@@ -3,7 +3,7 @@ use arangors::client::reqwest::ReqwestClient;
 use arangors::index::{IndexCollection, Index, IndexSettings};
 use serde_json::Value;
 use crate::helpers::json_helper;
-use crate::AragornServiceError;
+use crate::AragogServiceError;
 
 /// Struct containing the connection information on a ArangoDB collection
 #[derive(Debug, Clone)]
@@ -78,10 +78,10 @@ impl DatabaseCollection {
             .build())
     }
 
-    pub async fn record_count(&self) -> Result<u32, AragornServiceError> {
+    pub async fn record_count(&self) -> Result<u32, AragogServiceError> {
        let properties = match self.collection.document_count().await {
            Ok(value) => value,
-           Err(_client_error) => return Err(AragornServiceError::UnprocessableEntity)
+           Err(_client_error) => return Err(AragogServiceError::UnprocessableEntity)
        };
        match properties.info.count {
            Some(value) => Ok(value),

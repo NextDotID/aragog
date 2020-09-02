@@ -1,4 +1,4 @@
-use aragorn::{DatabaseConnectionPool, New, DatabaseRecord, Update, AragornServiceError};
+use aragog::{DatabaseConnectionPool, New, DatabaseRecord, Update, AragogServiceError};
 use crate::models::order::Order;
 use crate::models::dish::{Dish, DishDTO};
 
@@ -52,7 +52,7 @@ async fn main() {
     match dish_record.save(&db_pool).await {
         Ok(()) => panic!("Validations should have failed"),
         Err(error) => match error {
-            AragornServiceError::ValidationError(msg) => {
+            AragogServiceError::ValidationError(msg) => {
                 assert_eq!(msg, String::from("price should be above zero"))
             },
             _ => panic!("Wrong error returned")

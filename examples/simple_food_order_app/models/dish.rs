@@ -1,8 +1,8 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use aragorn::{AragornServiceError, New, Record, Validate, Update};
-use aragorn::helpers::string_validators;
+use aragog::{AragogServiceError, New, Record, Validate, Update};
+use aragog::helpers::string_validators;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Dish {
@@ -36,7 +36,7 @@ impl Validate for Dish {
 }
 
 impl New<DishDTO> for Dish {
-    fn new(form: DishDTO) -> Result<Self, AragornServiceError> {
+    fn new(form: DishDTO) -> Result<Self, AragogServiceError> {
         Ok(Self {
             name: form.name,
             description: form.description,
@@ -48,7 +48,7 @@ impl New<DishDTO> for Dish {
 }
 
 impl Update<DishDTO> for Dish {
-    fn update(&mut self, form: &DishDTO) -> Result<(), AragornServiceError> {
+    fn update(&mut self, form: &DishDTO) -> Result<(), AragogServiceError> {
         self.name = form.name.clone();
         self.description = form.description.clone();
         self.price = form.price;

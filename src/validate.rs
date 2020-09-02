@@ -1,19 +1,19 @@
-use crate::AragornServiceError;
+use crate::AragogServiceError;
 
-/// The `Validate` trait of the Aragorn library.
+/// The `Validate` trait of the Aragog library.
 /// This trait provides the possibility to validate an instance or its fields formats or logic. Its main use
 /// it to validate a new or updated [`Record`] model instance before saving it.
 ///
 /// [`Record`]: ../record/trait.Record.html
 pub trait Validate {
     /// Validates the object field formats, logic or anything. Calls the [`validations`] method
-    /// and will render a complete [`AragornServiceError`]::[`ValidationError`] on validation failure.
+    /// and will render a complete [`AragogServiceError`]::[`ValidationError`] on validation failure.
     /// On success returns `()`
     ///
     /// [`validations`]: ./trait.Validate.html#tymethod.validations
-    /// [`AragornServiceError`]: ../error/enum.AragornServiceError.html
-    /// [`ValidationError`]: ../error/enum.AragornServiceError.html#variant.ValidationError
-    fn validate(&self) -> Result<(), AragornServiceError>
+    /// [`AragogServiceError`]: ../error/enum.AragogServiceError.html
+    /// [`ValidationError`]: ../error/enum.AragogServiceError.html#variant.ValidationError
+    fn validate(&self) -> Result<(), AragogServiceError>
     {
         let mut errors: Vec<String> = Vec::new();
 
@@ -25,7 +25,7 @@ pub trait Validate {
         else {
             let error_str = errors.join(", ");
             log::error!("{}", &error_str);
-            Err(AragornServiceError::ValidationError(error_str))
+            Err(AragogServiceError::ValidationError(error_str))
         }
     }
 

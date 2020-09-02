@@ -1,6 +1,6 @@
-use crate::AragornServiceError;
+use crate::AragogServiceError;
 
-/// The `Authenticate` trait of the Aragorn library.
+/// The `Authenticate` trait of the Aragog library.
 /// This trait provides the possibility to authenticate a Type with some secret. Its main use
 /// it to authenticate a user or client [`Record`] model instance.
 ///
@@ -14,9 +14,9 @@ pub trait Authenticate {
     ///
     /// # Returns
     ///
-    /// On success `()` is returned, on failure it will return a [`AragornServiceError`] according to
+    /// On success `()` is returned, on failure it will return a [`AragogServiceError`] according to
     /// the Authenticate implementation
     ///
-    /// [`AragornServiceError`]: ../../../error/enum.AragornServiceError.html
-    fn authenticate(&self, secret: &str) -> Result<(), AragornServiceError>;
+    /// [`AragogServiceError`]: ../../../error/enum.AragogServiceError.html
+    fn authenticate(&self, secret: &str) -> Result<(), AragogServiceError>;
 }

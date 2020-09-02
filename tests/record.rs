@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use aragorn::{DatabaseRecord, Record, Validate};
-use aragorn::DatabaseConnectionPool;
+use aragog::{DatabaseRecord, Record, Validate};
+use aragog::DatabaseConnectionPool;
 use common::with_db;
 
 pub mod common;

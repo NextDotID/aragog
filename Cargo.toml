@@ -1,15 +1,18 @@
 [package]
-name = "aragorn"
+name = "aragog"
 version = "0.1.0"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>, <felix.maneville@qonfucius.team>",
     "Qonfucius <https://qonfucius.com>"
 ]
 edition = "2018"
-description = "A simple lightweight object mapper for ArangoDB, based on the arangors driver"
-keywords = ["ArangoDB", "Aragorn", "Arangorn", "Arangorm", "Arango", "Aragorm"]
+description = "A simple lightweight object-document mapper for ArangoDB"
+keywords = ["ArangoDB", "Aragog", "Arangorn", "Arangorm", "Arango", "Aragorm", "Aragorn"]
 categories = ["web-programming"]
-exclude =  ["examples"]
+exclude =  ["examples", "tests"]
+license-file = "LICENSE"
+readme = "README.md"
+repository = "https://gitlab.com/qonfucius/aragog"
 
 [dependencies]
 arangors = "0.4.3"

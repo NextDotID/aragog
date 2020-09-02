@@ -3,9 +3,9 @@ use arangors::document::options::{InsertOptions, RemoveOptions, UpdateOptions};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
-use crate::{Record, DatabaseConnectionPool, AragornServiceError, DatabaseRecord};
+use crate::{Record, DatabaseConnectionPool, AragogServiceError, DatabaseRecord};
 
-pub async fn update_record<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, AragornServiceError> {
+pub async fn update_record<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, AragogServiceError> {
     let collection = db_pool.get_collection(collection_name);
     // log::debug!("Trying to update a document in {:?}: {}", model, &db_pool.collections[model].collection_name);
     let response = match collection.update_document(
@@ -22,19 +22,19 @@ pub async fn update_record<T: DeserializeOwned + Serialize + Clone + Record>(obj
             return match error {
                 ClientError::Arango(arango_error) => {
                     if arango_error.code() == 409 {
-                        Err(AragornServiceError::Conflict)
+                        Err(AragogServiceError::Conflict)
                     } else {
-                        Err(AragornServiceError::UnprocessableEntity)
+                        Err(AragogServiceError::UnprocessableEntity)
                     }
                 }
-                _ => Err(AragornServiceError::UnprocessableEntity)
+                _ => Err(AragogServiceError::UnprocessableEntity)
             }
         }
     };
     DatabaseRecord::from(response)
 }
 
-pub async fn create_record<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, AragornServiceError> {
+pub async fn create_record<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, AragogServiceError> {
     let collection = db_pool.get_collection(collection_name);
     // log::debug!("Trying to create a document in {:?}: {}", model, &db_pool.collections[model].collection_name);
     let response = match collection.create_document(
@@ -50,25 +50,25 @@ pub async fn create_record<T: DeserializeOwned + Serialize + Clone + Record>(obj
             return match error {
                 ClientError::Arango(arango_error) => {
                     if arango_error.code() == 409 {
-                        Err(AragornServiceError::Conflict)
+                        Err(AragogServiceError::Conflict)
                     } else {
-                        Err(AragornServiceError::UnprocessableEntity)
+                        Err(AragogServiceError::UnprocessableEntity)
                     }
                 }
-                _ => Err(AragornServiceError::UnprocessableEntity)
+                _ => Err(AragogServiceError::UnprocessableEntity)
             }
         }
     };
     DatabaseRecord::from(response)
 }
 
-pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, AragornServiceError> {
+pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, AragogServiceError> {
     let collection = db_pool.get_collection(collection_name);
     let record: Document<T> = match collection.document(key).await {
         Ok(doc) => { doc }
         Err(error) => {
             log::error!("{}", error);
-            return Err(AragornServiceError::NotFound(format!("{} {}", collection_name, key)));
+            return Err(AragogServiceError::NotFound(format!("{} {}", collection_name, key)));
         }
     };
     Ok(
@@ -79,7 +79,7 @@ pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(k
     )
 }
 
-pub async fn remove_record<T: Serialize + DeserializeOwned + Clone + Record>(key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<(), AragornServiceError> {
+pub async fn remove_record<T: Serialize + DeserializeOwned + Clone + Record>(key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<(), AragogServiceError> {
     let collection = db_pool.get_collection(collection_name);
 
     match collection.remove_document::<T>(
@@ -92,7 +92,7 @@ pub async fn remove_record<T: Serialize + DeserializeOwned + Clone + Record>(key
         Ok(_result) => { Ok(()) }
         Err(error) => {
             log::error!("{}", error);
-            Err(AragornServiceError::NotFound(format!("{} {}", collection_name, key)))
+            Err(AragogServiceError::NotFound(format!("{} {}", collection_name, key)))
         }
     }
 }

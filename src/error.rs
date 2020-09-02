@@ -2,7 +2,7 @@ use thiserror::Error;
 
 /// Error enum used for the Arango ORM mapped as potential Http errors
 #[derive(Error, Debug)]
-pub enum AragornServiceError {
+pub enum AragogServiceError {
     /// code 500 internal error
     #[error("Internal error")]
     InternalError,
@@ -29,23 +29,23 @@ pub enum AragornServiceError {
     Conflict,
 }
 
-impl AragornServiceError {
+impl AragogServiceError {
     pub fn http_code(&self) -> String {
         match self {
-            AragornServiceError::NotFound(_str) => "404".to_string(),
-            AragornServiceError::ValidationError(_str) => "400".to_string(),
-            AragornServiceError::UnprocessableEntity => "422".to_string(),
-            AragornServiceError::Conflict => "409".to_string(),
-            AragornServiceError::Unauthorized => "401".to_string(),
-            AragornServiceError::Forbidden => "403".to_string(),
-            AragornServiceError::Timeout => "408".to_string(),
-            AragornServiceError::InternalError => "500".to_string()
+            AragogServiceError::NotFound(_str) => "404".to_string(),
+            AragogServiceError::ValidationError(_str) => "400".to_string(),
+            AragogServiceError::UnprocessableEntity => "422".to_string(),
+            AragogServiceError::Conflict => "409".to_string(),
+            AragogServiceError::Unauthorized => "401".to_string(),
+            AragogServiceError::Forbidden => "403".to_string(),
+            AragogServiceError::Timeout => "408".to_string(),
+            AragogServiceError::InternalError => "500".to_string()
         }
     }
 }
 
-impl Default for AragornServiceError {
+impl Default for AragogServiceError {
     fn default() -> Self {
-        AragornServiceError::InternalError
+        AragogServiceError::InternalError
     }
 }

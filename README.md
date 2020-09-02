@@ -1,13 +1,14 @@
 <!-- cargo-sync-readme start -->
 
-# Aragorn
+# Aragog
 
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Crates.io](https://img.shields.io/crates/v/aragorn.svg)](https://crates.io/crates/aragorn)
-[![aragorn](https://docs.rs/aragorn/badge.svg)](https://docs.rs/aragorn)
+[![Crates.io](https://img.shields.io/crates/v/aragog.svg)](https://crates.io/crates/aragog)
+[![aragog](https://docs.rs/aragog/badge.svg)](https://docs.rs/aragog)
 
-`aragorn` is a simple lightweight ORM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
+`aragog` is a simple lightweight ODM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
 The main concept is to provide behaviors allowing to synchronize documents and structs as simply an lightly as possible.
+In the future versions `aragog` will also be able to act as a ORM and OGM for [ArangoDB][ArangoDB]
 
 ### Features
 
@@ -19,7 +20,7 @@ By now the available features are:
     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
     * `Validate`: The structure can perform simple validations before being created or saved into the database.
     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
-* Different operations can return a `AragornServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
+* Different operations can return a `AragogServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 
 #### Schema and collections
 
@@ -78,7 +79,7 @@ The real representation of a complete document is `DatabaseRecord<T>` where `T` 
 
 ```rust
 use serde::{Deserialize, Serialize};
-use aragorn::{Record, DatabaseRecord, DatabaseConnectionPool};
+use aragog::{Record, DatabaseRecord, DatabaseConnectionPool};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct User { 
@@ -142,10 +143,12 @@ let user_records = User::get_where(find_conditions, &database_pool).await.unwrap
 ### TODO
 
 * Critic features:
-    - [ ] Advanced query system
+    - [ ] Advanced and modular query system
+* ORM and OGM
     - [ ] Relations
         - [ ] Handle graph vertices and edges
         - [ ] Handle SQL-like relations (foreign keys)
+    - [ ] Handle key-value pair system (redis like)
 * Middle and long term:
     - [ ] Handle revisions/concurrency correctly
     - [ ] Code Generation
@@ -172,8 +175,8 @@ arangosh> users.grantDatabase("DB_USER", "DB_NAME");
 
 ### License
 
-`aragorn` is provided under the MIT license. See [LICENSE](./LICENSE).
-An simple lightweight ORM for [ArangoDB][ArangoDB] based on [arangors][arangors].
+`aragog` is provided under the MIT license. See [LICENSE](./LICENSE).
+An simple lightweight ODM for [ArangoDB][ArangoDB] based on [arangors][arangors].
 
 Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][inzanez]
 

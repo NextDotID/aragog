@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use crate::models::dish::Dish;
-use aragorn::{Record, Validate};
+use aragog::{Record, Validate};
 use chrono::Utc;
 
 #[derive(Serialize, Deserialize, Clone)]

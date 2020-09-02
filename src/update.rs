@@ -1,6 +1,6 @@
-use crate::AragornServiceError;
+use crate::AragogServiceError;
 
-/// The `Update` trait of the Aragorn library.
+/// The `Update` trait of the Aragog library.
 /// This trait provides the possibility to update a Type from an other one. Its main use
 /// it to apply modifications from a Http form on a [`Record`] model instance.
 ///
@@ -8,12 +8,12 @@ use crate::AragornServiceError;
 pub trait Update<T> {
     /// Update the `Self` field values `T`. The object takes a mutable reference of itself and is directly
     /// updated.
-    /// Can fail and return an error, the error is in most of the cases a [`AragornServiceError`]::[`ValidationError`]
+    /// Can fail and return an error, the error is in most of the cases a [`AragogServiceError`]::[`ValidationError`]
     /// on fields validation failure
     ///
-    /// [`AragornServiceError`]: ../error/enum.AragornServiceError.html
-    /// [`ValidationError`]: ../error/enum.AragornServiceError.html#variant.ValidationError
-    fn update(&mut self, form: &T) -> Result<(), AragornServiceError>;
+    /// [`AragogServiceError`]: ../error/enum.AragogServiceError.html
+    /// [`ValidationError`]: ../error/enum.AragogServiceError.html#variant.ValidationError
+    fn update(&mut self, form: &T) -> Result<(), AragogServiceError>;
 
     /// Can update a mutable `value` with a new one if the `new_value` is defined (`Some`).
     /// if the `new_value` is `None` the value stays unchanged

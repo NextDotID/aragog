@@ -1,4 +1,4 @@
-use aragorn::DatabaseConnectionPool;
+use aragog::DatabaseConnectionPool;
 use std::fmt::Debug;
 
 pub fn setup_db() -> DatabaseConnectionPool {
@@ -6,7 +6,7 @@ pub fn setup_db() -> DatabaseConnectionPool {
 
     let pool = tokio_test::block_on(DatabaseConnectionPool::new(
         "http://localhost:8529",
-        "aragorn_test",
+        "aragog_test",
         "test",
         "test"
     ));
