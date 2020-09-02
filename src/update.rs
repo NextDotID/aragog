@@ -4,15 +4,15 @@ use crate::AragogServiceError;
 /// This trait provides the possibility to update a Type from an other one. Its main use
 /// it to apply modifications from a Http form on a [`Record`] model instance.
 ///
-/// [`Record`]: /aragog/trait.Record.html
+/// [`Record`]: trait.Record.html
 pub trait Update<T> {
     /// Update the `Self` field values `T`. The object takes a mutable reference of itself and is directly
     /// updated.
     /// Can fail and return an error, the error is in most of the cases a [`AragogServiceError`]::[`ValidationError`]
     /// on fields validation failure
     ///
-    /// [`AragogServiceError`]: /aragog/error/enum.AragogServiceError.html
-    /// [`ValidationError`]: /aragog/error/enum.AragogServiceError.html#variant.ValidationError
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
+    /// [`ValidationError`]: enum.AragogServiceError.html#variant.ValidationError
     fn update(&mut self, form: &T) -> Result<(), AragogServiceError>;
 
     /// Can update a mutable `value` with a new one if the `new_value` is defined (`Some`).
