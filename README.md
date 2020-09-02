@@ -2,6 +2,7 @@
 
 # Aragog
 
+[![pipeline status](https://gitlab.com/qonfucius/aragog/badges/master/pipeline.svg)](https://gitlab.com/qonfucius/aragog/commits/master)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Crates.io](https://img.shields.io/crates/v/aragog.svg)](https://crates.io/crates/aragog)
 [![aragog](https://docs.rs/aragog/badge.svg)](https://docs.rs/aragog)
