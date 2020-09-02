@@ -15,8 +15,8 @@ use regex::Regex;
 /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
 /// new error message is added to `errors`
 ///
-/// [`Validate`]: ../../validate/trait.Validate.html
-/// [`validations`]: ../../validate/trait.Validate.html#tymethod.validations
+/// [`Validate`]: trait.Validate.html
+/// [`validations`]: validate/trait.Validate.html#tymethod.validations
 #[allow(dead_code)]
 pub fn validate_numeric_string(field_path: &str, str: &str, errors: &mut Vec<String>) -> bool {
     for char in str.chars() {
@@ -44,8 +44,8 @@ pub fn validate_numeric_string(field_path: &str, str: &str, errors: &mut Vec<Str
 /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
 /// new error message is added to `errors`
 ///
-/// [`Validate`]: ../../validate/trait.Validate.html
-/// [`validations`]: ../../validate/trait.Validate.html#tymethod.validations
+/// [`Validate`]: trait.Validate.html
+/// [`validations`]: validate/trait.Validate.html#tymethod.validations
 #[allow(dead_code)]
 pub fn validate_max_len(field_path: &str, str: &str, max_len: usize, errors: &mut Vec<String>) -> bool {
     if str.len() > max_len {
@@ -71,8 +71,8 @@ pub fn validate_max_len(field_path: &str, str: &str, max_len: usize, errors: &mu
 /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
 /// new error message is added to `errors`
 ///
-/// [`Validate`]: ../../validate/trait.Validate.html
-/// [`validations`]: ../../validate/trait.Validate.html#tymethod.validations
+/// [`Validate`]: trait.Validate.html
+/// [`validations`]: validate/trait.Validate.html#tymethod.validations
 #[allow(dead_code)]
 pub fn validate_min_len(field_path: &str, str: &str, min_len: usize, errors: &mut Vec<String>) -> bool {
     if str.len() < min_len {
@@ -98,8 +98,8 @@ pub fn validate_min_len(field_path: &str, str: &str, min_len: usize, errors: &mu
 /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
 /// new error message is added to `errors`
 ///
-/// [`Validate`]: ../../validate/trait.Validate.html
-/// [`validations`]: ../../validate/trait.Validate.html#tymethod.validations
+/// [`Validate`]: trait.Validate.html
+/// [`validations`]: validate/trait.Validate.html#tymethod.validations
 #[allow(dead_code)]
 pub fn validate_len(field_path: &str, str: &str, len: usize, errors: &mut Vec<String>) -> bool {
     if str.len() != len {
@@ -125,8 +125,8 @@ pub fn validate_len(field_path: &str, str: &str, len: usize, errors: &mut Vec<St
 /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
 /// new error message is added to `errors`
 ///
-/// [`Validate`]: ../../validate/trait.Validate.html
-/// [`validations`]: ../../validate/trait.Validate.html#tymethod.validations
+/// [`Validate`]: trait.Validate.html
+/// [`validations`]: validate/trait.Validate.html#tymethod.validations
 #[allow(dead_code)]
 pub fn validate_regex(field_path: &str, str :&str, regex :&str, errors: &mut Vec<String>) -> bool {
     let reg = match Regex::new(regex) {
@@ -157,8 +157,8 @@ pub fn validate_regex(field_path: &str, str :&str, regex :&str, errors: &mut Vec
 /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
 /// new error message is added to `errors`
 ///
-/// [`Validate`]: ../../validate/trait.Validate.html
-/// [`validations`]: ../../validate/trait.Validate.html#tymethod.validations
+/// [`Validate`]: trait.Validate.html
+/// [`validations`]: validate/trait.Validate.html#tymethod.validations
 //#[allow(dead_code)]
 //pub fn validate_date_format(field_path :&str, str :&str, errors: &mut Vec<String>) -> bool {
 //    match DateTime::parse_from_rfc3339(str) {

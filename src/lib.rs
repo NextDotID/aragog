@@ -9,8 +9,8 @@ pub use {
     validate::Validate,
 };
 
-pub mod db;
 pub mod helpers;
+mod db;
 mod record;
 mod authenticate;
 mod update;

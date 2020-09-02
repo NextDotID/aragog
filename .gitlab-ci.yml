@@ -1,0 +1,41 @@
+variables:
+  CARGO_HOME: $CI_PROJECT_DIR/cargo
+
+cache:
+  paths:
+    - target/
+    - cargo/
+
+# Use cargo to test the project
+test:cargo:
+  image: rust:latest
+  variables:
+    ARANGO_ROOT_PASSWORD: "test"
+    DB_HOST: "http://arangodb:8529"
+    DB_NAME: "_system"
+    DB_USER: "root"
+    DB_PWD: "test"
+  services:
+    - "arangodb:latest"
+  script:
+    # setup environment variables
+    - cargo test -- --test-threads=1
+
+pages:
+  image: rust:latest
+  variables:
+    PKG_NAME: aragog
+    PKG_NAME_DIR: aragog
+  script:
+    - cargo --version
+    - cargo rustdoc -p $PKG_NAME
+    - rm -rf public
+    - mv target/doc public
+    - echo "<meta http-equiv=\"refresh\" content=\"0; url=$PKG_NAME_DIR\">" > public/index.html
+  artifacts:
+    paths:
+      - public
+  only:
+    refs:
+      - develop
+      - master
