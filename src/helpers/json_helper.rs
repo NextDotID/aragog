@@ -52,7 +52,7 @@ pub fn load_json_string(element: &Value) -> Result<String, String> {
 ///
 /// Returns the env var value on success,  returns a String error message on failure.
 ///
-/// [`load_json_string_key`]: ./fn.load_json_string_key.html
+/// [`load_json_string_key`]: fn.load_json_string_key.html
 pub fn load_json_string_as_env(element :&Value, key: &str) -> Result<String, String> {
     let str = load_json_string_key(&element, &key)?;
     Ok(std::env::var(&str).unwrap_or(format!("{} is not set in environment", key)))

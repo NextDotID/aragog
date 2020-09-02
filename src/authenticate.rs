@@ -4,7 +4,7 @@ use crate::AragogServiceError;
 /// This trait provides the possibility to authenticate a Type with some secret. Its main use
 /// it to authenticate a user or client [`Record`] model instance.
 ///
-/// [`Record`]: /aragog/trait.Record.html
+/// [`Record`]: record/trait.Record.html
 pub trait Authenticate {
     /// Authenticates the instance with a secret.
     ///
@@ -17,6 +17,6 @@ pub trait Authenticate {
     /// On success `()` is returned, on failure it will return a [`AragogServiceError`] according to
     /// the Authenticate implementation
     ///
-    /// [`AragogServiceError`]: /aragog/error/enum.AragogServiceError.html
+    /// [`AragogServiceError`]: enum.AragogServiceError.html
     fn authenticate(&self, secret: &str) -> Result<(), AragogServiceError>;
 }
