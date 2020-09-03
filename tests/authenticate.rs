@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use aragog::{AragogServiceError, Authenticate};
+use aragog::{ServiceError, Authenticate};
 
 pub mod common;
 
@@ -11,10 +11,10 @@ pub struct User {
 }
 
 impl Authenticate for User {
-    fn authenticate(&self, secret: &str) -> Result<(), AragogServiceError> {
+    fn authenticate(&self, secret: &str) -> Result<(), ServiceError> {
         // Obviously you must use some bcrypt or Argon2 hashing tool
         if secret != self.encrypted_password {
-            return Err(AragogServiceError::Unauthorized);
+            return Err(ServiceError::Unauthorized);
         }
         Ok(())
     }

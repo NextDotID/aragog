@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use aragog::{AragogServiceError, Validate};
+use aragog::{ServiceError, Validate};
 use aragog::helpers::string_validators;
 
 pub mod common;
@@ -59,7 +59,7 @@ fn can_fail_and_provide_message() -> Result<(), String> {
     match dish.validate() {
         Ok(()) => Err(String::from("Should have failed validations")),
         Err(error) => match error {
-            AragogServiceError::ValidationError(str) => {
+            ServiceError::ValidationError(str) => {
                 common::expect_assert(str.contains(r#"name 'Piza' is too short, min length: 5"#))?;
                 common::expect_assert(str.contains(r#"description 'wrong' is too short, min length: 15"#))?;
                 common::expect_assert(str.contains(r#"reference 'ABC' is not numeric"#))?;

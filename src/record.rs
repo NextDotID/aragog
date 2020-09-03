@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
-use crate::{AragogServiceError, DatabaseConnectionPool, DatabaseRecord};
+use crate::{ServiceError, DatabaseConnectionPool, DatabaseRecord};
 
 /// The main trait of the Aragog library.
 /// Trait for structures that can be stored in Database.
@@ -17,7 +17,7 @@ pub trait Record {
     /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
     /// [`find`]: db/database_record/struct.DatabaseRecord.html#method.find
     async fn find(key: &str, db_pool: &DatabaseConnectionPool)
-                  -> Result<DatabaseRecord<Self>, AragogServiceError>
+                  -> Result<DatabaseRecord<Self>, ServiceError>
         where Self: DeserializeOwned + Serialize + Clone {
         DatabaseRecord::find(key, &db_pool).await
     }
@@ -28,7 +28,7 @@ pub trait Record {
     /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
     /// [`find_by`]: db/database_record/struct.DatabaseRecord.html#method.find_by
     async fn find_by(condition: &str, db_pool: &DatabaseConnectionPool)
-                     -> Result<DatabaseRecord<Self>, AragogServiceError>
+                     -> Result<DatabaseRecord<Self>, ServiceError>
         where Self: DeserializeOwned + Serialize + Clone {
         DatabaseRecord::find_by(condition, &db_pool).await
     }
@@ -39,7 +39,7 @@ pub trait Record {
     /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
     /// [`find_where`]: db/database_record/struct.DatabaseRecord.html#method.find_where
     async fn find_where(conditions: Vec<&str>, db_pool: &DatabaseConnectionPool)
-                           -> Result<DatabaseRecord<Self>, AragogServiceError>
+                           -> Result<DatabaseRecord<Self>, ServiceError>
         where Self: DeserializeOwned + Serialize + Clone {
         DatabaseRecord::find_where(conditions, &db_pool).await
     }
@@ -50,7 +50,7 @@ pub trait Record {
     /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
     /// [`get_where`]: db/database_record/struct.DatabaseRecord.html#method.get_where
     async fn get_where(conditions: Vec<&str>, db_pool: &DatabaseConnectionPool)
-                          -> Result<Vec<DatabaseRecord<Self>>, AragogServiceError>
+                          -> Result<Vec<DatabaseRecord<Self>>, ServiceError>
         where Self: DeserializeOwned + Serialize + Clone {
         DatabaseRecord::get_where(conditions, &db_pool).await
     }

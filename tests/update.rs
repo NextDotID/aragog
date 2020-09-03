@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use aragog::{AragogServiceError, Update};
+use aragog::{ServiceError, Update};
 
 pub mod common;
 
@@ -17,9 +17,9 @@ pub struct DishForm {
 }
 
 impl Update<DishForm> for Dish {
-    fn update(&mut self, form: &DishForm) -> Result<(), AragogServiceError> {
+    fn update(&mut self, form: &DishForm) -> Result<(), ServiceError> {
         if form.price == 0 {
-            return Err(AragogServiceError::ValidationError(String::from("Wrong price")));
+            return Err(ServiceError::ValidationError(String::from("Wrong price")));
         }
         self.name = form.form_name.clone();
         self.description = form.form_description.clone();

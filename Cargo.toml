@@ -15,6 +15,10 @@ readme = "README.md"
 repository = "https://gitlab.com/qonfucius/aragog"
 documentation = "https://docs.rs/aragog"
 
+[features]
+default = [ ]
+actix_http_error = ["actix-web"]
+
 [dependencies]
 # ArangoDB driver
 arangors = "0.4.3"
@@ -29,6 +33,8 @@ serde_json = "1.0"
 log = "0.4.11"
 # Error definitions
 thiserror = "1.0.20"
+
+actix-web = { version = "2.0.0", optional = true }
 
 [dev-dependencies]
 tokio-test = "0.2.1"
