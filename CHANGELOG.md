@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+* Added new cargo feature `password_hashing`
+* Added new CI job
+* Added `lib.rs` documentation
+* Fixed non documented elements
+
 ## 0.2.0
 
 * Renamed AragogServiceError to ServiceError (breaking changes)
