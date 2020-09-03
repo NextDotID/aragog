@@ -31,7 +31,7 @@ If you use this crate with the [actix][actix] framework, you may want the `arago
 To do so cou can add to your `cargo.toml` the following `feature`: `actix_http_error`.
 
 ```toml
-aragog = { version = "0.2.1", features = ["actix_http_error"] }
+aragog = { version = "0.2.2", features = ["actix_http_error"] }
 ```
 
 ##### Password hashing
@@ -40,7 +40,7 @@ You may want `aragog` to provide a more complete `Authenticate` trait allowing t
 To do so cou can add to your `cargo.toml` the following `feature`: `password_hashing`.
 
 ```toml
-aragog = { version = "0.2.1", features = ["password_hashing"] }
+aragog = { version = "0.2.2", features = ["password_hashing"] }
 ```
 
 It will add two functions in the `Authenticate` trait:
@@ -220,7 +220,7 @@ Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][i
 [fMeow]: https://github.com/fMeow/
 [inzanez]: https://github.com/inzanez/
 [ArangoDB]: https://www.arangodb.com/
-[IndexSettings]: https://docs.rs/arangors/0.4.3/arangors/index/enum.IndexSettings.html
+[IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
 [arango_download]: https://www.arangodb.com/download "Download Arango"
 [arango_doc]: https://www.arangodb.com/docs/stable/getting-started.html "Arango getting started"
 [actix]: https://actix.rs/ "Actix Homepage"

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+* Fixed Documentation broken links
+
 ## 0.2.1
 
 * Added new cargo feature `password_hashing`

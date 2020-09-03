@@ -22,7 +22,7 @@
 //! To do so cou can add to your `cargo.toml` the following `feature`: `actix_http_error`.
 //!
 //! ```toml
-//! aragog = { version = "0.2.1", features = ["actix_http_error"] }
+//! aragog = { version = "0.2.2", features = ["actix_http_error"] }
 //! ```
 //!
 //! ##### Password hashing
@@ -31,7 +31,7 @@
 //! To do so cou can add to your `cargo.toml` the following `feature`: `password_hashing`.
 //!
 //! ```toml
-//! aragog = { version = "0.2.1", features = ["password_hashing"] }
+//! aragog = { version = "0.2.2", features = ["password_hashing"] }
 //! ```
 //!
 //! It will add two functions in the `Authenticate` trait:
@@ -163,6 +163,13 @@
 //! find_conditions.push("age > 15");
 //! let user_records = User::get_where(find_conditions, &database_pool).await.unwrap();
 //! ```
+//!
+//! [arangors]: https://docs.rs/arangors
+//! [argonautica]: https://github.com/bcmyers/argonautica
+//! [example_path]: examples/simple_app
+//! [ArangoDB]: https://www.arangodb.com/
+//! [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
+//! [actix]: https://actix.rs/ "Actix Homepage"
 #![warn(missing_docs)]
 
 pub use {
