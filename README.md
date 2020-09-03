@@ -31,7 +31,7 @@ If you use this crate with the [actix][actix] framework, you may want the `arago
 To do so cou can add to your `cargo.toml` the following `feature`: `actix_http_error`.
 
 ```toml
-aragog = { version = "0.1.2", features = ["actix_http_error"] }
+aragog = { version = "0.2.0", features = ["actix_http_error"] }
 ```
 
 ### Schema and collections
