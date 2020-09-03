@@ -2,7 +2,7 @@ pub use {
     authenticate::Authenticate,
     db::database_record::DatabaseRecord,
     db::database_connection_pool::DatabaseConnectionPool,
-    error::AragogServiceError,
+    error::ServiceError,
     new::New,
     record::Record,
     update::Update,
