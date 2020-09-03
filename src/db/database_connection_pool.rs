@@ -46,8 +46,8 @@ impl DatabaseConnectionPool {
             collections, database }
     }
 
-    /// Simple wrapper to retrieve the matching Collection of a Model without using the HashMap directly.
-    /// Can panic if the key matching `model` is missing
+    /// Simple wrapper to retrieve a Collection without using the HashMap directly.
+    /// Can panic if the key matching `collection` is missing
     pub fn get_collection(&self, collection: &str) -> &Collection<ReqwestClient> {
         &self.collections[collection].collection
     }

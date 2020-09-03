@@ -34,6 +34,26 @@ To do so cou can add to your `cargo.toml` the following `feature`: `actix_http_e
 aragog = { version = "0.2.0", features = ["actix_http_error"] }
 ```
 
+##### Password hashing
+
+You may want `aragog` to provide a more complete `Authenticate` trait allowing to hash and verify passwords.
+To do so cou can add to your `cargo.toml` the following `feature`: `password_hashing`.
+
+```toml
+aragog = { version = "0.2.0", features = ["password_hashing"] }
+```
+
+It will add two functions in the `Authenticate` trait:
+```rust 
+fn hash_password(password: &str, secret_key: &str) -> Result<String, ServiceError>;
+fn verify_password(password: &str, password_hash: &str, secret_key: &str) -> Result<(), ServiceError>;
+```
+* `hash_password` will return a Argon2 encrypted password hash you can safely store to your database
+* `verify_password` will check if the provided `password` matches the Argon2 encrypted hash you stored.
+
+The Argon2 encryption is based on the [argonautica][argonautica] crate. 
+That crate requires the `clang` lib, so if you deploy on docker you will need to install it or define a custom image.
+
 ### Schema and collections
 
 In order for everything yo work you need to specify a `schema.json` file. The path of the schema must be set in `SCHEMA_PATH` environment variable or by default the pool will look for it in `src/config/db/schema.json`.
@@ -135,7 +155,7 @@ The example below show different ways to retrieve records, look at each function
 let user_record = User::find("1234567", &database_pool).await.unwrap();
 
 // Find with a single condition
-let user_record = User::find_by("username" ,"LeRevenant1234", &database_pool).await.unwrap();
+let user_record = User::find_by(r#"username == "LeRevenant1234""#, &database_pool).await.unwrap();
 
 // Find a user with multiple conditions
 let mut find_conditions :Vec<&str> = Vec::new();
@@ -195,7 +215,8 @@ Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][i
 <!-- cargo-sync-readme end -->
 
 [arangors]: https://github.com/fMeow/arangors
-[example_path]: ./examples/simple_food_order_app
+[argonautica]: https://github.com/bcmyers/argonautica
+[example_path]: examples/simple_app
 [fMeow]: https://github.com/fMeow/
 [inzanez]: https://github.com/inzanez/
 [ArangoDB]: https://www.arangodb.com/

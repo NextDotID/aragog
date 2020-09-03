@@ -40,3 +40,64 @@ fn can_fail() {
     };
     user.authenticate("wrong").unwrap();
 }
+
+#[cfg(feature = "password_hashing")]
+mod password_hashing {
+    use super::*;
+
+    #[test]
+    fn hash_password() -> Result<(), String> {
+        let password = "foobar";
+        let secret_key = "keySecret";
+
+        match User::hash_password(password, secret_key) {
+            Ok(_value) => Ok(()),
+            Err(_error) => Err("Failed to hash password".to_string())
+        }
+    }
+
+    #[test]
+    fn hash_password_can_fail() -> Result<(), String> {
+        let password = "";
+        let secret_key = "";
+
+        match User::hash_password(password, secret_key) {
+            Ok(_value) => Err("Should have failed".to_string()),
+            Err(_error) => Ok(())
+        }
+    }
+
+
+    #[test]
+    fn verify_password() -> Result<(), String> {
+        let password = "foobar";
+        let secret_key = "keySecret";
+        let hashed_password = User::hash_password(password, secret_key).unwrap();
+
+        match User::verify_password(password, &hashed_password, secret_key) {
+            Ok(_value) => Ok(()),
+            Err(_error) => Err("Failed to verify password".to_string())
+        }
+    }
+
+    #[test]
+    fn verify_password_can_fail() -> Result<(), String> {
+        let password = "foobar";
+        let secret_key = "keySecret";
+        let hashed_password = User::hash_password(password, secret_key).unwrap();
+
+        match User::verify_password("wrong password", &hashed_password, secret_key) {
+            Ok(_value) => return Err("Should have failed".to_string()),
+            Err(_error) => ()
+        };
+        match User::verify_password(password, "wrong hash", secret_key) {
+            Ok(_value) => return Err("Should have failed".to_string()),
+            Err(_error) => ()
+        };
+        match User::verify_password(password, &hashed_password, "wrong key") {
+            Ok(_value) => return Err("Should have failed".to_string()),
+            Err(_error) => ()
+        };
+        Ok(())
+    }
+}
