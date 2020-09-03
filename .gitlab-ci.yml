@@ -1,5 +1,7 @@
 variables:
   CARGO_HOME: $CI_PROJECT_DIR/cargo
+  CONTAINER_CUSTOM_REGISTRY: registry.gitlab.com/qonfucius/infrastructure/docker-images
+  RUSTFLAGS: -Ctarget-feature=-crt-static
 
 cache:
   paths:
@@ -7,7 +9,6 @@ cache:
     - cargo/
 
 .test_template: &test_template
-  image: rust:latest
   variables:
     ARANGO_ROOT_PASSWORD: "test"
     DB_HOST: "http://arangodb:8529"
@@ -19,17 +20,25 @@ cache:
   stage: test
 
 test:default:
+  image: rust:latest
   <<: *test_template
   script:
     - cargo test -- --test-threads=1
 
 test:actix_http_error:
+  image: rust:latest
   <<: *test_template
   script:
     - cargo test --features "actix_http_error" -- --test-threads=1
 
+test:password_hashing:
+  image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
+  <<: *test_template
+  script:
+    - cargo test --features "password_hashing" -- --test-threads=1
+
 pages:
-  image: rust:latest
+  image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
   variables:
     PKG_NAME: aragog
     PKG_NAME_DIR: aragog
