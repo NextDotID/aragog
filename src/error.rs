@@ -4,6 +4,11 @@ use arangors::{ClientError};
 use actix_web::{error, http::StatusCode};
 
 /// Error enum used for the Arango ORM mapped as potential Http errors
+///
+/// # Features
+///
+/// If the cargo feature `actix_http_error` is enabled, `ServiceError` will implement the actix-web error system.
+/// Allowing `ServiceError` to be used in actix-web http endpoints.
 #[derive(Error, Debug)]
 pub enum ServiceError {
     /// Unhandled error.
@@ -45,6 +50,9 @@ pub enum ServiceError {
 }
 
 #[cfg(feature = "actix_http_error")]
+/// If the feature `actix_http_error` is enabled, `ServiceError` will implement `actix_web` `ResponseError` trait.
+///
+/// The implementation allows `ServiceError` to be used as an error response on `actix_web` http endpoints.
 impl error::ResponseError for ServiceError {
     fn status_code(&self) -> StatusCode {
         match self {

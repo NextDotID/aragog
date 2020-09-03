@@ -41,7 +41,7 @@ In order for everything yo work you need to specify a `schema.json` file. The pa
 
 The json must look like this:
 
-````json
+```json
 {
   "collections": [
     {
@@ -65,7 +65,7 @@ The json must look like this:
     }
   ]
 }
-````
+```
 
 When initializing the `DatabaseConnectionPool` every collection `name` will be searched in the database and if not found the collection will be automatically created.
 > You don't need to create the collections yourself
@@ -87,7 +87,7 @@ Your project should contain some `models` folder with every `struct` representat
 
 The real representation of a complete document is `DatabaseRecord<T>` where `T` is your model structure.
 
-> Example:
+**Example:**
 
 ```rust
 use serde::{Deserialize, Serialize};
@@ -107,19 +107,19 @@ impl Record for User {
 }
 
 async fn main() {
-    /// Database connection Setup
+    // Database connection Setup
     let database_pool = DatabaseConnectionPool::new("http://localhost:8529", "db", "root", "").await;
-    /// Define a document
+    // Define a document
     let mut user = User {
         username: String::from("LeRevenant1234"),
         first_name: String::from("Robert"),
         last_name: String::from("Surcouf")
     };
-    /// user_record is a DatabaseRecord<User>
+    // user_record is a DatabaseRecord<User>
     let user_record = DatabaseRecord::create(user, &database_pool).await;
-    /// You can access and edit the document
+    // You can access and edit the document
     user_record.record.username = String::from("LeRevenant1524356");
-    /// And directly save it
+    // And directly save it
     user_record.save(&database_pool).await;
 }
 ```
@@ -129,28 +129,28 @@ async fn main() {
 You can retrieve a document from the database as simply as it gets, from the unique ArangoDB `_key` or from multiple conditions.
 The example below show different ways to retrieve records, look at each function documentation for more exhaustive exaplanations.
 
-> Example
-````rust
-/// Find with the primary key
+**Example**
+```rust
+// Find with the primary key
 let user_record = User::find("1234567", &database_pool).await.unwrap();
 
-/// Find with a single condition
+// Find with a single condition
 let user_record = User::find_by("username" ,"LeRevenant1234", &database_pool).await.unwrap();
 
-/// Find a user with multiple conditions
+// Find a user with multiple conditions
 let mut find_conditions :Vec<&str> = Vec::new();
 find_conditions.push(r#"username == "LeRevenant1234""#);
 find_conditions.push(r#"last_name == "Surcouf""#);
 find_conditions.push("age > 15");
 let user_record = User::find_where(find_conditions, &database_pool).await.unwrap();
 
-/// Find all users with multiple conditions
+// Find all users with multiple conditions
 let mut find_conditions :Vec<&str> = Vec::new();
 find_conditions.push(r#"username == "LeRevenant1234""#);
 find_conditions.push(r#"last_name == "Surcouf""#);
 find_conditions.push("age > 15");
 let user_records = User::get_where(find_conditions, &database_pool).await.unwrap();
-````
+```
 
 ### TODO
 

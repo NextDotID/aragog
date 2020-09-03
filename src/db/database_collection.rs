@@ -78,6 +78,12 @@ impl DatabaseCollection {
             .build())
     }
 
+    /// Retrieves the total document count of this collection.
+    ///
+    /// # Returns
+    ///
+    /// On success a `i32` is returned as the document count.
+    /// On failure a ServiceError wil be returned.
     pub async fn record_count(&self) -> Result<u32, ServiceError> {
        let properties = match self.collection.document_count().await {
            Ok(value) => value,

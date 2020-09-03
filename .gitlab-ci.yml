@@ -35,14 +35,10 @@ pages:
     PKG_NAME_DIR: aragog
   script:
     - cargo --version
-    - cargo rustdoc -p $PKG_NAME
+    - cargo rustdoc -p $PKG_NAME --all-features
     - rm -rf public
     - mv target/doc public
     - echo "<meta http-equiv=\"refresh\" content=\"0; url=$PKG_NAME_DIR\">" > public/index.html
   artifacts:
     paths:
       - public
-  only:
-    refs:
-      - develop
-      - master
