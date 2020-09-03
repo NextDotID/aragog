@@ -1,4 +1,4 @@
-use crate::AragogServiceError;
+use crate::ServiceError;
 
 /// The `New` trait of the Aragog library.
 /// This trait provides the possibility to initialize a Type from an other one. Its main use
@@ -7,10 +7,10 @@ use crate::AragogServiceError;
 /// [`Record`]: trait.Record.html
 pub trait New<T> :Sized {
     /// Instantiate and returns a new `Self` instance from `T`.
-    /// Can fail and return an error, the error is in most of the cases a [`AragogServiceError`]::[`ValidationError`]
+    /// Can fail and return an error, the error is in most of the cases a [`ServiceError`]::[`ValidationError`]
     /// on fields validation failure
     ///
-    /// [`AragogServiceError`]: eum.AragogServiceError.html
-    /// [`ValidationError`]: enum.AragogServiceError.html#variant.ValidationError
-    fn new(form :T) -> Result<Self, AragogServiceError>;
+    /// [`ServiceError`]: eum.ServiceError.html
+    /// [`ValidationError`]: enum.ServiceError.html#variant.ValidationError
+    fn new(form :T) -> Result<Self, ServiceError>;
 }

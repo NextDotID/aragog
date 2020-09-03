@@ -21,9 +21,20 @@ By now the available features are:
     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
     * `Validate`: The structure can perform simple validations before being created or saved into the database.
     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
-* Different operations can return a `AragogServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
+* Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 
-#### Schema and collections
+#### Cargo features
+
+##### Actix Http Error
+
+If you use this crate with the [actix][actix] framework, you may want the `aragog` errors to be usable as http errors.
+To do so cou can add to your `cargo.toml` the following `feature`: `actix_http_error`.
+
+```toml
+aragog = { version = "0.1.2", features = ["actix_http_error"] }
+```
+
+### Schema and collections
 
 In order for everything yo work you need to specify a `schema.json` file. The path of the schema must be set in `SCHEMA_PATH` environment variable or by default the pool will look for it in `src/config/db/schema.json`.
 > There is an example `schema.json` file in [/examples/simple_food_order_app][example_path]
@@ -127,14 +138,14 @@ let user_record = User::find("1234567", &database_pool).await.unwrap();
 let user_record = User::find_by("username" ,"LeRevenant1234", &database_pool).await.unwrap();
 
 /// Find a user with multiple conditions
-let mut find_conditions = Vec::new();
+let mut find_conditions :Vec<&str> = Vec::new();
 find_conditions.push(r#"username == "LeRevenant1234""#);
 find_conditions.push(r#"last_name == "Surcouf""#);
 find_conditions.push("age > 15");
 let user_record = User::find_where(find_conditions, &database_pool).await.unwrap();
 
 /// Find all users with multiple conditions
-let mut find_conditions = Vec::new();
+let mut find_conditions :Vec<&str> = Vec::new();
 find_conditions.push(r#"username == "LeRevenant1234""#);
 find_conditions.push(r#"last_name == "Surcouf""#);
 find_conditions.push("age > 15");
@@ -191,3 +202,4 @@ Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][i
 [IndexSettings]: https://docs.rs/arangors/0.4.3/arangors/index/enum.IndexSettings.html
 [arango_download]: https://www.arangodb.com/download "Download Arango"
 [arango_doc]: https://www.arangodb.com/docs/stable/getting-started.html "Arango getting started"
+[actix]: https://actix.rs/ "Actix Homepage"

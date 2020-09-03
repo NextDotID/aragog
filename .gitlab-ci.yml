@@ -6,8 +6,7 @@ cache:
     - target/
     - cargo/
 
-# Use cargo to test the project
-test:cargo:
+.test_template: &test_template
   image: rust:latest
   variables:
     ARANGO_ROOT_PASSWORD: "test"
@@ -17,9 +16,17 @@ test:cargo:
     DB_PWD: "test"
   services:
     - "arangodb:latest"
+  stage: test
+
+test:default:
+  <<: *test_template
   script:
-    # setup environment variables
     - cargo test -- --test-threads=1
+
+test:actix_http_error:
+  <<: *test_template
+  script:
+    - cargo test --features "actix_http_error" -- --test-threads=1
 
 pages:
   image: rust:latest

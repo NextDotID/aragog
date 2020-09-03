@@ -1,4 +1,4 @@
-use crate::AragogServiceError;
+use crate::ServiceError;
 
 /// The `Validate` trait of the Aragog library.
 /// This trait provides the possibility to validate an instance or its fields formats or logic. Its main use
@@ -7,13 +7,13 @@ use crate::AragogServiceError;
 /// [`Record`]: record/trait.Record.html
 pub trait Validate {
     /// Validates the object field formats, logic or anything. Calls the [`validations`] method
-    /// and will render a complete [`AragogServiceError`]::[`ValidationError`] on validation failure.
+    /// and will render a complete [`ServiceError`]::[`ValidationError`] on validation failure.
     /// On success returns `()`
     ///
     /// [`validations`]: trait.Validate.html#tymethod.validations
-    /// [`AragogServiceError`]: enum.AragogServiceError.html
-    /// [`ValidationError`]: enum.AragogServiceError.html#variant.ValidationError
-    fn validate(&self) -> Result<(), AragogServiceError>
+    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`ValidationError`]: enum.ServiceError.html#variant.ValidationError
+    fn validate(&self) -> Result<(), ServiceError>
     {
         let mut errors: Vec<String> = Vec::new();
 
@@ -25,7 +25,7 @@ pub trait Validate {
         else {
             let error_str = errors.join(", ");
             log::error!("{}", &error_str);
-            Err(AragogServiceError::ValidationError(error_str))
+            Err(ServiceError::ValidationError(error_str))
         }
     }
 

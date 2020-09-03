@@ -42,6 +42,17 @@ mod write {
             Ok(())
         })
     }
+
+    #[should_panic(expected = "Conflict")]
+    #[test]
+    fn can_fail() {
+        with_db(|pool| {
+            let dish = init_dish();
+            tokio_test::block_on(DatabaseRecord::create(dish.clone(), pool)).unwrap();
+            tokio_test::block_on(DatabaseRecord::create(dish, pool)).unwrap();
+            Ok(())
+        }).unwrap();
+    }
 }
 
 mod read {
