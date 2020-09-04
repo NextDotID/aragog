@@ -10,8 +10,8 @@ pub struct User {
 }
 
 impl Record for User {
-   fn collection_name() -> String {
-       String::from("Users")
+   fn collection_name() -> &'static str {
+       "Users"
    }
 }
 

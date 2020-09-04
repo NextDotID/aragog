@@ -44,7 +44,7 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// [`ValidationError`]: enum.ServiceError.html#variant.ValidationError
     pub async fn save(&mut self, db_pool: &DatabaseConnectionPool) -> Result<(), ServiceError> where T: Validate {
         self.record.validate()?;
-        let new_record = database_service::update_record(self.record.clone(), &self.key, &db_pool, &T::collection_name()).await?;
+        let new_record = database_service::update_record(self.record.clone(), &self.key, &db_pool, T::collection_name()).await?;
         self.record = new_record.record;
         Ok(())
     }
@@ -67,7 +67,7 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     pub async fn delete(&self, db_pool: &DatabaseConnectionPool) -> Result<(), ServiceError> {
-        database_service::remove_record::<T>(&self.key, &db_pool, &T::collection_name()).await
+        database_service::remove_record::<T>(&self.key, &db_pool, T::collection_name()).await
     }
 
     /// Retrieves a record from the database with the associated unique `key`
@@ -88,7 +88,7 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     pub async fn find(key: &str, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
-        database_service::retrieve_record(key, &db_pool, &T::collection_name()).await
+        database_service::retrieve_record(key, &db_pool, T::collection_name()).await
     }
 
     /// Retrieves a record from the database with the condition.
@@ -220,7 +220,7 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     pub async fn get_where(conditions: Vec<&str>, db_pool: &DatabaseConnectionPool) -> Result<Vec<Self>, ServiceError> {
         let query = FilterQuery::from(conditions);
         let query_string = format!(r#"FOR i in {} {} return i"#,
-                                   db_pool.collections[&T::collection_name()].collection_name,
+                                   T::collection_name(),
                                    query.0
         );
         let query_result: Vec<Value> = match db_pool.database.aql_str(&query_string).await {
@@ -267,7 +267,7 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     pub async fn exists_where(conditions:  Vec<&str>, db_pool: &DatabaseConnectionPool) -> bool {
         let query = FilterQuery::from(conditions);
         let query_string = format!(r#"FOR i in {} {} return i"#,
-                                   db_pool.collections[&T::collection_name()].collection_name,
+                                   T::collection_name(),
                                    query.0
         );
         let aql_query = AqlQuery::builder().query(&query_string).batch_size(1).count(true).build();
@@ -299,7 +299,7 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     pub async fn create(record: T, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> where T: Validate {
         record.validate()?;
-        database_service::create_record(record, &db_pool, &T::collection_name()).await
+        database_service::create_record(record, &db_pool, T::collection_name()).await
     }
 
     /// Builds a DatabaseRecord from a arangors crate `DocumentResponse<T>`

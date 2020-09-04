@@ -14,7 +14,7 @@ pub struct Dish {
 }
 
 impl Record for Dish {
-    fn collection_name() -> String { String::from("Dishes") }
+    fn collection_name() -> &'static str { "Dishes" }
 }
 
 impl Validate for Dish {

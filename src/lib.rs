@@ -109,9 +109,7 @@
 //! }
 //!
 //! impl Record for User {
-//!     fn collection_name() -> String {
-//!         String::from("Users")
-//!     }
+//!     fn collection_name() -> &'static str { "Users" }
 //! }
 //!
 //! async fn main() {
@@ -170,7 +168,7 @@
 //! [ArangoDB]: https://www.arangodb.com/
 //! [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
 //! [actix]: https://actix.rs/ "Actix Homepage"
-#![warn(missing_docs)]
+#![forbid(missing_docs)]
 
 pub use {
     authenticate::Authenticate,
