@@ -15,9 +15,6 @@ const SCHEMA_COLLECTION_NAME: &str = "name";
 /// Struct containing ArangoDB connections and information to access the database, collections and documents
 #[derive(Clone)]
 pub struct DatabaseConnectionPool {
-    db_host: String,
-    db_user: String,
-    db_name: String,
     /// Map between a collection name and a `DatabaseCollection` instance
     pub collections: HashMap<String, DatabaseCollection>,
     /// The database accessor
@@ -41,9 +38,7 @@ impl DatabaseConnectionPool {
         log::info!("Connected to database server.");
         let database = db_connection.db(&db_name).await.unwrap();
         let collections = DatabaseConnectionPool::load_schema(&database).await.unwrap();
-        DatabaseConnectionPool {
-            db_name: String::from(db_name), db_user: String::from(db_user), db_host: String::from(db_host),
-            collections, database }
+        DatabaseConnectionPool { collections, database }
     }
 
     /// Simple wrapper to retrieve a Collection without using the HashMap directly.

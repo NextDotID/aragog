@@ -68,5 +68,5 @@ pub trait Record {
 
     /// returns the associated Collection
     /// for read and write operations.
-    fn collection_name() -> String;
+    fn collection_name() -> &'static str;
 }

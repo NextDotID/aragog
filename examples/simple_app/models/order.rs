@@ -28,9 +28,7 @@ impl Order {
 }
 
 impl Record for Order {
-    fn collection_name() -> String {
-        String::from("Orders")
-    }
+    fn collection_name() -> &'static str { "Orders" }
 }
 
 impl Validate for Order {
