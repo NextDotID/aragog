@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.3
+
+* Added truncation method for database connection pool
+* Improved lib.rs and Readme documentation
+* License is owned by Qonfucius
+* Fixed some broken documentation links
+* `Record` `collection_name` is a a static `&str`
+
 ## 0.2.2
 
 * Fixed Documentation broken links
