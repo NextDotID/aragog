@@ -3,12 +3,34 @@ variables:
   CONTAINER_CUSTOM_REGISTRY: registry.gitlab.com/qonfucius/infrastructure/docker-images
   RUSTFLAGS: -Ctarget-feature=-crt-static
 
-cache:
+stages:
+  - build
+  - test
+  - documentation
+  - package
+
+cache: &cache_template
+  key: ${CI_COMMIT_REF_SLUG}
   paths:
     - target/
     - cargo/
+  policy: pull-push
+
+.cache_pulll_template: &cache_pull_template
+  cache:
+    <<: *cache_template
+    policy: pull
+
+build:
+  image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
+  stage: build
+  script:
+    - cargo build --all-features
+  cache:
+    <<: *cache_template
 
 .test_template: &test_template
+  <<: *cache_pull_template
   variables:
     ARANGO_ROOT_PASSWORD: "test"
     DB_HOST: "http://arangodb:8529"
@@ -37,8 +59,10 @@ test:password_hashing:
   script:
     - cargo test --features "password_hashing" -- --test-threads=1
 
-pages:
+rustdoc:
+  <<: *cache_pull_template
   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
+  stage: documentation
   variables:
     PKG_NAME: aragog
     PKG_NAME_DIR: aragog
@@ -51,3 +75,14 @@ pages:
   artifacts:
     paths:
       - public
+
+package:
+  <<: *cache_pull_template
+  stage: package
+  script:
+    - cargo package --list
+    - cargo publish --dry-run
+  only:
+    refs:
+      - tags
+      - master

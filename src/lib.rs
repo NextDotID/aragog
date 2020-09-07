@@ -100,29 +100,47 @@
 //!
 //! **Example:**
 //!
-//! ```rust ignore
+//! ```rust no_run
+//! use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
+//! use serde::{Serialize, Deserialize};
+//! use tokio;
+//!
 //! #[derive(Serialize, Deserialize, Clone)]
 //! pub struct User {
 //!     pub username: String,
 //!     pub first_name: String,
 //!     pub last_name: String,
+//!     pub age: usize
 //! }
 //!
 //! impl Record for User {
 //!     fn collection_name() -> &'static str { "Users" }
 //! }
 //!
+//! impl Validate for User {
+//!     fn validations(&self,errors: &mut Vec<String>) { }
+//! }
+//!
+//! #[tokio::main]
 //! async fn main() {
-//!     // Database connection Setup
-//!     let database_pool = DatabaseConnectionPool::new("http://localhost:8529", "db", "root", "").await;
+//! // Database connection Setup
+//! # std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
+//!
+//!     let database_pool = DatabaseConnectionPool::new(
+//!         &std::env::var("DB_HOST").unwrap(),
+//!         &std::env::var("DB_NAME").unwrap(),
+//!         &std::env::var("DB_USER").unwrap(),
+//!         &std::env::var("DB_PWD").unwrap()).await;
+//! #     database_pool.truncate().await;
 //!     // Define a document
 //!     let mut user = User {
 //!         username: String::from("LeRevenant1234"),
 //!         first_name: String::from("Robert"),
-//!         last_name: String::from("Surcouf")
+//!         last_name: String::from("Surcouf"),
+//!         age: 18
 //!     };
 //!     // user_record is a DatabaseRecord<User>
-//!     let user_record = DatabaseRecord::create(user, &database_pool).await;
+//!     let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
 //!     // You can access and edit the document
 //!     user_record.record.username = String::from("LeRevenant1524356");
 //!     // And directly save it
@@ -136,7 +154,43 @@
 //! The example below show different ways to retrieve records, look at each function documentation for more exhaustive exaplanations.
 //!
 //! **Example**
-//! ```rust ignore
+//! ```rust no_run
+//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
+//! # use serde::{Serialize, Deserialize};
+//! # use tokio;
+//! #
+//! # #[derive(Serialize, Deserialize, Clone)]
+//! # pub struct User {
+//! #     pub username: String,
+//! #     pub first_name: String,
+//! #     pub last_name: String,
+//! #     pub age: usize
+//! # }
+//!#
+//! # impl Record for User {
+//! #     fn collection_name() -> &'static str { "Users" }
+//! # }
+//!#
+//! # impl Validate for User {
+//! #     fn validations(&self,errors: &mut Vec<String>) { }
+//! # }
+//! #
+//! # #[tokio::main]
+//! # async fn main() {
+//! # std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
+//! # let database_pool = DatabaseConnectionPool::new(
+//! #       &std::env::var("DB_HOST").unwrap(),
+//! #       &std::env::var("DB_NAME").unwrap(),
+//! #       &std::env::var("DB_USER").unwrap(),
+//! #       &std::env::var("DB_PWD").unwrap()).await;
+//! # database_pool.truncate().await;
+//! # let mut user = User {
+//! #     username: String::from("LeRevenant1234"),
+//! #     first_name: String::from("Robert"),
+//! #     last_name: String::from("Surcouf"),
+//! #     age: 18,
+//! # };
+//!
 //! let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
 //! // Find with the primary key
 //! let user_record = User::find(&record.key, &database_pool).await.unwrap();
@@ -149,17 +203,14 @@
 //! let user_record = User::find_by(&condition, &database_pool).await.unwrap();
 //!
 //! // Find a user with multiple conditions
-//! let mut find_conditions = Vec::new();
-//! find_conditions.push(r#"last_name == "Surcouf""#);
-//! find_conditions.push("age > 15");
+//! let mut find_conditions = vec![r#"last_name == "Surcouf""#, "age > 15"];
 //!
 //! let user_record = User::find_where(find_conditions, &database_pool).await.unwrap();
 //!
 //! // Find all users with multiple conditions
-//! let mut find_conditions = Vec::new();
-//! find_conditions.push(r#"last_name == "Surcouf""#);
-//! find_conditions.push("age > 15");
+//! let mut find_conditions = vec![r#"last_name == "Surcouf""#, "age > 15"];
 //! let user_records = User::get_where(find_conditions, &database_pool).await.unwrap();
+//! # }
 //! ```
 //!
 //! [arangors]: https://docs.rs/arangors

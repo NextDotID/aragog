@@ -7,10 +7,10 @@ authors = [
 ]
 edition = "2018"
 description = "A simple lightweight object-document mapper for ArangoDB"
-keywords = ["ArangoDB", "Arango"]
+keywords = ["ArangoDB", "Arango", "ORM", "ODM", "OGM"]
 exclude =  ["examples", "tests", ".gitlab-ci.yml"]
 categories = ["web-programming", "database"]
-license-file = "LICENSE"
+license = "MIT"
 readme = "README.md"
 repository = "https://gitlab.com/qonfucius/aragog"
 documentation = "https://docs.rs/aragog"
