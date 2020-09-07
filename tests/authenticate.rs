@@ -12,7 +12,6 @@ pub struct User {
 
 impl Authenticate for User {
     fn authenticate(&self, secret: &str) -> Result<(), ServiceError> {
-        // Obviously you must use some bcrypt or Argon2 hashing tool
         if secret != self.encrypted_password {
             return Err(ServiceError::Unauthorized);
         }

@@ -47,6 +47,20 @@ impl DatabaseConnectionPool {
         &self.collections[collection].collection
     }
 
+    /// **DESTRUCTIVE OPERATION**
+    /// This will truncate all collections in the database pool, the collection will still exist but
+    /// every document will be destryed.
+    ///
+    /// # Panics
+    ///
+    /// If the truncate fails on some collection the method will panic, see the `arangors` documentation
+    /// on collection truncate.
+    pub async fn truncate(&self) {
+        for collection in self.collections.iter() {
+            collection.1.collection.truncate().await.unwrap();
+        }
+    }
+
     async fn load_schema(database: &Database<ReqwestClient>) -> Result<HashMap<String, DatabaseCollection>, String> {
         let schema_path = match std::env::var("SCHEMA_PATH") {
             Ok(path) => path,

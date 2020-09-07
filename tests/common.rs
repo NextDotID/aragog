@@ -16,7 +16,7 @@ pub fn setup_db() -> DatabaseConnectionPool {
         &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
         &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
     ));
-    truncate_db(&pool);
+    tokio_test::block_on(pool.truncate());
     pool
 }
 
@@ -24,14 +24,8 @@ pub fn with_db<T>(test: T) -> Result<(), String> where T: FnOnce(&DatabaseConnec
 {
     let db_pool = setup_db();
     let res = test(&db_pool);
-    truncate_db(&db_pool);
+    tokio_test::block_on(db_pool.truncate());
     res
-}
-
-pub fn truncate_db(pool: &DatabaseConnectionPool) {
-    for collection in pool.collections.iter() {
-        tokio_test::block_on(collection.1.collection.truncate()).unwrap();
-    }
 }
 
 pub fn expect_assert(expr: bool) -> Result<(), String> {
