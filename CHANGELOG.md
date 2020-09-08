@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.3.3
+## 0.3.1
+
+* Added new `Validate` validation helper
+
+## 0.3.0
 
 * Added truncation method for database connection pool
 * Improved lib.rs and Readme documentation
