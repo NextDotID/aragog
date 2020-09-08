@@ -50,7 +50,11 @@ pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(k
         Ok(doc) => { doc }
         Err(error) => {
             log::error!("{}", error);
-            return Err(ServiceError::from(error));
+            let err = ServiceError::from(error);
+            if let ServiceError::NotFound(_str) = err {
+                return Err(ServiceError::NotFound(format!("{} document not found", collection_name)))
+            }
+            return Err(err);
         }
     };
     Ok(

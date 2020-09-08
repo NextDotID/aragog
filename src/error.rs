@@ -29,7 +29,7 @@ pub enum ServiceError {
     /// Can be interpreted as a HTTP code `404` not found.
     ///
     /// [`Record`]: trait.Record.html
-    #[error("`{0}` not found")]
+    #[error("{0}")]
     NotFound(String),
     /// An operation on a document failed due to format or data issue.
     /// Can be interpreted as a HTTP code `422` unprocessable entity.
