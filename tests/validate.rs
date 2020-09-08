@@ -8,7 +8,7 @@ pub mod common;
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Dish {
     pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     pub reference: String,
     pub price: u16,
 }
@@ -16,7 +16,11 @@ pub struct Dish {
 impl Validate for Dish {
     fn validations(&self, errors: &mut Vec<String>) {
         string_validators::validate_min_len("name", &self.name, 5, errors);
-        string_validators::validate_min_len("description", &self.description, 15, errors);
+
+        Self::validate_field_presence("description", &self.description, errors);
+        if self.description.is_some() {
+            string_validators::validate_min_len("description", self.description.as_ref().unwrap(), 15, errors);
+        }
         string_validators::validate_numeric_string("reference", &self.reference, errors);
         string_validators::validate_len("reference", &self.reference, 10, errors);
         if self.price == 0 {
@@ -29,7 +33,7 @@ impl Validate for Dish {
 fn can_succeed() {
     let dish = Dish {
         name: "Pizza Regina".to_string(),
-        description: "Tomate, Jambon, Oeuf, Mozzarella".to_string(),
+        description: Some("Tomate, Jambon, Oeuf, Mozzarella".to_string()),
         reference: "0102030405".to_string(),
         price: 5,
     };
@@ -41,7 +45,7 @@ fn can_succeed() {
 fn can_fail() {
     let dish = Dish {
         name: "Piza".to_string(),
-        description: "wrong".to_string(),
+        description: Some("wrong".to_string()),
         reference: "ABC".to_string(),
         price: 0,
     };
@@ -52,7 +56,7 @@ fn can_fail() {
 fn can_fail_and_provide_message() -> Result<(), String> {
     let dish = Dish {
         name: "Piza".to_string(),
-        description: "wrong".to_string(),
+        description: Some("wrong".to_string()),
         reference: "ABC".to_string(),
         price: 0,
     };

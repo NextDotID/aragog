@@ -19,9 +19,7 @@ pub trait Validate {
 
         self.validations(&mut errors);
 
-        if errors.is_empty() {
-            Ok(())
-        }
+        if errors.is_empty() { Ok(()) }
         else {
             let error_str = errors.join(", ");
             log::error!("{}", &error_str);
@@ -53,6 +51,30 @@ pub trait Validate {
                 errors.push(format!("{} is missing", field_name));
                 false
             }
+        }
+    }
+
+    /// Helper function to simply check the absence of a field. This function is usually used inside the
+    /// [`validations`] method since it will fill the `errors` with a message if the `field` is missing.
+    ///
+    /// # Arguments
+    ///
+    /// * `field_name` - The string slice name of the field, will be used in the error message on failure
+    /// * `field` - Optional value, if `field` is `None` the function will succeed
+    /// * `errors` - the mutable reference of the error message vector like provided in [`validations`]
+    ///
+    /// # Returns
+    ///
+    /// `true` if `field` is `None` on failure, `false` is returned and `errors` stored a new message
+    ///
+    /// [`validations`]: trait.Validate.html#tymethod.validations
+    fn validate_field_absence<T>(field_name: &str, field: &Option<T>, errors: &mut Vec<String>) -> bool {
+        match field {
+            Some(_value) => {
+                errors.push(format!("{} should not be set", field_name));
+                false
+            }
+            None => { true }
         }
     }
 }
