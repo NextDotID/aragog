@@ -57,6 +57,7 @@ mod write {
 
 mod read {
     use super::*;
+    use aragog::ServiceError;
 
     fn create_dishes(pool: &DatabaseConnectionPool) -> DatabaseRecord<Dish> {
         tokio_test::block_on(DatabaseRecord::create(Dish {
@@ -96,6 +97,26 @@ mod read {
             tokio_test::block_on(Dish::find("wrong_key", pool)).unwrap();
             Ok(())
         }).unwrap();
+    }
+
+    #[test]
+    fn find_can_fail_with_correct_error() -> Result<(), String>  {
+        with_db(|pool| {
+            create_dishes(&pool);
+            let res = tokio_test::block_on(Dish::find("wrong_key", pool));
+            if let Err(error) = res {
+                if let ServiceError::NotFound(message) = error {
+                    assert_eq!(message, "Dishes document not found".to_string());
+                    Ok(())
+                }
+                else {
+                    Err(format!("The find should return a NotFound"))
+                }
+            }
+            else {
+                Err(format!("The find should return an error"))
+            }
+        })
     }
 
     #[test]
