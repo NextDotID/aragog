@@ -22,7 +22,7 @@
 //! To do so cou can add to your `cargo.toml` the following `feature`: `actix_http_error`.
 //!
 //! ```toml
-//! aragog = { version = "0.3.1", features = ["actix_http_error"] }
+//! aragog = { version = "0.3.2", features = ["actix_http_error"] }
 //! ```
 //!
 //! ##### Password hashing
@@ -31,7 +31,7 @@
 //! To do so cou can add to your `cargo.toml` the following `feature`: `password_hashing`.
 //!
 //! ```toml
-//! aragog = { version = "0.3.1", features = ["password_hashing"] }
+//! aragog = { version = "0.3.2", features = ["password_hashing"] }
 //! ```
 //!
 //! It will add two functions in the `Authenticate` trait:

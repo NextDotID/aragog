@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2
+
+* Fixed `ServiceError`::`NotFound` message
+* On find error the Not Found message is improved
+
 ## 0.3.1
 
 * Added new `Validate` validation helper
