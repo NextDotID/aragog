@@ -153,7 +153,7 @@ async fn main() {
 #### Querying
 
 You can retrieve a document from the database as simply as it gets, from the unique ArangoDB `_key` or from multiple conditions.
-The example below show different ways to retrieve records, look at each function documentation for more exhaustive exaplanations.
+The example below show different ways to retrieve records, look at each function documentation for more exhaustive explanations.
 
 **Example**
 ```rust
@@ -171,6 +171,21 @@ let mut query = Query::new(QueryItem::field("last_name").like("%Surc%")).and(Que
 let user_records = User::get_where(query, &database_pool).await.unwrap();
 ```
 
+The querying system hierarchy works this way:
+```rust
+Query::new(comparison_1).and(comparison_2).or(comparison_3)
+```
+Each comparison is a `QueryItem` built via `QueryItemBuilder`:
+```rust
+// for a simple field comparison
+QueryItem::field("some_field").some_comparison("compared_value");
+// for field veing arrays (see ArangoDB operators)
+QueryItem::all("some_field_array").some_comparison("compared_value");
+QueryItem::any("some_field_array").some_comparison("compared_value");
+QueryItem::none("some_field_array").some_comparison("compared_value");
+```
+All the currently implemented comparison methods are listed under [QueryItemBuilder][QueryItemBuilder] documentation page.
+
 ### TODO
 
 * Query system:
@@ -178,8 +193,8 @@ let user_records = User::get_where(query, &database_pool).await.unwrap();
     - [ ] Macros for lighter queries
     - [ ] Advanced query system supporting:
         - [ ] Arithmetic Operators
-        - [ ] Array variant querying (`ANY`, `NONE`, `ALL`)
-        - [ ] Operator Precedence
+        - [X] Array variant querying (`ANY`, `NONE`, `ALL`)
+        - [ ] ArangoDB functions (`LENGTH`, `ABS`, etc.)
 * ORM and OGM
     - [ ] Relations
         - [ ] Handle graph vertices and edges
@@ -228,6 +243,7 @@ Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][i
 [inzanez]: https://github.com/inzanez/
 [ArangoDB]: https://www.arangodb.com/
 [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
+[QueryItemBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.QueryItemBuilder.html
 [arango_download]: https://www.arangodb.com/download "Download Arango"
 [arango_doc]: https://www.arangodb.com/docs/stable/getting-started.html "Arango getting started"
 [actix]: https://actix.rs/ "Actix Homepage"

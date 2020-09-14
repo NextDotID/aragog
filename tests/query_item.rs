@@ -118,3 +118,57 @@ fn different_than_str() -> Result<(), String> {
     common::expect_assert_eq(format!("{}", item).as_str(), r#"name != "felix""#)?;
     Ok(())
 }
+
+#[test]
+fn is_null() -> Result<(), String> {
+    let item = QueryItem::field("name").is_null();
+    common::expect_assert_eq(format!("{}", item).as_str(), "name == null")?;
+    Ok(())
+}
+
+#[test]
+fn not_null() -> Result<(), String> {
+    let item = QueryItem::field("name").not_null();
+    common::expect_assert_eq(format!("{}", item).as_str(), "name != null")?;
+    Ok(())
+}
+
+#[test]
+fn is_true() -> Result<(), String> {
+    let item = QueryItem::field("is_company").is_true();
+    common::expect_assert_eq(format!("{}", item).as_str(), "is_company == true")?;
+    Ok(())
+}
+
+#[test]
+fn is_false() -> Result<(), String> {
+    let item = QueryItem::field("is_company").is_false();
+    common::expect_assert_eq(format!("{}", item).as_str(), "is_company == false")?;
+    Ok(())
+}
+
+mod array_testing {
+    use super::*;
+
+    #[test]
+    fn all() -> Result<(), String> {
+        let item = QueryItem::all("emails").not_null();
+        common::expect_assert_eq(format!("{}", item).as_str(), "emails ALL != null")?;
+        Ok(())
+    }
+
+    #[test]
+    fn none() -> Result<(), String> {
+        let item = QueryItem::none("emails").is_null();
+        common::expect_assert_eq(format!("{}", item).as_str(), "emails NONE == null")?;
+        Ok(())
+    }
+
+    #[test]
+    fn any() -> Result<(), String> {
+        let item = QueryItem::any("authorizations").is_true();
+        common::expect_assert_eq(format!("{}", item).as_str(), "authorizations ANY == true")?;
+        Ok(())
+    }
+
+}
