@@ -162,26 +162,24 @@ let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
 // Find with the primary key
 let user_record = User::find(&record.key, &database_pool).await.unwrap();
 
-// Find with a single condition
-let user_record = User::find_by(r#"username == "LeRevenant1234""#, &database_pool).await.unwrap();
-
-// Find with a single but formatted condition
-let condition = format!(r#"first_name == "{}""#, user_record.record.first_name);
-let user_record = User::find_by(&condition, &database_pool).await.unwrap();
-
 // Find a user with multiple conditions
-let mut find_conditions = vec![r#"last_name == "Surcouf""#, "age > 15"];
-let user_record = User::find_where(find_conditions, &database_pool).await.unwrap();
+let mut query = Query::new(QueryItem::field("last_name").equals_str("Surcouf")).and(QueryItem::field("age").greater_than(15));
+let user_record = User::find_where(query, &database_pool).await.unwrap();
 
 // Find all users with multiple conditions
-let mut find_conditions = vec![r#"last_name == "Surcouf""#, "age > 15"];
-let user_records = User::get_where(find_conditions, &database_pool).await.unwrap();
+let mut query = Query::new(QueryItem::field("last_name").like("%Surc%")).and(QueryItem::field("age").in_array(&[15,16,17,18]));
+let user_records = User::get_where(query, &database_pool).await.unwrap();
 ```
 
 ### TODO
 
-* Critic features:
-    - [ ] Advanced and modular query system
+* Query system:
+    - [X] Simple and modular query system
+    - [ ] Macros for lighter queries
+    - [ ] Advanced query system supporting:
+        - [ ] Arithmetic Operators
+        - [ ] Array variant querying (`ANY`, `NONE`, `ALL`)
+        - [ ] Operator Precedence
 * ORM and OGM
     - [ ] Relations
         - [ ] Handle graph vertices and edges

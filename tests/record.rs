@@ -58,6 +58,7 @@ mod write {
 mod read {
     use super::*;
     use aragog::ServiceError;
+    use aragog::query::{Query, QueryItem};
 
     fn create_dishes(pool: &DatabaseConnectionPool) -> DatabaseRecord<Dish> {
         tokio_test::block_on(DatabaseRecord::create(Dish {
@@ -120,45 +121,13 @@ mod read {
     }
 
     #[test]
-    fn find_by() -> Result<(), String> {
-        with_db(|pool| {
-            let dish_record = create_dishes(&pool);
-
-            let found_record = tokio_test::block_on(Dish::find_by(r#"name == "Quiche""#, pool)).unwrap();
-            common::expect_assert_eq(dish_record.record, found_record.record)?;
-            Ok(())
-        })
-    }
-
-    #[should_panic(expected = "NotFound")]
-    #[test]
-    fn find_by_can_fail() {
-        with_db(|pool| {
-            create_dishes(&pool);
-            tokio_test::block_on(Dish::find_by(r#"name == "Soufflé""#, pool)).unwrap();
-            Ok(())
-        }).unwrap();
-    }
-
-    #[should_panic(expected = "NotFound")]
-    #[test]
-    fn find_by_can_fail_on_multiple_found(){
-        with_db(|pool| {
-            create_dishes(&pool);
-            tokio_test::block_on(Dish::find_by("price == 10", pool)).unwrap();
-            Ok(())
-        }).unwrap();
-    }
-
-    #[test]
     fn find_where() -> Result<(), String> {
         with_db(|pool| {
             let dish_record = create_dishes(&pool);
-            let mut conditions = Vec::new();
-            conditions.push(r#"name == "Quiche""#);
-            conditions.push("price == 7");
+            let query = Query::new(QueryItem::field("name").equals_str("Quiche"))
+                .and(QueryItem::field("price").equals(7));
 
-            let found_record = tokio_test::block_on(Dish::find_where(conditions, pool)).unwrap();
+            let found_record = tokio_test::block_on(Dish::find_where(query, pool)).unwrap();
             common::expect_assert_eq(dish_record.record, found_record.record)?;
             Ok(())
         })
@@ -168,10 +137,9 @@ mod read {
     #[test]
     fn find_where_can_fail() {
         with_db(|pool| {
-            let mut conditions = Vec::new();
-            conditions.push(r#"name == "Quiche""#);
+            let query = Query::new(QueryItem::field("name").equals_str("Quiche"));
 
-            tokio_test::block_on(Dish::find_where(conditions, pool)).unwrap();
+            tokio_test::block_on(Dish::find_where(query, pool)).unwrap();
             Ok(())
         }).unwrap();
     }
@@ -182,10 +150,9 @@ mod read {
     fn find_where_can_fail_on_multiple_found() {
         with_db(|pool| {
             create_dishes(&pool);
-            let mut conditions = Vec::new();
-            conditions.push("price == 10");
+            let query = Query::new(QueryItem::field("price").equals(10));
 
-            tokio_test::block_on(Dish::find_where(conditions, pool)).unwrap();
+            tokio_test::block_on(Dish::find_where(query, pool)).unwrap();
             Ok(())
         }).unwrap();
     }
@@ -194,11 +161,10 @@ mod read {
     fn get_where() -> Result<(), String> {
         with_db(|pool| {
             let dish_record = create_dishes(&pool);
-            let mut conditions = Vec::new();
-            conditions.push(r#"name == "Quiche""#);
-            conditions.push("price == 7");
+            let query = Query::new(QueryItem::field("name").equals_str("Quiche"))
+                .and(QueryItem::field("price").equals(7));
 
-            let found_records = tokio_test::block_on(Dish::get_where(conditions, pool)).unwrap();
+            let found_records = tokio_test::block_on(Dish::get_where(query, pool)).unwrap();
             common::expect_assert_eq(found_records.len(), 1)?;
             common::expect_assert_eq(dish_record.record, found_records[0].record.clone())?;
             Ok(())
@@ -208,10 +174,8 @@ mod read {
     #[test]
     fn get_where_can_return_empty_vec() {
         with_db(|pool| {
-            let mut conditions = Vec::new();
-            conditions.push(r#"name == "Quiche""#);
-
-            let found_records = tokio_test::block_on(Dish::get_where(conditions, pool)).unwrap();
+            let query = Query::new(QueryItem::field("name").equals_str("Quiche"));
+            let found_records = tokio_test::block_on(Dish::get_where(query, pool)).unwrap();
             common::expect_assert_eq(found_records.len(), 0)?;
             Ok(())
         }).unwrap();
@@ -222,10 +186,9 @@ mod read {
     fn get_where_on_multiple_found() -> Result<(), String> {
         with_db(|pool| {
             create_dishes(&pool);
-            let mut conditions = Vec::new();
-            conditions.push("price == 10");
+            let query = Query::new(QueryItem::field("price").equals(10));
 
-            let found_records = tokio_test::block_on(Dish::get_where(conditions, pool)).unwrap();
+            let found_records = tokio_test::block_on(Dish::get_where(query, pool)).unwrap();
             common::expect_assert_eq(found_records.len(), 2)?;
             Ok(())
         })
@@ -235,11 +198,9 @@ mod read {
     fn exists_where() -> Result<(), String> {
         with_db(|pool| {
             create_dishes(&pool);
-            let mut conditions = Vec::new();
-            conditions.push(r#"name == "Quiche""#);
-            conditions.push("price == 7");
-
-            let res = tokio_test::block_on(Dish::exists_where(conditions, pool));
+            let query = Query::new(QueryItem::field("name").equals_str("Quiche"))
+                .and(QueryItem::field("price").equals(7));
+            let res = tokio_test::block_on(Dish::exists_where(query, pool));
             common::expect_assert_eq(res, true)?;
             Ok(())
         })

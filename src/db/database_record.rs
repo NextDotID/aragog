@@ -6,6 +6,7 @@ use serde_json::Value;
 
 use crate::db::database_service;
 use crate::{ServiceError, Record, Validate, DatabaseConnectionPool, Authenticate};
+use crate::query::Query;
 
 /// Struct representing database stored documents
 ///
@@ -91,47 +92,6 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
         database_service::retrieve_record(key, &db_pool, T::collection_name()).await
     }
 
-    /// Retrieves a record from the database with the condition.
-    /// The function wraps a simple [`find_where`] for a single condition.
-    ///
-    /// Since the function attempts to retrieve one unique record, if the condition is matched by multiple
-    /// documents the function will return an error. Use this function for conditions that are supposed to match
-    /// only one document, the condition should probably be on a unique indexed field.
-    ///
-    /// # Arguments:
-    ///
-    /// * `condition` - the condition to match as a string slice
-    /// * `db_pool` - database connection pool reference
-    ///
-    /// # Note
-    ///
-    /// This is simply an AQL request wrapper, each `conditions` must be used as **`$KEY $OPERATOR $VALUE`**.
-    ///
-    /// # Returns
-    ///
-    /// On success `Self` is returned,
-    /// On failure a [`ServiceError`] is returned:
-    /// * [`NotFound`] on invalid document key or if multiple records match the condition
-    /// * [`UnprocessableEntity`] on data corruption
-    ///
-    /// # Example
-    ///
-    /// ```rust compile_fail
-    /// let condition = r#"username =="MichelDu93""#;
-    ///
-    /// User::find_by(condition, &db_pool).await.unwrap();
-    /// ```
-    ///
-    /// [`find_where`]: struct.DatabaseRecord.html#method.find_where
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn find_by(condition: &str, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
-        let mut map = Vec::new();
-        map.push(condition);
-        Self::find_where(map, &db_pool).await
-    }
-
     /// Retrieves a record from the database with the associated conditions.
     /// The function wraps a simple [`get_where`] for a single record instance to find.
     ///
@@ -141,12 +101,12 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     ///
     /// # Arguments:
     ///
-    /// * `conditions` - Vec containing the find conditions to match
+    /// * `query` - The `Query` to match
     /// * `db_pool` - database connection pool reference
     ///
     /// # Note
     ///
-    /// This is simply an AQL request wrapper, each `conditions` must be used as **`$KEY $OPERATOR $VALUE`**.
+    /// This is simply an AQL request wrapper.
     ///
     /// # Returns
     ///
@@ -157,26 +117,27 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     ///
     /// # Example
     ///
-    /// ```rust compile_fail
-    /// let mut conditions :Vec<&str> = Vec::new();
-    /// conditions.push(r#"username =="MichelDu93""#);
-    /// conditions.push(r#"age > 10"#);
+    /// ```rust ignore
+    /// use aragog::query::{Query, QueryItem};
     ///
-    /// User::find_where(conditions, &db_pool).await.unwrap();
+    /// let mut query = Query::new(QueryItem::field("username").equals_str("MichelDu93"))
+    ///     .and(QueryItem::field("age").greater_than(10));
+    ///
+    /// User::find_where(query, &db_pool).await.unwrap();
     /// ```
     ///
     /// [`get_where`]: struct.DatabaseRecord.html#method.get_where
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn find_where(conditions: Vec<&str>, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
+    pub async fn find_where(query: Query, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
         let not_found = format!("{} Not found", T::collection_name());
-        let values = Self::get_where(conditions.clone(), &db_pool).await?;
+        let values = Self::get_where(query.clone(), &db_pool).await?;
         if values.len() > 1 {
-            log::error!("Found multiple records matching {:?}", conditions);
+            log::error!("Found multiple records matching {:?}", query);
             return Err(ServiceError::NotFound(not_found));
         } else if values.len() <= 0 {
-            log::info!("Found no records matching {:?}", conditions);
+            log::info!("Found no records matching {:?}", query);
             return Err(ServiceError::NotFound(not_found));
         }
         let res = values.first().unwrap();
@@ -190,12 +151,12 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     ///
     /// # Arguments:
     ///
-    /// * `conditions` - Vec containing the find conditions to match
+    /// * `query` - The `Query` to match
     /// * `db_pool` - database connection pool reference
     ///
     /// # Note
     ///
-    /// This is simply an AQL request wrapper, each `conditions` must be used as **`$KEY $OPERATOR $VALUE`**.
+    /// This is simply an AQL request wrapper.
     ///
     /// # Returns
     ///
@@ -206,22 +167,22 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     ///
     /// # Example
     ///
-    /// ```rust compile_fail
-    /// let mut conditions :Vec<&str> = Vec::new();
-    /// conditions.push(r#"username =="MichelDu93""#);
-    /// conditions.push(r#"age > 10"#);
+    /// ```rust ignore
+    /// use aragog::query::{Query, QueryItem};
     ///
-    /// User::get_where(conditions, &db_pool).await.unwrap();
+    /// let mut query = Query::new(QueryItem::field("username").equals_str("MichelDu93"))
+    ///     .and(QueryItem::field("age").greater_than(10));
+    ///
+    /// User::get_where(query, &db_pool).await.unwrap();
     /// ```
     ///
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn get_where(conditions: Vec<&str>, db_pool: &DatabaseConnectionPool) -> Result<Vec<Self>, ServiceError> {
-        let query = FilterQuery::from(conditions);
+    pub async fn get_where(query: Query, db_pool: &DatabaseConnectionPool) -> Result<Vec<Self>, ServiceError> {
         let query_string = format!(r#"FOR i in {} {} return i"#,
                                    T::collection_name(),
-                                   query.0
+                                   query
         );
         let query_result: Vec<Value> = match db_pool.database.aql_str(&query_string).await {
             Ok(value) => { value }
@@ -244,12 +205,12 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     ///
     /// # Arguments:
     ///
-    /// * `conditions` - Vec containing the find conditions to match
+    /// * `query` - The `Query` to match
     /// * `db_pool` - database connection pool reference
     ///
     /// # Note
     ///
-    /// This is simply an AQL request wrapper, each `conditions` must be used as **`$KEY $OPERATOR $VALUE`**.
+    /// This is simply an AQL request wrapper.
     ///
     /// # Returns
     ///
@@ -257,18 +218,18 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     ///
     /// # Example
     ///
-    /// ```rust compile_fail
-    /// let mut conditions :Vec<&str> = Vec::new();
-    /// conditions.push(r#"username =="MichelDu93""#);
-    /// conditions.push(r#"age > 10"#);
+    /// ```rust ignore
+    /// use aragog::query::{Query, QueryItem};
     ///
-    /// User::exists_where(conditions, &db_pool).await;
+    /// let mut query = Query::new(QueryItem::field("username").equals_str("MichelDu93"))
+    ///     .and(QueryItem::field("age").greater_than(10));
+    ///
+    /// User::exists_where(query, &db_pool).await;
     /// ```
-    pub async fn exists_where(conditions:  Vec<&str>, db_pool: &DatabaseConnectionPool) -> bool {
-        let query = FilterQuery::from(conditions);
+    pub async fn exists_where(query: Query, db_pool: &DatabaseConnectionPool) -> bool {
         let query_string = format!(r#"FOR i in {} {} return i"#,
                                    T::collection_name(),
-                                   query.0
+                                   query
         );
         let aql_query = AqlQuery::builder().query(&query_string).batch_size(1).count(true).build();
         match db_pool.database.aql_query_batch::<Value>(aql_query).await {
@@ -341,17 +302,5 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// [`authenticate method`]: trait.Authenticate.html#tymethod.authenticate
     pub fn authenticate(&self, password: &str) -> Result<(), ServiceError> where T: Authenticate {
         self.record.authenticate(password)
-    }
-}
-
-struct FilterQuery(String);
-
-impl From<Vec<&str>> for FilterQuery {
-    fn from(map: Vec<&str>) -> Self {
-        let mut filters_string = String::new();
-        for condition in map {
-            filters_string += &format!(r#"FILTER i.{}"#, condition);
-        };
-        Self(filters_string)
     }
 }
