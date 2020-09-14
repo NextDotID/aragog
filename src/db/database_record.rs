@@ -131,7 +131,7 @@ impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     pub async fn find_where(query: Query, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
-        let not_found = format!("{} Not found", T::collection_name());
+        let not_found = format!("{} document not found", T::collection_name());
         let values = Self::get_where(query.clone(), &db_pool).await?;
         if values.len() > 1 {
             log::error!("Found multiple records matching {:?}", query);

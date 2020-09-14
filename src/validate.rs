@@ -30,6 +30,14 @@ pub trait Validate {
     /// Runs all the defined validation on fields and fills the `errors` string vector with custom error messages
     fn validations(&self, errors: &mut Vec<String>);
 
+    /// Runs all validations and returns a `false` if they failed, on success `true` is returned
+    fn is_valid(&self) -> bool {
+        match self.validate() {
+            Ok(()) => true,
+            Err(_err) => false
+        }
+    }
+
     /// Helper function to simply check the presence of a field. This function is usually used inside the
     /// [`validations`] method since it will fill the `errors` with a message if the `field` is missing.
     ///
