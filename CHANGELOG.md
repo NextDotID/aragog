@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0
+
+* New `is_valid` method for `Record` trait.
+* New query system for `Record`.
+
 ## 0.3.2
 
 * Fixed `ServiceError`::`NotFound` message
