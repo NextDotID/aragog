@@ -20,14 +20,6 @@ pub struct QueryItem {
 }
 
 impl QueryItemBuilder {
-    /// Instantiates a new builder for [`QueryItem`] with the specified `field_name`
-    ///
-    /// [`QueryItem`]: struct.QueryItem.html
-    pub fn field(field_name: &str) -> Self {
-        Self {
-            field: String::from(field_name),
-        }
-    }
 
     /// Finalizes the current query item builder with a string equality comparison.
     /// The field to be matched should be a string.
@@ -334,6 +326,80 @@ impl QueryItemBuilder {
         }
     }
 
+    /// Finalizes the current query item builder with a `null` comparison.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::{QueryItem, Query};
+    ///
+    /// let query_item = QueryItem::field("username").is_null();
+    /// let query = Query::new(query_item);
+    /// ```
+    pub fn is_null(self) -> QueryItem {
+        QueryItem {
+            field: self.field,
+            comparator: "==".to_string(),
+            value: "null".to_string()
+        }
+    }
+
+    /// Finalizes the current query item builder with a not `null` comparison.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::{QueryItem, Query};
+    ///
+    /// let query_item = QueryItem::field("username").not_null();
+    /// let query = Query::new(query_item);
+    /// ```
+    pub fn not_null(self) -> QueryItem {
+        QueryItem {
+            field: self.field,
+            comparator: "!=".to_string(),
+            value: "null".to_string()
+        }
+    }
+
+    /// Finalizes the current query item builder with a boolean comparison.
+    /// The field to be matched should be a boolean type.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::{QueryItem, Query};
+    ///
+    /// let query_item = QueryItem::field("is_authorized").is_true();
+    /// let query = Query::new(query_item);
+    /// ```
+    pub fn is_true(self) -> QueryItem {
+        QueryItem {
+            field: self.field,
+            comparator: "==".to_string(),
+            value: "true".to_string()
+        }
+    }
+
+    /// Finalizes the current query item builder with a boolean comparison.
+    /// The field to be matched should be a boolean type.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::{QueryItem, Query};
+    ///
+    /// let query_item = QueryItem::field("is_authorized").is_false();
+    /// let query = Query::new(query_item);
+    /// ```
+    pub fn is_false(self) -> QueryItem {
+        QueryItem {
+            field: self.field,
+            comparator: "==".to_string(),
+            value: "false".to_string()
+        }
+    }
+
     fn string_from_array<T>(array: &[T]) -> String where T: Num + Display {
         let mut array_str = String::from("[");
         for (i, element) in array.iter().enumerate() {
@@ -357,6 +423,7 @@ impl QueryItemBuilder {
 
 impl QueryItem {
     /// Instantiates a new builder for a `QueryItem` with the specified `field_name`.
+    /// The field will be used as the left value of the comparison.
     ///
     /// # Example
     ///
@@ -365,7 +432,58 @@ impl QueryItem {
     /// let query_item_builder = QueryItem::field("username");
     /// ```
     pub fn field(field_name: &str) -> QueryItemBuilder {
-        QueryItemBuilder::field(field_name)
+        QueryItemBuilder {
+            field: field_name.to_string()
+        }
+    }
+
+    /// Instantiates a new builder for a `QueryItem` with the specified `array_field_name`.
+    /// The field should be an array, as all items in the array will have to match the comparison
+    /// to succeed.
+    ///
+    /// # Example
+    ///
+    /// In this example the query will render all documents where every price is above 10.
+    /// ```rust
+    /// # use aragog::query::{QueryItem, Query};
+    /// Query::new(QueryItem::all("prices").greater_or_equal(10));
+    /// ```
+    pub fn all(array_field_name: &str) -> QueryItemBuilder {
+        QueryItemBuilder {
+            field: format!("{} ALL", array_field_name)
+        }
+    }
+
+    /// Instantiates a new builder for a `QueryItem` with the specified `array_field_name`.
+    /// The field should be an array, none of the items in the array can match the comparison to succeed.
+    ///
+    /// # Example
+    ///
+    /// In this example the query will render all documents where every price is not above 10.
+    /// ```rust
+    /// # use aragog::query::{QueryItem, Query};
+    /// Query::new(QueryItem::none("prices").greater_or_equal(10));
+    /// ```
+    pub fn none(array_field_name: &str) -> QueryItemBuilder {
+        QueryItemBuilder {
+            field: format!("{} NONE", array_field_name)
+        }
+    }
+    /// Instantiates a new builder for a `QueryItem` with the specified `array_field_name`.
+    /// The field should be an array, at least one of the items in the array must match the
+    /// comparison to succeed.
+    ///
+    /// # Example
+    ///
+    /// In this example the query will render all documents where at least one price is above 10.
+    /// ```rust
+    /// # use aragog::query::{QueryItem, Query};
+    /// Query::new(QueryItem::any("prices").greater_or_equal(10));
+    /// ```
+    pub fn any(array_field_name: &str) -> QueryItemBuilder {
+        QueryItemBuilder {
+            field: format!("{} ANY", array_field_name)
+        }
     }
 }
 
