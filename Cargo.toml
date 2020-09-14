@@ -34,6 +34,9 @@ serde_json = "1.0"
 log = "0.4.11"
 # Error definitions
 thiserror = "1.0.20"
+# Numeric types
+num = "0.3.0"
+
 
 actix-web = { version = "2.0.0", optional = true }
 argonautica = { version = "0.2.0", optional = true }

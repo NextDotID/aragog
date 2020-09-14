@@ -1,6 +1,8 @@
-use aragog::{DatabaseConnectionPool, New, DatabaseRecord, Update, ServiceError, Record};
-use crate::models::order::Order;
+use aragog::{DatabaseConnectionPool, DatabaseRecord, New, Record, ServiceError, Update};
+use aragog::query::{Query, QueryItem};
+
 use crate::models::dish::{Dish, DishDTO};
+use crate::models::order::Order;
 use crate::models::user::User;
 
 mod models;
@@ -21,7 +23,7 @@ async fn main() {
     let dish = Dish::new(DishDTO {
         name: "Pizza Regina".to_string(),
         description: "Tomato base, Ham, Mozzarella, egg".to_string(),
-        price: 10
+        price: 10,
     }).unwrap();
     // Creates a database record
     let mut dish_record = DatabaseRecord::create(dish, &db_pool).await.unwrap();
@@ -36,7 +38,7 @@ async fn main() {
     dish_record.record.update(&DishDTO {
         name: "Pizza Mozzarella".to_string(),
         description: "Tomato base, Mozzarella".to_string(),
-        price: 7
+        price: 7,
     }).unwrap();
     // Add the updated dish to the order
     order_record.record.add(&dish_record.record);
@@ -55,7 +57,7 @@ async fn main() {
         Err(error) => match error {
             ServiceError::ValidationError(msg) => {
                 assert_eq!(msg, String::from("price should be above zero"))
-            },
+            }
             _ => panic!("Wrong error returned")
         }
     }
@@ -73,22 +75,13 @@ async fn main() {
     // Find with the primary key
     let _user_record = User::find(&record.key, &db_pool).await.unwrap();
 
-    // Find with a single condition
-    let user_record = User::find_by(r#"username == "LeRevenant1234""#, &db_pool).await.unwrap();
-
-    // Find with a single but formatted condition
-    let condition = format!(r#"first_name == "{}""#, user_record.record.first_name);
-    let _user_record = User::find_by(&condition, &db_pool).await.unwrap();
-
     // Find a user with multiple conditions
-    let mut find_conditions = Vec::new();
-    find_conditions.push(r#"last_name == "Surcouf""#);
-    find_conditions.push("age > 15");
-    let _user_record = User::find_where(find_conditions, &db_pool).await.unwrap();
+    let query = Query::new(QueryItem::field("last_name").equals_str("Surcouf"))
+        .and(QueryItem::field("age").greater_than(15));
+    let _user_record = User::find_where(query, &db_pool).await.unwrap();
 
     // Find all users with multiple conditions
-    let mut find_conditions = Vec::new();
-    find_conditions.push(r#"last_name == "Surcouf""#);
-    find_conditions.push("age > 15");
-    let _user_records = User::get_where(find_conditions, &db_pool).await.unwrap();
+    let query = Query::new(QueryItem::field("last_name").equals_str("Surcouf"))
+        .and(QueryItem::field("age").greater_than(15));
+    let _user_records = User::get_where(query, &db_pool).await.unwrap();
 }

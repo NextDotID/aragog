@@ -100,7 +100,7 @@
 //!
 //! **Example:**
 //!
-//! ```rust no_run
+//! ```rust
 //! use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
 //! use serde::{Serialize, Deserialize};
 //! use tokio;
@@ -154,9 +154,10 @@
 //! The example below show different ways to retrieve records, look at each function documentation for more exhaustive exaplanations.
 //!
 //! **Example**
-//! ```rust no_run
+//! ```rust
 //! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
 //! # use serde::{Serialize, Deserialize};
+//! # use aragog::query::{Query, QueryItem};
 //! # use tokio;
 //! #
 //! # #[derive(Serialize, Deserialize, Clone)]
@@ -177,7 +178,7 @@
 //! #
 //! # #[tokio::main]
 //! # async fn main() {
-//! # std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
+//! std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
 //! # let database_pool = DatabaseConnectionPool::new(
 //! #       &std::env::var("DB_HOST").unwrap(),
 //! #       &std::env::var("DB_NAME").unwrap(),
@@ -195,21 +196,14 @@
 //! // Find with the primary key
 //! let user_record = User::find(&record.key, &database_pool).await.unwrap();
 //!
-//! // Find with a single condition
-//! let user_record = User::find_by(r#"username == "LeRevenant1234""#, &database_pool).await.unwrap();
-//!
-//! // Find with a single but formatted condition
-//! let condition = format!(r#"first_name == "{}""#, user_record.record.first_name);
-//! let user_record = User::find_by(&condition, &database_pool).await.unwrap();
-//!
 //! // Find a user with multiple conditions
-//! let mut find_conditions = vec![r#"last_name == "Surcouf""#, "age > 15"];
+//! let mut query = Query::new(QueryItem::field("last_name").equals_str("Surcouf")).and(QueryItem::field("age").greater_than(15));
 //!
-//! let user_record = User::find_where(find_conditions, &database_pool).await.unwrap();
+//! let user_record = User::find_where(query, &database_pool).await.unwrap();
 //!
 //! // Find all users with multiple conditions
-//! let mut find_conditions = vec![r#"last_name == "Surcouf""#, "age > 15"];
-//! let user_records = User::get_where(find_conditions, &database_pool).await.unwrap();
+//! let mut query = Query::new(QueryItem::field("last_name").like("%Surc%")).and(QueryItem::field("age").in_array(&[15,16,17,18]));
+//! let user_records = User::get_where(query, &database_pool).await.unwrap();
 //! # }
 //! ```
 //!
@@ -232,7 +226,7 @@ pub use {
     validate::Validate,
 };
 
-/// Contains useful tools to parse json value and to valiate string formats
+/// Contains useful tools to parse json value and to valiate string formats.
 pub mod helpers;
 mod db;
 mod record;
@@ -241,3 +235,5 @@ mod update;
 mod validate;
 mod new;
 mod error;
+/// contains querying struct and functions.
+pub mod query;
