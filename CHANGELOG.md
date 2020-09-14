@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+* New query builder comparisons (bolean and null comparators)
+* Better Readme
+* Added array `All`, `Any`, `None` filters for query
+
 ## 0.4.0
 
 * New `is_valid` method for `Record` trait.
