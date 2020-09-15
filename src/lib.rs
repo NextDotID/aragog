@@ -224,10 +224,13 @@ pub use {
     record::Record,
     update::Update,
     validate::Validate,
+    authorize_action::AuthorizeAction,
 };
 
 /// Contains useful tools to parse json value and to valiate string formats.
 pub mod helpers;
+/// contains querying struct and functions.
+pub mod query;
 mod db;
 mod record;
 mod authenticate;
@@ -235,5 +238,4 @@ mod update;
 mod validate;
 mod new;
 mod error;
-/// contains querying struct and functions.
-pub mod query;
+mod authorize_action;

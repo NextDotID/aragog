@@ -20,7 +20,8 @@ By now the available features are:
     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
     * `Validate`: The structure can perform simple validations before being created or saved into the database.
-    * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
+    * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example) (see `password_hashing` section)
+    * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
 * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 
 #### Cargo features
@@ -196,6 +197,7 @@ All the currently implemented comparison methods are listed under [QueryItemBuil
         - [X] Array variant querying (`ANY`, `NONE`, `ALL`)
         - [ ] ArangoDB functions (`LENGTH`, `ABS`, etc.)
 * ORM and OGM
+    - [X] Pundit like authorizations (authorize actions on model)
     - [ ] Relations
         - [ ] Handle graph vertices and edges
         - [ ] Handle SQL-like relations (foreign keys)

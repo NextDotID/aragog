@@ -14,7 +14,7 @@ use crate::query::Query;
 ///
 /// [`Record`]: trait.Record.html
 #[derive(Debug)]
-pub struct DatabaseRecord<T> {
+pub struct DatabaseRecord<T: Serialize + DeserializeOwned + Clone + Record> {
     /// The Document unique and indexed key
     pub key: String,
     /// The deserialized stored document
@@ -22,7 +22,7 @@ pub struct DatabaseRecord<T> {
 }
 
 #[allow(dead_code)]
-impl<T> DatabaseRecord<T> where T: Serialize + DeserializeOwned + Clone + Record {
+impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// Writes in the database the new state of the record, "saving it". The record will first be validates
     /// as it should implement the [`Validate`] trait.
     ///
