@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3
+
+* Fixed `AuthorizeAction` trait to allow optional target
+
 ## 0.4.2
 
 * `AuthorizeAction` trait
