@@ -30,7 +30,9 @@ pub enum DishAction {
 impl AuthorizeAction<Dish> for User {
     type Action = DishAction;
 
-    fn is_action_authorized(&self, action: Self::Action, target: &DatabaseRecord<Dish>) -> bool {
+    fn is_action_authorized(&self, action: Self::Action, target: Option<&DatabaseRecord<Dish>>) -> bool {
+        if target.is_none() { return false; }
+        let target = target.unwrap();
         match action {
             DishAction::Order => {
                 if self.money < target.record.price {
