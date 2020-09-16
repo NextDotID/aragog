@@ -9,6 +9,7 @@ pub struct Dish {
     pub name: String,
     pub description: String,
     pub price: u16,
+    pub is_alcohol: bool,
     created_at: u64,
     updated_at: u64,
 }
@@ -17,6 +18,7 @@ pub struct DishDTO {
     pub name: String,
     pub description: String,
     pub price: u16,
+    pub is_alcohol: bool,
 }
 
 impl Record for Dish {
@@ -39,6 +41,7 @@ impl New<DishDTO> for Dish {
             name: form.name,
             description: form.description,
             price: form.price,
+            is_alcohol: form.is_alcohol,
             created_at: Utc::now().timestamp() as u64,
             updated_at: Utc::now().timestamp() as u64,
         })
@@ -50,6 +53,7 @@ impl Update<DishDTO> for Dish {
         self.name = form.name.clone();
         self.description = form.description.clone();
         self.price = form.price;
+        self.is_alcohol = form.is_alcohol;
         self.updated_at = Utc::now().timestamp() as u64;
         Ok(())
     }

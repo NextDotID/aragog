@@ -24,6 +24,7 @@ async fn main() {
         name: "Pizza Regina".to_string(),
         description: "Tomato base, Ham, Mozzarella, egg".to_string(),
         price: 10,
+        is_alcohol: false
     }).unwrap();
     // Creates a database record
     let mut dish_record = DatabaseRecord::create(dish, &db_pool).await.unwrap();
@@ -39,6 +40,7 @@ async fn main() {
         name: "Pizza Mozzarella".to_string(),
         description: "Tomato base, Mozzarella".to_string(),
         price: 7,
+        is_alcohol: false
     }).unwrap();
     // Add the updated dish to the order
     order_record.record.add(&dish_record.record);
@@ -69,6 +71,8 @@ async fn main() {
         first_name: String::from("Robert"),
         last_name: String::from("Surcouf"),
         age: 18,
+        is_cook: false,
+        money: 100
     };
     let record = DatabaseRecord::create(user, &db_pool).await.unwrap();
 
