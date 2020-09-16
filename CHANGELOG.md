@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2
+
+* `AuthorizeAction` trait
+
 ## 0.4.1
 
 * New query builder comparisons (bolean and null comparators)
