@@ -38,7 +38,9 @@ use serde::{Serialize, de::DeserializeOwned};
 /// impl AuthorizeAction<Company> for Employee {
 /// type Action = EmployeeAction;
 ///
-///     fn is_action_authorized(&self,action: Self::Action,target: &DatabaseRecord<Company>) -> bool {
+///     fn is_action_authorized(&self, action: Self::Action, target: Option<&DatabaseRecord<Company>>) -> bool {
+///         if target.is_none() { return false; }
+///         let target = target.unwrap();
 ///         match action {
 ///             EmployeeAction::Cook => self.is_cook && !target.record.is_cooking_done,
 ///             EmployeeAction::PayTaxes => self.is_accountant && !target.record.taxes_payed,
@@ -58,11 +60,11 @@ pub trait AuthorizeAction<T: Serialize + DeserializeOwned + Clone + Record> {
     ///
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`Forbidden`]: enum.ServiceError.html#variant.Forbidden
-    fn authorize_action(&self, action: Self::Action, target: &DatabaseRecord<T>) -> Result<(), ServiceError> {
+    fn authorize_action(&self, action: Self::Action, target: Option<&DatabaseRecord<T>>) -> Result<(), ServiceError> {
         if self.is_action_authorized(action, target) { return Ok(()) }
         Err(ServiceError::Forbidden)
     }
 
     /// Returns true if the object is authorized to do `action` on `target`
-    fn is_action_authorized(&self, action: Self::Action, target: &DatabaseRecord<T>) -> bool;
+    fn is_action_authorized(&self, action: Self::Action, target: Option<&DatabaseRecord<T>>) -> bool;
 }

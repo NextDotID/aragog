@@ -34,7 +34,9 @@ pub enum DishAction {
 impl AuthorizeAction<Dish> for User {
     type Action = DishAction;
 
-    fn is_action_authorized(&self, action: Self::Action, target: &DatabaseRecord<Dish>) -> bool {
+    fn is_action_authorized(&self, action: Self::Action, target: Option<&DatabaseRecord<Dish>>) -> bool {
+        if target.is_none() { return false; }
+        let target = target.unwrap();
         match action {
             DishAction::Order => {
                 if self.money < target.record.price {
@@ -65,8 +67,8 @@ fn can_authorize() -> Result<(), String> {
             money: 11,
             is_cook: false
         };
-        common::expect_assert(user.is_action_authorized(DishAction::Order, &dish_record))?;
-        common::expect_assert(user.authorize_action(DishAction::Order, &dish_record).is_ok())?;
+        common::expect_assert(user.is_action_authorized(DishAction::Order, Some(&dish_record)))?;
+        common::expect_assert(user.authorize_action(DishAction::Order, Some(&dish_record)).is_ok())?;
         Ok(())
     })
 }
@@ -89,10 +91,10 @@ fn can_fail() -> Result<(), String> {
             money: 5,
             is_cook: false
         };
-        common::expect_assert(!poor_user.is_action_authorized(DishAction::Order, &dish_record))?;
-        common::expect_assert(poor_user.authorize_action(DishAction::Order, &dish_record).is_err())?;
-        common::expect_assert(!poor_user.is_action_authorized(DishAction::Cook, &dish_record))?;
-        common::expect_assert(poor_user.authorize_action(DishAction::Cook, &dish_record).is_err())?;
+        common::expect_assert(!poor_user.is_action_authorized(DishAction::Order, Some(&dish_record)))?;
+        common::expect_assert(poor_user.authorize_action(DishAction::Order, Some(&dish_record)).is_err())?;
+        common::expect_assert(!poor_user.is_action_authorized(DishAction::Cook, Some(&dish_record)))?;
+        common::expect_assert(poor_user.authorize_action(DishAction::Cook, Some(&dish_record)).is_err())?;
 
         // Not old enough and not cook
         let poor_user = User {
@@ -101,10 +103,10 @@ fn can_fail() -> Result<(), String> {
             money: 15,
             is_cook: false
         };
-        common::expect_assert(!poor_user.is_action_authorized(DishAction::Order, &dish_record))?;
-        common::expect_assert(poor_user.authorize_action(DishAction::Order, &dish_record).is_err())?;
-        common::expect_assert(!poor_user.is_action_authorized(DishAction::Cook, &dish_record))?;
-        common::expect_assert(poor_user.authorize_action(DishAction::Cook, &dish_record).is_err())?;
+        common::expect_assert(!poor_user.is_action_authorized(DishAction::Order, Some(&dish_record)))?;
+        common::expect_assert(poor_user.authorize_action(DishAction::Order, Some(&dish_record)).is_err())?;
+        common::expect_assert(!poor_user.is_action_authorized(DishAction::Cook, Some(&dish_record)))?;
+        common::expect_assert(poor_user.authorize_action(DishAction::Cook, Some(&dish_record)).is_err())?;
 
         // Not old enough but is cook
         let poor_user = User {
@@ -113,10 +115,10 @@ fn can_fail() -> Result<(), String> {
             money: 15,
             is_cook: true
         };
-        common::expect_assert(!poor_user.is_action_authorized(DishAction::Order, &dish_record))?;
-        common::expect_assert(poor_user.authorize_action(DishAction::Order, &dish_record).is_err())?;
-        common::expect_assert(poor_user.is_action_authorized(DishAction::Cook, &dish_record))?;
-        common::expect_assert(poor_user.authorize_action(DishAction::Cook, &dish_record).is_ok())?;
+        common::expect_assert(!poor_user.is_action_authorized(DishAction::Order, Some(&dish_record)))?;
+        common::expect_assert(poor_user.authorize_action(DishAction::Order, Some(&dish_record)).is_err())?;
+        common::expect_assert(poor_user.is_action_authorized(DishAction::Cook, Some(&dish_record)))?;
+        common::expect_assert(poor_user.authorize_action(DishAction::Cook, Some(&dish_record)).is_ok())?;
         Ok(())
     })
 }
