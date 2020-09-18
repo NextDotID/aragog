@@ -32,7 +32,7 @@ If you use this crate with the [actix][actix] framework, you may want the `arago
 To do so cou can add to your `cargo.toml` the following `feature`: `actix_http_error`.
 
 ```toml
-aragog = { version = "0.4.3", features = ["actix_http_error"] }
+aragog = { version = "^0.4", features = ["actix_http_error"] }
 ```
 
 ##### Password hashing
@@ -41,7 +41,7 @@ You may want `aragog` to provide a more complete `Authenticate` trait allowing t
 To do so cou can add to your `cargo.toml` the following `feature`: `password_hashing`.
 
 ```toml
-aragog = { version = "0.4.3", features = ["password_hashing"] }
+aragog = { version = "^0.4", features = ["password_hashing"] }
 ```
 
 It will add two functions in the `Authenticate` trait:

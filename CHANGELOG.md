@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.4
+
+* `actix-web` version 3
+* better cargo version handling
+
 ## 0.4.3
 
 * Fixed `AuthorizeAction` trait to allow optional target
