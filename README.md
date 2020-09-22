@@ -158,43 +158,97 @@ The example below show different ways to retrieve records, look at each function
 
 **Example**
 ```rust
+// User creation
 let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
-
-// Find with the primary key
+// Find with the primary key or..
 let user_record = User::find(&record.key, &database_pool).await.unwrap();
-
-// Find a user with multiple conditions
-let mut query = Query::new(QueryItem::field("last_name").equals_str("Surcouf")).and(QueryItem::field("age").greater_than(15));
-let user_record = User::find_where(query, &database_pool).await.unwrap();
+// .. Generate a query and..
+let query = User::query().filter(Filter::new(Comparison::field("last_name").equals_str("Surcouf")).and(Comparison::field("age").greater_than(15)));
+// get the only record (fails if no or multiple records)
+let user_record = User::get(query, &database_pool).await.unwrap().uniq().unwrap();
 
 // Find all users with multiple conditions
-let mut query = Query::new(QueryItem::field("last_name").like("%Surc%")).and(QueryItem::field("age").in_array(&[15,16,17,18]));
-let user_records = User::get_where(query, &database_pool).await.unwrap();
+let query = User::query().filter(Filter::new(Comparison::field("last_name").like("%Surc%")).and(Comparison::field("age").in_array(&[15,16,17,18])));
+let clone_query = query.clone(); // we clone the query
+// This syntax is valid...
+let user_records = User::get(query, &database_pool).await.unwrap();
+// ... This one too
+let user_records = clone_query.call::<User>(&database_pool).await.unwrap();
+```
+
+You can simplify the previous queries with some macros:
+```rust
+#[macro_use] extern crate aragog;
+// Find a user with multiple conditions
+let query = query!("Users").filter(Filter::new(compare!(field "last_name").equals_str("Surcouf")).and(compare!(field "age").greater_than(15)));
+let records = User::get(query, &database_pool).await.unwrap();
 ```
 
 The querying system hierarchy works this way:
 ```rust
-Query::new(comparison_1).and(comparison_2).or(comparison_3)
+Query::new("collection_name").filter(comparison_1).and(comparison_2).or(comparison_3).sort().limit().distinct();
 ```
-Each comparison is a `QueryItem` built via `QueryItemBuilder`:
+
+##### Query
+
+You can intialize a query in the following ways:
+* `Query::new("CollectionName")`
+* `Object.query()` (only works if `Object` implements `Record`)
+* `query!("CollectionName")`
+
+You can customize the query with the following methods:
+* `filter()` you can specify AQL comparisons
+* `sort()` you can specify fields to sort with
+* `limit()` you can skip and limit the query results
+* `distinct()` you can skip duplicate documents
+
+you can then call a query in the following ways:
+* `query.call::<Object>(&database_connection_pool)`
+* `Object::get(query, &database_connection_pool`
+
+Which will return a `QueryResult` containing a `Vec` of `DatabaseRecord<Object>`.
+If you want to receive a unique record and render an error in case of multiple record you can use `uniq()`.
+
+#### Filter
+
+You can initialize a `Filter` with `Filter::new(comparison)`
+
+Each comparison is a `Comparison` struct built via `ComparisonBuilder`:
 ```rust
 // for a simple field comparison
-QueryItem::field("some_field").some_comparison("compared_value");
-// for field veing arrays (see ArangoDB operators)
-QueryItem::all("some_field_array").some_comparison("compared_value");
-QueryItem::any("some_field_array").some_comparison("compared_value");
-QueryItem::none("some_field_array").some_comparison("compared_value");
+
+// Explicit
+Comparison::field("some_field").some_comparison("compared_value");
+// Macro
+compare!(field "some_field").some_comparison("compared_value");
+
+// for field arrays (see ArangoDB operators)
+
+// Explicit
+Comparison::all("some_field_array").some_comparison("compared_value");
+// Macro
+compare!(all "some_field_array").some_comparison("compared_value");
+
+// Explicit
+Comparison::any("some_field_array").some_comparison("compared_value");
+// Macro
+compare!(any "some_field_array").some_comparison("compared_value");
+
+// Explicit
+Comparison::none("some_field_array").some_comparison("compared_value");
+// Macro
+compare!(none "some_field_array").some_comparison("compared_value");
 ```
-All the currently implemented comparison methods are listed under [QueryItemBuilder][QueryItemBuilder] documentation page.
+All the currently implemented comparison methods are listed under [ComparisonBuilder][ComparisonBuilder] documentation page.
 
 ### TODO
 
 * Query system:
     - [X] Simple and modular query system
-    - [ ] Macros for lighter queries
     - [ ] Advanced query system supporting:
-        - [ ] Arithmetic Operators
         - [X] Array variant querying (`ANY`, `NONE`, `ALL`)
+        - [X] Sort, limit and distinct methods
+        - [X] Macros for syntax simplification
         - [ ] ArangoDB functions (`LENGTH`, `ABS`, etc.)
 * ORM and OGM
     - [X] Pundit like authorizations (authorize actions on model)
@@ -245,7 +299,7 @@ Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][i
 [inzanez]: https://github.com/inzanez/
 [ArangoDB]: https://www.arangodb.com/
 [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
-[QueryItemBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.QueryItemBuilder.html
+[ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html
 [arango_download]: https://www.arangodb.com/download "Download Arango"
 [arango_doc]: https://www.arangodb.com/docs/stable/getting-started.html "Arango getting started"
 [actix]: https://actix.rs/ "Actix Homepage"

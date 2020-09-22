@@ -1,8 +1,13 @@
 mod query;
-mod query_item;
+mod comparison;
+mod filter;
+mod query_result;
 
 pub use {
     query::Query,
-    query_item::QueryItem,
-    query_item::QueryItemBuilder
+    query::SortDirection,
+    comparison::Comparison,
+    comparison::ComparisonBuilder,
+    filter::Filter,
+    query_result::QueryResult
 };

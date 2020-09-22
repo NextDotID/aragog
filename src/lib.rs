@@ -157,7 +157,7 @@
 //! ```rust
 //! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
 //! # use serde::{Serialize, Deserialize};
-//! # use aragog::query::{Query, QueryItem};
+//! # use aragog::query::{Comparison, Filter};
 //! # use tokio;
 //! #
 //! # #[derive(Serialize, Deserialize, Clone)]
@@ -178,7 +178,67 @@
 //! #
 //! # #[tokio::main]
 //! # async fn main() {
-//! std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
+//! # std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
+//! # let database_pool = DatabaseConnectionPool::new(
+//! #       &std::env::var("DB_HOST").unwrap(),
+//! #       &std::env::var("DB_NAME").unwrap(),
+//! #       &std::env::var("DB_USER").unwrap(),
+//! #       &std::env::var("DB_PWD").unwrap()).await;
+//! # database_pool.truncate().await;
+//! # let mut user = User {
+//! #     username: String::from("LeRevenant1234"),
+//! #     first_name: String::from("Robert"),
+//! #     last_name: String::from("Surcouf"),
+//! #     age: 18,
+//! # };
+//! // User creation
+//! let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
+//!
+//! // Find with the primary key or..
+//! let user_record = User::find(&record.key, &database_pool).await.unwrap();
+//! // .. Generate a query and..
+//! let query = User::query().filter(Filter::new(Comparison::field("last_name").equals_str("Surcouf")).and(Comparison::field("age").greater_than(15)));
+//! // get the only record (fails if no or multiple records)
+//! let user_record = User::get(query, &database_pool).await.unwrap().uniq().unwrap();
+//!
+//! // Find all users with multiple conditions
+//! let query = User::query().filter(Filter::new(Comparison::field("last_name").like("%Surc%")).and(Comparison::field("age").in_array(&[15,16,17,18])));
+//! let clone_query = query.clone(); // we clone the query
+//!
+//! // This syntax is valid...
+//! let user_records = User::get(query, &database_pool).await.unwrap();
+//! // ... This one too
+//! let user_records = clone_query.call::<User>(&database_pool).await.unwrap();
+//! # }
+//! ```
+//! You can simplify the previous queries with some macros:
+//! ```rust
+//! #[macro_use]
+//! extern crate aragog;
+//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
+//! # use serde::{Serialize, Deserialize};
+//! # use aragog::query::{Query, Comparison, Filter};
+//! # use tokio;
+//! #
+//! # #[derive(Serialize, Deserialize, Clone)]
+//! # pub struct User {
+//! #     pub username: String,
+//! #     pub first_name: String,
+//! #     pub last_name: String,
+//! #     pub age: usize
+//! # }
+//!#
+//! # impl Record for User {
+//! #     fn collection_name() -> &'static str { "Users" }
+//! # }
+//!#
+//! # impl Validate for User {
+//! #     fn validations(&self,errors: &mut Vec<String>) { }
+//! # }
+//! #
+//! # #[tokio::main]
+//! # async fn main() {
+//! # std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
 //! # let database_pool = DatabaseConnectionPool::new(
 //! #       &std::env::var("DB_HOST").unwrap(),
 //! #       &std::env::var("DB_NAME").unwrap(),
@@ -193,17 +253,20 @@
 //! # };
 //!
 //! let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
-//! // Find with the primary key
-//! let user_record = User::find(&record.key, &database_pool).await.unwrap();
 //!
-//! // Find a user with multiple conditions
-//! let mut query = Query::new(QueryItem::field("last_name").equals_str("Surcouf")).and(QueryItem::field("age").greater_than(15));
+//! // Find a user with a query
+//! let query = User::query().filter(Filter::new(compare!(field "last_name").equals_str("Surcouf")).and(compare!(field "age").greater_than(15)));
 //!
-//! let user_record = User::find_where(query, &database_pool).await.unwrap();
+//! // get the only record (fails if no or multiple records)
+//! let user_record = User::get(query, &database_pool).await.unwrap().uniq().unwrap();
 //!
 //! // Find all users with multiple conditions
-//! let mut query = Query::new(QueryItem::field("last_name").like("%Surc%")).and(QueryItem::field("age").in_array(&[15,16,17,18]));
-//! let user_records = User::get_where(query, &database_pool).await.unwrap();
+//! let query = User::query().filter(Filter::new(compare!(field "last_name").like("%Surc%")).and(compare!(field "age").in_array(&[15,16,17,18])));
+//! let clone_query = query.clone();
+//! // This syntax is valid...
+//! let user_records = User::get(query, &database_pool).await.unwrap();
+//! // ... This one too
+//! let user_records = clone_query.call::<User>(&database_pool).await.unwrap();
 //! # }
 //! ```
 //!

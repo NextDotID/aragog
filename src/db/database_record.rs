@@ -6,7 +6,7 @@ use serde_json::Value;
 
 use crate::db::database_service;
 use crate::{ServiceError, Record, Validate, DatabaseConnectionPool, Authenticate};
-use crate::query::Query;
+use crate::query::{Query, QueryResult};
 
 /// Struct representing database stored documents
 ///
@@ -92,61 +92,6 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
         database_service::retrieve_record(key, &db_pool, T::collection_name()).await
     }
 
-    /// Retrieves a record from the database with the associated conditions.
-    /// The function wraps a simple [`get_where`] for a single record instance to find.
-    ///
-    /// Since the function attempts to retrieve one unique record, if the condition is matched by multiple
-    /// documents the function will return an error. Use this function for conditions that are supposed to match
-    /// only one document, the condition should probably be on a unique indexed field.
-    ///
-    /// # Arguments:
-    ///
-    /// * `query` - The `Query` to match
-    /// * `db_pool` - database connection pool reference
-    ///
-    /// # Note
-    ///
-    /// This is simply an AQL request wrapper.
-    ///
-    /// # Returns
-    ///
-    /// On success `Self` is returned,
-    /// On failure a [`ServiceError`] is returned:
-    /// * [`NotFound`] on invalid document key or if multiple records match the condition
-    /// * [`UnprocessableEntity`] on data corruption
-    ///
-    /// # Example
-    ///
-    /// ```rust ignore
-    /// use aragog::query::{Query, QueryItem};
-    ///
-    /// let mut query = Query::new(QueryItem::field("username").equals_str("MichelDu93"))
-    ///     .and(QueryItem::field("age").greater_than(10));
-    ///
-    /// User::find_where(query, &db_pool).await.unwrap();
-    /// ```
-    ///
-    /// [`get_where`]: struct.DatabaseRecord.html#method.get_where
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn find_where(query: Query, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
-        let not_found = format!("{} document not found", T::collection_name());
-        let values = Self::get_where(query.clone(), &db_pool).await?;
-        if values.len() > 1 {
-            log::error!("Found multiple records matching {:?}", query);
-            return Err(ServiceError::NotFound(not_found));
-        } else if values.len() <= 0 {
-            log::info!("Found no records matching {:?}", query);
-            return Err(ServiceError::NotFound(not_found));
-        }
-        let res = values.first().unwrap();
-        Ok(DatabaseRecord {
-            key: res.key.clone(),
-            record: res.record.clone(),
-        })
-    }
-
     /// Retrieves all records from the database matching the associated conditions.
     ///
     /// # Arguments:
@@ -160,7 +105,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     ///
     /// # Returns
     ///
-    /// On success a vector of `Self` is returned. It is never empty.
+    /// On success a `QueryResult` with a vector of `Self` is returned. It is can be empty.
     /// On failure a [`ServiceError`] is returned:
     /// * [`NotFound`] if no document matches the condition
     /// * [`UnprocessableEntity`] on data corruption
@@ -168,23 +113,19 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// # Example
     ///
     /// ```rust ignore
-    /// use aragog::query::{Query, QueryItem};
+    /// use aragog::query::{Query, Comparison};
     ///
-    /// let mut query = Query::new(QueryItem::field("username").equals_str("MichelDu93"))
-    ///     .and(QueryItem::field("age").greater_than(10));
+    /// let mut query = Query::new().filter(Filter::new(Comparison::field("username").equals_str("MichelDu93"))
+    ///     .and(Comparison::field("age").greater_than(10));
     ///
-    /// User::get_where(query, &db_pool).await.unwrap();
+    /// User::get(query, &db_pool).await.unwrap();
     /// ```
     ///
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn get_where(query: Query, db_pool: &DatabaseConnectionPool) -> Result<Vec<Self>, ServiceError> {
-        let query_string = format!(r#"FOR i in {} {} return i"#,
-                                   T::collection_name(),
-                                   query
-        );
-        let query_result: Vec<Value> = match db_pool.database.aql_str(&query_string).await {
+    pub async fn get(query: Query, db_pool: &DatabaseConnectionPool) -> Result<QueryResult<T>, ServiceError> {
+        let query_result: Vec<Value> = match db_pool.database.aql_str(&query.render()).await {
             Ok(value) => { value }
             Err(error) => {
                 log::error!("{}", error);
@@ -198,7 +139,10 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
                 record: serde_json::from_str(&value.to_string()).unwrap(),
             })
         }
-        Ok(res)
+        Ok(QueryResult {
+            doc_count: res.len(),
+            documents: res,
+        })
     }
 
     /// Checks if any document matching the associated conditions exist
@@ -219,19 +163,16 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// # Example
     ///
     /// ```rust ignore
-    /// use aragog::query::{Query, QueryItem};
+    /// use aragog::query::{Query, Comparison};
     ///
-    /// let mut query = Query::new(QueryItem::field("username").equals_str("MichelDu93"))
-    ///     .and(QueryItem::field("age").greater_than(10));
+    /// let mut query = Query::new().filter(Filter::new(Comparison::field("username").equals_str("MichelDu93"))
+    ///     .and(Comparison::field("age").greater_than(10));
     ///
-    /// User::exists_where(query, &db_pool).await;
+    /// User::exists(query, &db_pool).await;
     /// ```
-    pub async fn exists_where(query: Query, db_pool: &DatabaseConnectionPool) -> bool {
-        let query_string = format!(r#"FOR i in {} {} return i"#,
-                                   T::collection_name(),
-                                   query
-        );
-        let aql_query = AqlQuery::builder().query(&query_string).batch_size(1).count(true).build();
+    pub async fn exists(query: Query, db_pool: &DatabaseConnectionPool) -> bool {
+        let aql_string = query.render();
+        let aql_query = AqlQuery::builder().query(&aql_string).batch_size(1).count(true).build();
         match db_pool.database.aql_query_batch::<Value>(aql_query).await {
             Ok(cursor) => match cursor.count {
                 Some(count) => count > 0,
