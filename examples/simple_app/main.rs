@@ -1,9 +1,11 @@
 use aragog::{DatabaseConnectionPool, DatabaseRecord, New, Record, ServiceError, Update};
-use aragog::query::{Query, QueryItem};
+use aragog::query::{Comparison, Filter};
 
 use crate::models::dish::{Dish, DishDTO};
 use crate::models::order::Order;
 use crate::models::user::User;
+
+#[macro_use] extern crate aragog;
 
 mod models;
 
@@ -79,13 +81,15 @@ async fn main() {
     // Find with the primary key
     let _user_record = User::find(&record.key, &db_pool).await.unwrap();
 
-    // Find a user with multiple conditions
-    let query = Query::new(QueryItem::field("last_name").equals_str("Surcouf"))
-        .and(QueryItem::field("age").greater_than(15));
-    let _user_record = User::find_where(query, &db_pool).await.unwrap();
+    // Build a query
+    let query = User::query().filter(Filter::new(compare!(field "last_name").equals_str("Surcouf"))
+        .and(Comparison::field("age").greater_than(15)));
+    let query_b = query.clone();
+    // Call the query
+    let result_a = query.call::<User>(&db_pool).await.unwrap();
+    // OR (equivalent)
+    let result_b = User::get(query_b, &db_pool).await.unwrap();
 
-    // Find all users with multiple conditions
-    let query = Query::new(QueryItem::field("last_name").equals_str("Surcouf"))
-        .and(QueryItem::field("age").greater_than(15));
-    let _user_records = User::get_where(query, &db_pool).await.unwrap();
+    // Get an unique record (fails otherwise):
+    let _user = result_a.uniq().unwrap();
 }
