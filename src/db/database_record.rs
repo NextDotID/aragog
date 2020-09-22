@@ -139,10 +139,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
                 record: serde_json::from_str(&value.to_string()).unwrap(),
             })
         }
-        Ok(QueryResult {
-            doc_count: res.len(),
-            documents: res,
-        })
+        Ok(QueryResult::new(res))
     }
 
     /// Checks if any document matching the associated conditions exist

@@ -6,14 +6,23 @@ use crate::{DatabaseRecord, Record, ServiceError};
 /// Result of a succeeded [`Query`].
 ///
 /// [`Query`]: struct.Query.html
+#[derive(Debug)]
 pub struct QueryResult<T: Record + Clone + Serialize + DeserializeOwned> {
     /// Vector of the returned documents
     pub documents: Vec<DatabaseRecord<T>>,
     /// The total `documents` count
-    pub doc_count: usize,
+    doc_count: usize,
 }
 
 impl<T: Record + Clone + Serialize + DeserializeOwned> QueryResult<T> {
+    /// Instantiates a new `QueryResult` from a document collection
+    pub fn new(documents: Vec<DatabaseRecord<T>>) -> Self {
+        Self {
+            doc_count: documents.len(),
+            documents,
+        }
+    }
+
     /// Returns the only document of the current `QueryResult`.
     /// If there is no document or more than one, a [`ServiceError`]::[`NotFound`] is returned.
     ///

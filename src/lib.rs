@@ -7,11 +7,12 @@
 //! By now the available features are:
 //! * Creating a database connection pool from a defined `schema.json`
 //! * Structures can implement different behaviors:
-//! * `Record`: The structure can be written into a ArangoDB collection as well as retrieved, from its `_key` or other query arguments.
-//! * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
-//! * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
-//! * `Validate`: The structure can perform simple validations before being created or saved into the database.
-//! * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
+//!     * `Record`: The structure can be written into a ArangoDB collection as well as retrieved, from its `_key` or other query arguments.
+//!     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
+//!     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
+//!     * `Validate`: The structure can perform simple validations before being created or saved into the database.
+//!     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
+//!     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
 //! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 //!
 //! #### Cargo features
