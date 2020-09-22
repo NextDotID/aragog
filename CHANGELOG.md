@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0
+
+* Improved Querying:
+    * now `Query` handles a complete AQL query
+    * `Query` can be sorted, limited, distincted
+    * Added simplifying macros
+    * Query can call the database itself
+* `DatabaseRecord` and `Record` methods updated:
+    * `get_where` becomes `get`
+    * `get` response is a `QueryResult` instead of a vector
+    * `find_where` was removed, use `QueryResult::uniq()` method instead
+    * `Record` can build a query with `query()` method
+
 ## 0.4.4
 
 * `actix-web` version 3
