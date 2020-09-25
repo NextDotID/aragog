@@ -264,7 +264,7 @@ let filter :Filter = Comparison::field("name").equals_str("felix").into();
     - [ ] Advanced query system supporting:
         - [X] Array variant querying (`ANY`, `NONE`, `ALL`)
         - [X] Sort, limit and distinct methods
-        - [X] Macros for syntax simplification
+        - [ ] Procedural Macros for syntax simplification and field presence validation at compile time
         - [ ] ArangoDB functions (`LENGTH`, `ABS`, etc.)
 * ORM and OGM
     - [X] Pundit like authorizations (authorize actions on model)
@@ -275,13 +275,13 @@ let filter :Filter = Comparison::field("name").equals_str("felix").into();
 * Middle and long term:
     - [ ] Handle revisions/concurrency correctly
     - [ ] Code Generation
-        - [ ] Avoid string literals as collection names
+        - [ ] macro to procedurally implement record and other traits on a struct
         - [ ] Handle Migrations
     - [ ] Define possible `async` validations for database advance state check
 
 ### Arango db setup
 
-**Installation** (See official documentation [Here] [arango_doc])
+**Installation** (See official documentation [Here][arango_doc])
 
 * [Download Link][arango_download]
 * Run it with `/usr/local/sbin/arangod` The default installation contains one database `_system` and a user named `root`

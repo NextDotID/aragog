@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+
+* Query filters can be built via comparisons (syntax cleaning no breaking changes)
+* Added Paperclip feature
+* Renamed actic feature
+
 ## 0.5.0
 
 * Improved Querying:
