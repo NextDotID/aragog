@@ -212,7 +212,7 @@
 //! let user_records = clone_query.call::<User>(&database_pool).await.unwrap();
 //! # }
 //! ```
-//! You can simplify the previous queries with some macros:
+//! You can simplify the previous queries with some tweaks and macros:
 //! ```rust
 //! #[macro_use]
 //! extern crate aragog;
@@ -256,13 +256,13 @@
 //! let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
 //!
 //! // Find a user with a query
-//! let query = User::query().filter(Filter::new(compare!(field "last_name").equals_str("Surcouf")).and(compare!(field "age").greater_than(15)));
+//! let query = User::query().filter(compare!(field "last_name").equals_str("Surcouf").and(compare!(field "age").greater_than(15)));
 //!
 //! // get the only record (fails if no or multiple records)
 //! let user_record = User::get(query, &database_pool).await.unwrap().uniq().unwrap();
 //!
 //! // Find all users with multiple conditions
-//! let query = User::query().filter(Filter::new(compare!(field "last_name").like("%Surc%")).and(compare!(field "age").in_array(&[15,16,17,18])));
+//! let query = User::query().filter(compare!(field "last_name").like("%Surc%").and(compare!(field "age").in_array(&[15,16,17,18])));
 //! let clone_query = query.clone();
 //! // This syntax is valid...
 //! let user_records = User::get(query, &database_pool).await.unwrap();
@@ -271,6 +271,16 @@
 //! # }
 //! ```
 //!
+//! Filters can be defined explicitely like this:
+//! ```rust
+//! # use aragog::query::{Filter, Comparison};
+//! let filter = Filter::new(Comparison::field("name").equals_str("felix"));
+//! ```
+//! or
+//! ```rust
+//! # use aragog::query::{Filter, Comparison};
+//! let filter :Filter = Comparison::field("name").equals_str("felix").into();
+//! ```
 //! [arangors]: https://docs.rs/arangors
 //! [argonautica]: https://github.com/bcmyers/argonautica
 //! [example_path]: examples/simple_app
