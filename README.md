@@ -176,11 +176,11 @@ let user_records = User::get(query, &database_pool).await.unwrap();
 let user_records = clone_query.call::<User>(&database_pool).await.unwrap();
 ```
 
-You can simplify the previous queries with some macros:
+You can simplify the previous queries with some tweaks and macros:
 ```rust
 #[macro_use] extern crate aragog;
 // Find a user with multiple conditions
-let query = query!("Users").filter(Filter::new(compare!(field "last_name").equals_str("Surcouf")).and(compare!(field "age").greater_than(15)));
+let query = query!("Users").filter(compare!(field "last_name").equals_str("Surcouf").and(compare!(field "age").greater_than(15)));
 let records = User::get(query, &database_pool).await.unwrap();
 ```
 
@@ -240,6 +240,15 @@ Comparison::none("some_field_array").some_comparison("compared_value");
 compare!(none "some_field_array").some_comparison("compared_value");
 ```
 All the currently implemented comparison methods are listed under [ComparisonBuilder][ComparisonBuilder] documentation page.
+
+Filters can be defined explicitely like this:
+```rust
+let filter = Filter::new(Comparison::field("name").equals_str("felix"));
+```
+or
+```rust
+let filter :Filter = Comparison::field("name").equals_str("felix").into();
+```
 
 ### TODO
 

@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter, Result};
 use num::Num;
+use crate::query::Filter;
 
 /// Macro to simplify the [`Comparison`] construction:
 ///
@@ -477,6 +478,8 @@ impl Comparison {
     /// ```rust
     /// # use aragog::query::{Comparison, Filter, Query};
     /// Query::new("Users").filter(Filter::new(Comparison::field("name").equals_str("felix")));
+    /// // or
+    /// Query::new("Users").filter(Comparison::field("name").equals_str("felix").into());
     /// ```
     pub fn field(field_name: &str) -> ComparisonBuilder {
         ComparisonBuilder {
@@ -494,6 +497,8 @@ impl Comparison {
     /// ```rust
     /// # use aragog::query::{Comparison, Filter, Query};
     /// Query::new("Products").filter(Filter::new(Comparison::all("prices").greater_or_equal(10)));
+    /// // or
+    /// Query::new("Users").filter(Comparison::all("prices").greater_or_equal(10).into());
     /// ```
     pub fn all(array_field_name: &str) -> ComparisonBuilder {
         ComparisonBuilder {
@@ -510,6 +515,8 @@ impl Comparison {
     /// ```rust
     /// # use aragog::query::{Comparison, Query, Filter};
     /// Query::new("Products").filter(Filter::new(Comparison::none("prices").greater_or_equal(10)));
+    /// // or
+    /// Query::new("Users").filter(Comparison::none("prices").greater_or_equal(10).into());
     /// ```
     pub fn none(array_field_name: &str) -> ComparisonBuilder {
         ComparisonBuilder {
@@ -526,6 +533,8 @@ impl Comparison {
     /// ```rust
     /// # use aragog::query::{Comparison, Query, Filter};
     /// Query::new("Products").filter(Filter::new(Comparison::any("prices").greater_or_equal(10)));
+    /// // or
+    /// Query::new("Users").filter(Comparison::any("prices").greater_or_equal(10).into());
     /// ```
     pub fn any(array_field_name: &str) -> ComparisonBuilder {
         ComparisonBuilder {
@@ -541,6 +550,8 @@ impl Comparison {
     /// ```rust
     /// # use aragog::query::{Comparison, Query, Filter};
     /// Query::new("Products").filter(Filter::new(Comparison::statement("10 * 3").greater_or_equal(10)));
+    /// // or
+    /// Query::new("Products").filter(Comparison::statement("10 * 3").greater_or_equal(10).into());
     /// ```
     pub fn statement(statement: &str) -> ComparisonBuilder {
         ComparisonBuilder {
@@ -548,10 +559,41 @@ impl Comparison {
         }
     }
 
+    /// Appends the filter current condition(s) with a new one with a `AND` logic.
+    /// `self` will be treated as a `Filter`.
+    /// ```rust
+    /// # use aragog::query::{Comparison, Query, Filter};
+    /// /// Both are equivalent
+    /// let a = Filter::new(Comparison::field("age").greater_than(10)).and(Comparison::field("age").lesser_or_equal(18));
+    /// let b = Comparison::field("age").greater_than(10).and(Comparison::field("age").lesser_or_equal(18));
+    /// assert_eq!(a.render(), b.render());
+    /// ```
+    pub fn and(self, comparison: Comparison) -> Filter {
+        Filter::new(self).and(comparison)
+    }
+
+    /// Appends the filter current condition(s) with a new one with a `OR` logic.
+    /// `self` will be treated as a `Filter`.
+    /// ```rust
+    /// # use aragog::query::{Comparison, Query, Filter};
+    /// /// Both are equivalent
+    /// let a = Filter::new(Comparison::field("age").greater_than(10)).or(Comparison::field("age").lesser_or_equal(18));
+    /// let b = Comparison::field("age").greater_than(10).or(Comparison::field("age").lesser_or_equal(18));
+    /// assert_eq!(a.render(), b.render());
+    /// ```
+    pub fn or(self, comparison: Comparison) -> Filter {
+        Filter::new(self).or(comparison)
+    }
 }
 
 impl Display for Comparison {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{} {} {}", self.left_value, self.comparator, self.right_value)
+    }
+}
+
+impl Into<Filter> for Comparison {
+    fn into(self) -> Filter {
+        Filter::new(self)
     }
 }

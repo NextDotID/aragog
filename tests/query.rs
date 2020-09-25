@@ -1,6 +1,7 @@
-#[macro_use] extern crate aragog;
+#[macro_use]
+extern crate aragog;
 
-use aragog::query::{Query, Comparison, Filter, SortDirection};
+use aragog::query::{Comparison, Filter, Query, SortDirection};
 
 pub mod common;
 
@@ -181,14 +182,13 @@ mod comparison {
             common::expect_assert_eq(format!("{}", item).as_str(), "i.authorizations ANY == true")?;
             Ok(())
         }
-
     }
-
 }
 
 mod filter {
-    use super::*;
     use aragog::query::Filter;
+
+    use super::*;
 
     #[test]
     fn provides_correct_string() -> Result<(), String> {
@@ -231,7 +231,23 @@ fn complex_query_works() -> Result<(), String> {
         .distinct();
     common::expect_assert_eq(
         query.render().as_str(),
-        r#"FOR i in Companies FILTER i.emails ANY LIKE "%gmail.com" SORT i.company_name, i.company_age DESC LIMIT 5 DISTINCT return i"#
+        r#"FOR i in Companies FILTER i.emails ANY LIKE "%gmail.com" SORT i.company_name, i.company_age DESC LIMIT 5 DISTINCT return i"#,
+    )?;
+    Ok(())
+}
+
+
+#[test]
+fn complex_query_works_without_filter() -> Result<(), String> {
+    let query = Query::new("Companies")
+        .filter(Comparison::any("emails").like("%gmail.com").into())
+        .sort("company_name", None)
+        .sort("company_age", Some(SortDirection::Desc))
+        .limit(5, None)
+        .distinct();
+    common::expect_assert_eq(
+        query.render().as_str(),
+        r#"FOR i in Companies FILTER i.emails ANY LIKE "%gmail.com" SORT i.company_name, i.company_age DESC LIMIT 5 DISTINCT return i"#,
     )?;
     Ok(())
 }
@@ -239,14 +255,15 @@ fn complex_query_works() -> Result<(), String> {
 #[test]
 fn macros_work() -> Result<(), String> {
     let query = query!("Companies")
-        .filter(Filter::new(compare!(any "emails").like("%gmail.com")))
+        .filter(compare!(any "emails").like("%gmail.com").and(
+            compare!(field "id").greater_than(10)))
         .sort("company_name", Some(SortDirection::Desc))
         .sort("company_age", None)
         .limit(5, None)
         .distinct();
     common::expect_assert_eq(
         query.render().as_str(),
-        r#"FOR i in Companies FILTER i.emails ANY LIKE "%gmail.com" SORT i.company_name DESC, i.company_age LIMIT 5 DISTINCT return i"#
+        r#"FOR i in Companies FILTER i.emails ANY LIKE "%gmail.com" && i.id > 10 SORT i.company_name DESC, i.company_age LIMIT 5 DISTINCT return i"#,
     )?;
     Ok(())
 }

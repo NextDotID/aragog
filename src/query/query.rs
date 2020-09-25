@@ -154,6 +154,8 @@ impl Query {
     /// ```rust
     /// # use aragog::query::{Query, Filter, Comparison};
     /// let query = Query::new("User").filter(Filter::new(Comparison::field("age").greater_than(18)));
+    /// // or
+    /// let query = Query::new("User").filter(Comparison::field("age").greater_than(18).into());
     /// ```
     pub fn filter(mut self, filter: Filter) -> Self {
         self.filter = Some(filter.render());

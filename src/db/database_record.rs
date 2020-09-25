@@ -125,7 +125,38 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     pub async fn get(query: Query, db_pool: &DatabaseConnectionPool) -> Result<QueryResult<T>, ServiceError> {
-        let query_result: Vec<Value> = match db_pool.database.aql_str(&query.render()).await {
+        Self::aql_get(&query.render(), db_pool).await
+    }
+
+    /// Retrieves all records from the database matching the associated conditions.
+    ///
+    /// # Arguments:
+    ///
+    /// * `query` - The AQL request string
+    /// * `db_pool` - database connection pool reference
+    ///
+    /// # Returns
+    ///
+    /// On success a `QueryResult` with a vector of `Self` is returned. It is can be empty.
+    /// On failure a [`ServiceError`] is returned:
+    /// * [`NotFound`] if no document matches the condition
+    /// * [`UnprocessableEntity`] on data corruption
+    ///
+    /// # Example
+    ///
+    /// ```rust ignore
+    /// use aragog::query::{Query, Comparison};
+    ///
+    /// let mut query = r#"FOR i in User FILTER i.username == "MichelDu93" && i.age > 10 return i"#;
+    ///
+    /// User::aql_get(query, &db_pool).await.unwrap();
+    /// ```
+    ///
+    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    pub async fn aql_get(query: &str, db_pool: &DatabaseConnectionPool) -> Result<QueryResult<T>, ServiceError> {
+        let query_result: Vec<Value> = match db_pool.database.aql_str(query).await {
             Ok(value) => { value }
             Err(error) => {
                 log::error!("{}", error);
