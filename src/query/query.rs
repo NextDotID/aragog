@@ -4,6 +4,9 @@ use serde::de::DeserializeOwned;
 use serde::export::Formatter;
 use serde::{Serialize, Deserialize};
 
+#[cfg(feature = "open-api")]
+use paperclip::actix::Apiv2Schema;
+
 use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 use crate::query::{Filter, QueryResult};
 
@@ -36,6 +39,7 @@ macro_rules! query {
 /// [`Query`]: struct.Query.html
 /// [`sort`]: struct.Query.html#method.sort
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "open-api", derive(Apiv2Schema))]
 pub enum SortDirection {
     /// Ascending
     Asc,

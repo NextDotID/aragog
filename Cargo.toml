@@ -17,7 +17,8 @@ documentation = "https://docs.rs/aragog"
 
 [features]
 default = [ ]
-actix_http_error = ["actix-web"]
+actix = ["actix-web"]
+open-api = ["paperclip"]
 password_hashing = ["argonautica"]
 
 [dependencies]
@@ -37,6 +38,7 @@ thiserror = "^1.0"
 # Numeric types
 num = "^0.3"
 
+paperclip = { git = "https://github.com/wafflespeanut/paperclip.git", branch = "master", optional = true, features = ["actix"] }
 actix-web = { version = "^3.0", optional = true }
 argonautica = { version = "^0.2", optional = true }
 
