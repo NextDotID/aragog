@@ -1,14 +1,18 @@
 use thiserror::Error;
 use arangors::{ClientError};
-#[cfg(feature = "actix_http_error")]
+#[cfg(feature = "actix")]
 use actix_web::{error, http::StatusCode};
+#[cfg(feature = "open-api")]
+use paperclip::actix::api_v2_errors;
 
 /// Error enum used for the Arango ORM mapped as potential Http errors
 ///
 /// # Features
 ///
-/// If the cargo feature `actix_http_error` is enabled, `ServiceError` will implement the actix-web error system.
+/// If the cargo feature `actix` is enabled, `ServiceError` will implement the actix-web error system.
 /// Allowing `ServiceError` to be used in actix-web http endpoints.
+#[cfg_attr(feature = "open-api", api_v2_errors(
+))]
 #[derive(Error, Debug)]
 pub enum ServiceError {
     /// Unhandled error.
@@ -49,8 +53,8 @@ pub enum ServiceError {
     Conflict,
 }
 
-#[cfg(feature = "actix_http_error")]
-/// If the feature `actix_http_error` is enabled, `ServiceError` will implement `actix_web` `ResponseError` trait.
+#[cfg(feature = "actix")]
+/// If the feature `actix` is enabled, `ServiceError` will implement `actix_web` `ResponseError` trait.
 ///
 /// The implementation allows `ServiceError` to be used as an error response on `actix_web` http endpoints.
 impl error::ResponseError for ServiceError {

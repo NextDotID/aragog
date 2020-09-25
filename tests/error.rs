@@ -5,7 +5,7 @@ fn error_default() {
     assert_eq!(ServiceError::default().http_code(), ServiceError::InternalError.http_code());
 }
 
-#[cfg(feature = "actix_http_error")]
+#[cfg(feature = "actix")]
 mod actix_http_errors {
     use aragog::ServiceError;
     use actix_web::ResponseError;

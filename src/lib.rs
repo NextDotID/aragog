@@ -17,19 +17,26 @@
 //!
 //! #### Cargo features
 //!
-//! ##### Actix Http Error
+//! ##### Actix and Open API
 //!
-//! If you use this crate with the [actix][actix] framework, you may want the `aragog` errors to be usable as http errors.
-//! To do so cou can add to your `cargo.toml` the following `feature`: `actix_http_error`.
+//! If you use this crate with the [actix-web][actix] framework, you may want the `aragog` errors to be usable as http errors.
+//! To do so you can add to your `cargo.toml` the following `feature`: `actix`. This will add Actix 3 dependency and compatibility
 //!
 //! ```toml
-//! aragog = { version = "^0.5", features = ["actix_http_error"] }
+//! aragog = { version = "^0.5", features = ["actix"] }
+//! ```
+//!
+//! If you also want to be able to use [paperclip][paperclip], you may want the `aragog` to be compatible.
+//! To do so you can add to your `cargo.toml` the following `feature`: `open-api`.
+//!
+//! ```toml
+//! aragog = { version = "^0.5", features = ["actix", "open-api"] }
 //! ```
 //!
 //! ##### Password hashing
 //!
 //! You may want `aragog` to provide a more complete `Authenticate` trait allowing to hash and verify passwords.
-//! To do so cou can add to your `cargo.toml` the following `feature`: `password_hashing`.
+//! To do so you can add to your `cargo.toml` the following `feature`: `password_hashing`.
 //!
 //! ```toml
 //! aragog = { version = "^0.5", features = ["password_hashing"] }
@@ -277,6 +284,7 @@
 //! [ArangoDB]: https://www.arangodb.com/
 //! [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
 //! [actix]: https://actix.rs/ "Actix Homepage"
+//! [paperclip]: https://github.com/wafflespeanut/paperclip "Paperclip Github"
 #![forbid(missing_docs)]
 
 pub use {

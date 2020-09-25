@@ -50,7 +50,7 @@ test:actix_http_error:
   image: rust:latest
   <<: *test_template
   script:
-    - cargo test --features "actix_http_error" --all-targets -- --test-threads=1
+    - cargo test --features "actix" --all-targets -- --test-threads=1
 
 test:password_hashing:
   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
