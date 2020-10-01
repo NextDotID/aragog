@@ -37,6 +37,8 @@ log = "^0.4"
 thiserror = "^1.0"
 # Numeric types
 num = "^0.3"
+# Self depedencies
+aragog-macros = { path = "aragog_macros" }
 
 paperclip = { git = "https://github.com/wafflespeanut/paperclip.git", branch = "master", optional = true, features = ["actix"] }
 actix-web = { version = "^3.0", optional = true }

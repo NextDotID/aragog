@@ -38,7 +38,7 @@ pub fn expect_assert(expr: bool) -> Result<(), String> {
 
 pub fn expect_assert_eq<T: PartialEq>(expr1: T, expr2: T) -> Result<(), String> where T: Debug {
     if expr1 != expr2 {
-        Err(format!("Failed expectation, {:?} and {:?} are not eqal", expr1, expr2))
+        Err(format!("Failed expectation, {:?} and {:?} are not equal", expr1, expr2))
     } else {
         Ok(())
     }

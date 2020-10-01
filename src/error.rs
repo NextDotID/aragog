@@ -11,8 +11,7 @@ use paperclip::actix::api_v2_errors;
 ///
 /// If the cargo feature `actix` is enabled, `ServiceError` will implement the actix-web error system.
 /// Allowing `ServiceError` to be used in actix-web http endpoints.
-#[cfg_attr(feature = "open-api", api_v2_errors(
-))]
+#[cfg_attr(feature = "open-api", api_v2_errors())]
 #[derive(Error, Debug)]
 pub enum ServiceError {
     /// Unhandled error.

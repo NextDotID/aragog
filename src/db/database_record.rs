@@ -1,12 +1,13 @@
-use arangors::AqlQuery;
+use arangors::{AqlQuery, Document};
 use arangors::document::response::DocumentResponse;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
 
+use crate::{Authenticate, DatabaseConnectionPool, Record, ServiceError, Validate};
 use crate::db::database_service;
-use crate::{ServiceError, Record, Validate, DatabaseConnectionPool, Authenticate};
-use crate::query::{Query, QueryResult};
+use crate::db::edge_model::EdgeModel;
+use crate::query::{Query, RecordQueryResult};
 
 /// Struct representing database stored documents
 ///
@@ -15,8 +16,12 @@ use crate::query::{Query, QueryResult};
 /// [`Record`]: trait.Record.html
 #[derive(Debug)]
 pub struct DatabaseRecord<T: Serialize + DeserializeOwned + Clone + Record> {
-    /// The Document unique and indexed key
+    /// The Document unique and indexed `_key`
     pub key: String,
+    /// The Document unique and indexed `_id`
+    pub id: String,
+    /// The Document revision `_rev`
+    pub rev: String,
     /// The deserialized stored document
     pub record: T,
 }
@@ -124,8 +129,8 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn get(query: Query, db_pool: &DatabaseConnectionPool) -> Result<QueryResult<T>, ServiceError> {
-        Self::aql_get(&query.render(), db_pool).await
+    pub async fn get(query: Query, db_pool: &DatabaseConnectionPool) -> Result<RecordQueryResult<T>, ServiceError> {
+        Self::aql_get(&query.to_aql(), db_pool).await
     }
 
     /// Retrieves all records from the database matching the associated conditions.
@@ -142,6 +147,10 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// * [`NotFound`] if no document matches the condition
     /// * [`UnprocessableEntity`] on data corruption
     ///
+    /// # Warning
+    ///
+    /// If you call this method on a graph query only the documents that can be serialized into `T` will be returned.
+    ///
     /// # Example
     ///
     /// ```rust ignore
@@ -155,22 +164,72 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn aql_get(query: &str, db_pool: &DatabaseConnectionPool) -> Result<QueryResult<T>, ServiceError> {
-        let query_result: Vec<Value> = match db_pool.database.aql_str(query).await {
-            Ok(value) => { value }
-            Err(error) => {
-                log::error!("{}", error);
-                return Err(ServiceError::from(error));
-            }
+    pub async fn aql_get(query: &str, db_pool: &DatabaseConnectionPool) -> Result<RecordQueryResult<T>, ServiceError> {
+        let result = db_pool.aql_get(query).await?;
+        Ok(result.into())
+    }
+
+    /// Creates a new outbound graph `Query` with `self` as a start vertex
+    ///
+    /// # Arguments
+    ///
+    /// * `edge_collection`- The name of the queried edge collection
+    /// * `min` - The minimum depth of the graph request
+    /// * `max` - The maximum depth of the graph request
+    ///
+    /// # Example
+    /// ```rust ignore
+    /// # use aragog::query::Query;
+    ///
+    /// let record = User::find("123", &database_pool).await.unwrap();
+    /// // Both statements are equivalent
+    /// let q = record.outbound_query(1, 2, "ChildOf");
+    /// let q = Query::outbound(1, 2, "ChildOf", record.id);
+    /// ```
+    pub fn outbound_query(&self, min: u16, max: u16, edge_collection: &str) -> Query {
+        Query::outbound(min, max, edge_collection, &self.id)
+    }
+
+    /// Creates a new inbound graph `Query` with `self` as a start vertex
+    ///
+    /// # Arguments
+    ///
+    /// * `edge_collection`- The name of the queried edge collection
+    /// * `min` - The minimum depth of the graph request
+    /// * `max` - The maximum depth of the graph request
+    ///
+    /// # Example
+    /// ```rust ignore
+    /// # use aragog::query::Query;
+    ///
+    /// let record = User::find("123", &database_pool).await.unwrap();
+    /// // Both statements are equivalent
+    /// let q = record.inbound_query(1, 2, "ChildOf");
+    /// let q = Query::inbound(1, 2, "ChildOf", record.id);
+    /// ```
+    pub fn inbound_query(&self, min: u16, max: u16, edge_collection: &str) -> Query {
+        Query::inbound(min, max, edge_collection, &self.id)
+    }
+
+    /// Creates an edge between `self` and `target` on the specified `edge_collection`.
+    ///
+    /// # Example
+    /// ```rust ignore
+    /// let record_a = Character::find("123", &database_connection_pool).await.unwrap();
+    /// let record_b = Character::find("234", &database_connection_pool).await.unwrap();
+    ///
+    /// record_a.link_to(record_b, "ChildOf", &database_connection_pool).await.unwrap();
+    /// ```
+    pub async fn link_to<U>(&self, target_record: &DatabaseRecord<U>, edge_collection: &str, db_pool: &DatabaseConnectionPool)
+                            -> Result<DatabaseRecord<EdgeModel>, ServiceError>
+        where U: Serialize + DeserializeOwned + Clone + Record
+    {
+        let edge = EdgeModel {
+            _from: self.id.clone(),
+            _to: target_record.id.clone(),
         };
-        let mut res = Vec::new();
-        for value in query_result {
-            res.push(DatabaseRecord {
-                key: String::from(value["_key"].as_str().unwrap()),
-                record: serde_json::from_str(&value.to_string()).unwrap(),
-            })
-        }
-        Ok(QueryResult::new(res))
+        edge.validate()?;
+        database_service::create_edge_record(edge, &db_pool, edge_collection).await
     }
 
     /// Checks if any document matching the associated conditions exist
@@ -199,7 +258,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// User::exists(query, &db_pool).await;
     /// ```
     pub async fn exists(query: Query, db_pool: &DatabaseConnectionPool) -> bool {
-        let aql_string = query.render();
+        let aql_string = query.to_aql();
         let aql_query = AqlQuery::builder().query(&aql_string).batch_size(1).count(true).build();
         match db_pool.database.aql_query_batch::<Value>(aql_query).await {
             Ok(cursor) => match cursor.count {
@@ -238,7 +297,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     ///
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub fn from(doc_response: DocumentResponse<T>) -> Result<Self, ServiceError> {
+    pub fn from_response(doc_response: DocumentResponse<T>) -> Result<Self, ServiceError> {
         let header = match doc_response.header() {
             Some(value) => { value }
             None => { return Err(ServiceError::UnprocessableEntity); }
@@ -249,6 +308,8 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
         };
         Ok(DatabaseRecord {
             key: header._key.clone(),
+            id: header._id.clone(),
+            rev: header._rev.clone(),
             record: doc,
         })
     }
@@ -271,5 +332,21 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`authenticate method`]: trait.Authenticate.html#tymethod.authenticate
     pub fn authenticate(&self, password: &str) -> Result<(), ServiceError> where T: Authenticate {
         self.record.authenticate(password)
+    }
+
+    /// Retrieves the ArangoDB `_id` built as `$collection_name/$_key
+    pub fn get_id(&self) -> String {
+        format!("{}/{}", T::collection_name(), &self.key)
+    }
+}
+
+impl<T: Serialize + DeserializeOwned + Clone + Record> From<Document<T>> for DatabaseRecord<T> {
+    fn from(doc: Document<T>) -> Self {
+        Self {
+            key: doc.header._key,
+            id: doc.header._id,
+            rev: doc.header._rev,
+            record: doc.document,
+        }
     }
 }

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use aragog::{ServiceError, New, Record, Validate, Update};
 use aragog::helpers::string_validators;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Record)]
 pub struct Dish {
     pub name: String,
     pub description: String,
@@ -19,10 +19,6 @@ pub struct DishDTO {
     pub description: String,
     pub price: u16,
     pub is_alcohol: bool,
-}
-
-impl Record for Dish {
-    fn collection_name() -> &'static str { "Dishes" }
 }
 
 impl Validate for Dish {

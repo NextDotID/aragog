@@ -46,7 +46,7 @@ test:default:
   script:
     - cargo test -- --test-threads=1 # Will run doctests
 
-test:actix_http_error:
+test:actix:
   image: rust:latest
   <<: *test_template
   script:
@@ -57,6 +57,15 @@ test:password_hashing:
   <<: *test_template
   script:
     - cargo test --features "password_hashing" --all-targets -- --test-threads=1
+
+test:examples:
+  image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
+  <<: *test_template
+  script:
+    - cd examples/simple_app
+    - cargo run
+    - cd ../graph_example
+    - cargo run
 
 rustdoc:
   <<: *cache_pull_template

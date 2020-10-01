@@ -3,7 +3,7 @@ use crate::models::dish::Dish;
 use aragog::{Record, Validate};
 use chrono::Utc;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Record)]
 pub struct Order {
     pub dishes: Vec<Dish>,
     pub total_price: u16,
@@ -25,10 +25,6 @@ impl Order {
         self.total_price += dish.price;
         self.dishes.push(dish.clone());
     }
-}
-
-impl Record for Order {
-    fn collection_name() -> &'static str { "Orders" }
 }
 
 impl Validate for Order {

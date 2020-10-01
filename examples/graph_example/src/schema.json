@@ -1,0 +1,13 @@
+{
+  "collections": [
+    {
+      "name": "Character",
+      "indexes": []
+    }
+  ],
+  "edge_collections": [
+    {
+      "name": "ChildOf"
+    }
+  ]
+}

@@ -7,9 +7,10 @@
 [![Crates.io](https://img.shields.io/crates/v/aragog.svg)](https://crates.io/crates/aragog)
 [![aragog](https://docs.rs/aragog/badge.svg)](https://docs.rs/aragog)
 
-`aragog` is a simple lightweight ODM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
+`aragog` is a simple lightweight ODM/OGM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
 The main concept is to provide behaviors allowing to synchronize documents and structs as simply an lightly as possible.
-In the future versions `aragog` will also be able to act as a ORM and OGM for [ArangoDB][ArangoDB]
+
+The crate also provides a powerful AQL querying tool allowing complex graph queries in *Rust*
 
 ### Features
 
@@ -65,7 +66,7 @@ That crate requires the `clang` lib, so if you deploy on docker you will need to
 ### Schema and collections
 
 In order for everything yo work you need to specify a `schema.json` file. The path of the schema must be set in `SCHEMA_PATH` environment variable or by default the pool will look for it in `src/config/db/schema.json`.
-> There is an example `schema.json` file in [/examples/simple_food_order_app][example_path]
+> There are example `schema.json` files in [/examples/][example_path]
 
 The json must look like this:
 
@@ -73,11 +74,11 @@ The json must look like this:
 {
   "collections": [
     {
-      "name": "collection1",
+      "name": "Collection1",
       "indexes": []
     },
     {
-      "name": "collection2",
+      "name": "Collection2",
       "indexes": [
         {
           "name": "byUsernameAndEmail",
@@ -91,6 +92,11 @@ The json must look like this:
         } 
       ]
     }
+  ],
+  "edge_collections": [
+    {
+      "name": "EdgeCollection1"
+    } 
   ]
 }
 ```
@@ -104,13 +110,22 @@ The array of Index in `indexes` must have that exact format:
 * `name`: the index name,
 * `fields`: an array of the fields concerned on that compound index,
 * `settings`: this json bloc must be the serialized version of an [IndexSettings][IndexSettings] variant from [arangors][arangors] driver.
+> There is no indexing for `edge_collections`
 
 #### Database Record
 
-The global architecture is simple, every *Model* you define that can be synced with the database must implement `Record` and derive from `serde::Serialize`, `serde::Deserialize` and `Clone`.
+The global architecture is simple, every *model* you define that can be synced with the database must implement `serde::Serialize`, `serde::Deserialize` and `Clone`.
+To declare a `struct` as a Model you can either:
+* Derive from `aragog::Record` (the collection name must be the same as the struct)
+* Implement `aragog::Record` yourself and specify the collection name
+
+The model needs to have *Validations* so you'll need to either:
+* Implement `aragog::Validate` and specify validations
+* Derive `aragog::Validate` and validations will be empty.
+
 If you want any of the other behaviors you can implement the associated *trait*
 
-The final *Model* structure will be an **Exact** representation of the content of a ArangoDB *document*, so without its `_key`, `_id` and `_rev`.
+The final *model* structure will be an **Exact** representation of the content of a ArangoDB *document*, so without its `_key`, `_id` and `_rev`.
 Your project should contain some `models` folder with every `struct` representation of your database documents.
 
 The real representation of a complete document is `DatabaseRecord<T>` where `T` is your model structure.
@@ -122,20 +137,12 @@ use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
 use serde::{Serialize, Deserialize};
 use tokio;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
 pub struct User {
     pub username: String,
     pub first_name: String,
     pub last_name: String,
     pub age: usize
-}
-
-impl Record for User {
-    fn collection_name() -> &'static str { "Users" }
-}
-
-impl Validate for User {
-    fn validations(&self,errors: &mut Vec<String>) { }
 }
 
 #[tokio::main]
@@ -180,7 +187,7 @@ let clone_query = query.clone(); // we clone the query
 // This syntax is valid...
 let user_records = User::get(query, &database_pool).await.unwrap();
 // ... This one too
-let user_records = clone_query.call::<User>(&database_pool).await.unwrap();
+let user_records = clone_query.call(&database_pool).await.unwrap().get_records::<User>();
 ```
 
 You can simplify the previous queries with some tweaks and macros:
@@ -196,27 +203,29 @@ The querying system hierarchy works this way:
 Query::new("collection_name").filter(comparison_1).and(comparison_2).or(comparison_3).sort().limit().distinct();
 ```
 
-##### Query
+##### Query Object
 
 You can intialize a query in the following ways:
 * `Query::new("CollectionName")`
 * `Object.query()` (only works if `Object` implements `Record`)
 * `query!("CollectionName")`
 
-You can customize the query with the following methods:
+You can customize the query with the following operations:
 * `filter()` you can specify AQL comparisons
 * `sort()` you can specify fields to sort with
 * `limit()` you can skip and limit the query results
 * `distinct()` you can skip duplicate documents
+> The order of operations will be respected in the rendered AQL query (except for `distinct`)
 
 you can then call a query in the following ways:
 * `query.call::<Object>(&database_connection_pool)`
 * `Object::get(query, &database_connection_pool`
 
-Which will return a `QueryResult` containing a `Vec` of `DatabaseRecord<Object>`.
+Which will return a `JsonQueryResult` containing a `Vec` of `serde_json::Value`.
+`JsonQueryResult` can return deserialized models as `DatabaseRecord` by calling `.get_records::<T>()`
 If you want to receive a unique record and render an error in case of multiple record you can use `uniq()`.
 
-#### Filter
+###### Filter
 
 You can initialize a `Filter` with `Filter::new(comparison)`
 
@@ -257,6 +266,47 @@ or
 let filter :Filter = Comparison::field("name").equals_str("felix").into();
 ```
 
+##### Graph Querying
+
+You can use graph features with sub-queries with different ways:
+
+###### Straightforward graph query
+
+* Explicit way
+```rust
+# use aragog::query::Query;
+let query = Query::outbound(1, 2, "edgeCollection", "User/123");
+let query = Query::inbound(1, 2, "edgeCollection", "User/123");
+```
+* Implicit way from a `DatabaseRecord<T>`
+```rust
+# use aragog::query::Query;
+let query = user_record.outbound_query(1, 2, "edgeCollection");
+let query = user_record.inbound_query(1, 2, "edgeCollection");
+```
+###### Sub queries
+
+-  Queries can be joined together this way
+```rust
+# use aragog::query::Query;
+let query = Query::new("User")
+    .join_inbound(1, 2, Query::new("edgeCollection"));
+```
+- It works with complex queries:
+```rust
+# use aragog::query::{Query, Comparison};
+let query = Query::new("User")
+    .filter(Comparison::field("age").greater_than(10).into())
+    .join_inbound(1, 2,
+        Query::new("edgeCollection")
+            .sort("_key", None)
+            .join_outbound(1, 5,
+                Query::new("otherEdgeCollection")
+                    .filter(Comparison::any("roles").like("%Manager%").into())
+                    .distinct()
+        )
+    );
+```
 ### TODO
 
 * Query system:
@@ -269,13 +319,13 @@ let filter :Filter = Comparison::field("name").equals_str("felix").into();
 * ORM and OGM
     - [X] Pundit like authorizations (authorize actions on model)
     - [ ] Relations
-        - [ ] Handle graph vertices and edges
+        - [X] Handle graph vertices and edges
         - [ ] Handle SQL-like relations (foreign keys)
     - [ ] Handle key-value pair system (redis like)
 * Middle and long term:
     - [ ] Handle revisions/concurrency correctly
     - [ ] Code Generation
-        - [ ] macro to procedurally implement record and other traits on a struct
+        - [X] Record `derive` macro
         - [ ] Handle Migrations
     - [ ] Define possible `async` validations for database advance state check
 
@@ -298,6 +348,10 @@ arangosh> users.grantDatabase("DB_USER", "DB_NAME");
 $> arangosh --server.username $DB_USER --server.database $DB_NAME
 ```
 
+### Q&A
+
+* How can I customize the `collection_name` of my `Record` ?
+> Instead of deriving from `aragog::Record` you can implement `aragog::Record` directly and declare `collection_name()` as a string litteral
 
 ### License
 
@@ -310,7 +364,7 @@ Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][i
 
 [arangors]: https://github.com/fMeow/arangors
 [argonautica]: https://github.com/bcmyers/argonautica
-[example_path]: examples/simple_app
+[example_path]: examples/
 [fMeow]: https://github.com/fMeow/
 [inzanez]: https://github.com/inzanez/
 [ArangoDB]: https://www.arangodb.com/

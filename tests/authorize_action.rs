@@ -3,23 +3,19 @@ use aragog::{Record, AuthorizeAction, DatabaseRecord, Validate};
 
 pub mod common;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Record)]
 pub struct Dish {
     pub name: String,
     pub price: u16,
     pub is_alcohol: bool
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Record)]
 pub struct User {
     pub name: String,
     pub age: u8,
     pub money: u16,
     pub is_cook: bool,
-}
-
-impl Record for Dish {
-    fn collection_name() -> &'static str { "Dishes" }
 }
 
 impl Validate for Dish {

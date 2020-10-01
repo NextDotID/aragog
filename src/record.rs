@@ -3,7 +3,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 use crate::{ServiceError, DatabaseConnectionPool, DatabaseRecord};
-use crate::query::{Query, QueryResult};
+use crate::query::{Query, RecordQueryResult};
 
 /// The main trait of the Aragog library.
 /// Trait for structures that can be stored in Database.
@@ -29,7 +29,7 @@ pub trait Record {
     /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
     /// [`get`]: db/database_record/struct.DatabaseRecord.html#method.get
     async fn get(query: Query, db_pool: &DatabaseConnectionPool)
-                 -> Result<QueryResult<Self>, ServiceError>
+                 -> Result<RecordQueryResult<Self>, ServiceError>
         where Self: DeserializeOwned + Serialize + Clone {
         DatabaseRecord::get(query, &db_pool).await
     }
@@ -49,7 +49,19 @@ pub trait Record {
     /// for read and write operations.
     fn collection_name() -> &'static str;
 
-    /// Creates a new `Query` instance for `Self`
+    /// Creates a new `Query` instance for `Self`.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use aragog::query::Query;
+    /// # use aragog::Record;
+    /// #[derive(Record)]
+    /// pub struct User { }
+    ///
+    /// // Both statements are equivalent:
+    /// let q = Query::new("User");
+    /// let q = User::query();
+    /// ```
     fn query() -> Query {
         Query::new(Self::collection_name())
     }

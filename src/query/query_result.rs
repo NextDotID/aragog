@@ -2,19 +2,34 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 use crate::{DatabaseRecord, Record, ServiceError};
+use serde_json::Value;
 
-/// Result of a succeeded [`Query`].
-///
-/// [`Query`]: struct.Query.html
+pub trait QueryResult {
+
+}
+
+/// Typed Query result
 #[derive(Debug)]
-pub struct QueryResult<T: Record + Clone + Serialize + DeserializeOwned> {
+pub struct RecordQueryResult<T: Record + Clone + Serialize + DeserializeOwned> {
     /// Vector of the returned documents
     pub documents: Vec<DatabaseRecord<T>>,
     /// The total `documents` count
     doc_count: usize,
 }
 
-impl<T: Record + Clone + Serialize + DeserializeOwned> QueryResult<T> {
+/// Result of a succeeded [`Query`]. Contains a `Vec` of `serde_json`::`Value`.
+/// The structure has methods to retrieve typed models (`get_records`).
+///
+/// [`Query`]: struct.Query.html
+#[derive(Debug)]
+pub struct JsonQueryResult {
+    /// Vector of the returned documents
+    pub documents: Vec<Value>,
+    /// The total `documents` count
+    doc_count: usize,
+}
+
+impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
     /// Instantiates a new `QueryResult` from a document collection
     pub fn new(documents: Vec<DatabaseRecord<T>>) -> Self {
         Self {
@@ -56,4 +71,58 @@ impl<T: Record + Clone + Serialize + DeserializeOwned> QueryResult<T> {
 
     /// Returns the length of `documents`
     pub fn len(&self) -> usize { self.doc_count }
+}
+
+impl JsonQueryResult {
+    /// Instantiates a new `JsonQueryResult` from a document collection
+    pub fn new(documents: Vec<Value>) -> Self {
+        Self {
+            doc_count: documents.len(),
+            documents,
+        }
+    }
+
+    /// Retrieves deserialized documents from the json results. The documents not matching `T` will not be returned.
+    ///
+    /// # Example
+    /// If you want to do a graph query that can return different models you can use this method to retrieve the serialized record:
+    /// ```rust ignore
+    /// # use aragog::query::Query;
+    /// let json_results = Query::outbound("ChildOf", "User/123", 1, 5).call(&database_connection_pool).await.unwrap();
+    ///
+    /// let user_results = json_results.get_records::<User>();
+    /// let topic_results = json_results.get_records::<Topic>();
+    /// let role_results = json_results.get_records::<Role>();
+    /// ```
+    pub fn get_records<T: Record + Clone + Serialize + DeserializeOwned>(&self) -> Vec<DatabaseRecord<T>> {
+        let mut res = Vec::new();
+        for value in self.documents.iter() {
+            let key = value["_key"].as_str();
+            let id = value["_id"].as_str();
+            let rev = value["_rev"].as_str();
+            if key.is_none() || id.is_none() || rev.is_none() {
+                continue;
+            }
+            let record = serde_json::from_value(value.clone().take());
+            if record.is_err() {
+                continue;
+            }
+            res.push(DatabaseRecord {
+                key: key.unwrap().to_string(),
+                id: id.unwrap().to_string(),
+                rev: rev.unwrap().to_string(),
+                record: record.unwrap(),
+            })
+        }
+        res
+    }
+
+    /// Returns the length of `documents`
+    pub fn len(&self) -> usize { self.doc_count }
+}
+
+impl<T: Record + Clone + Serialize + DeserializeOwned> From<JsonQueryResult> for RecordQueryResult<T> {
+    fn from(query_result: JsonQueryResult) -> Self {
+        Self::new(query_result.get_records())
+    }
 }
