@@ -8,7 +8,7 @@ authors = [
 edition = "2018"
 description = "A simple lightweight object-document mapper for ArangoDB"
 keywords = ["ArangoDB", "Arango", "ORM", "ODM", "OGM"]
-exclude =  ["examples", "tests", ".gitlab-ci.yml"]
+exclude =  ["tests", ".gitlab-ci.yml"]
 categories = ["web-programming", "database"]
 license = "MIT"
 readme = "README.md"
@@ -41,7 +41,7 @@ num = "^0.3"
 aragog-macros = { path = "aragog_macros" }
 
 paperclip = { git = "https://github.com/wafflespeanut/paperclip.git", branch = "master", optional = true, features = ["actix"] }
-actix-web = { version = "^3.0", optional = true }
+actix-web = { version = "^3.0", optional = true, default-features = false }
 argonautica = { version = "^0.2", optional = true }
 
 [dev-dependencies]
