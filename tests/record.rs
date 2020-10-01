@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate aragog;
+
 use serde::{Deserialize, Serialize};
 
 use aragog::{DatabaseRecord, Record, Validate};
@@ -6,15 +9,11 @@ use common::with_db;
 
 pub mod common;
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record)]
 pub struct Dish {
     pub name: String,
     pub description: String,
     pub price: u16,
-}
-
-impl Record for Dish {
-    fn collection_name() -> &'static str { "Dishes" }
 }
 
 impl Validate for Dish {
@@ -27,6 +26,11 @@ fn init_dish() -> Dish {
         description: "Part de quiche aux oeufs, lardons et fromage".to_string(),
         price: 7,
     }
+}
+
+#[test]
+fn macro_works() {
+    assert_eq!(Dish::collection_name(), "Dish");
 }
 
 mod write {
@@ -56,25 +60,26 @@ mod write {
 }
 
 mod read {
-    use super::*;
-    use aragog::ServiceError;
     use aragog::query::{Comparison, Filter};
+    use aragog::ServiceError;
+
+    use super::*;
 
     fn create_dishes(pool: &DatabaseConnectionPool) -> DatabaseRecord<Dish> {
         tokio_test::block_on(DatabaseRecord::create(Dish {
             name: "Pizza".to_string(),
             description: "Tomato and Mozarella".to_string(),
-            price: 10
+            price: 10,
         }, pool)).unwrap();
         tokio_test::block_on(DatabaseRecord::create(Dish {
             name: "Pasta".to_string(),
             description: "Ham and cheese".to_string(),
-            price: 6
+            price: 6,
         }, pool)).unwrap();
         tokio_test::block_on(DatabaseRecord::create(Dish {
             name: "Steak".to_string(),
             description: "Served with fries".to_string(),
-            price: 10
+            price: 10,
         }, pool)).unwrap();
         tokio_test::block_on(DatabaseRecord::create(init_dish(), pool)).unwrap()
     }
@@ -101,20 +106,18 @@ mod read {
     }
 
     #[test]
-    fn find_can_fail_with_correct_error() -> Result<(), String>  {
+    fn find_can_fail_with_correct_error() -> Result<(), String> {
         with_db(|pool| {
             create_dishes(&pool);
             let res = tokio_test::block_on(Dish::find("wrong_key", pool));
             if let Err(error) = res {
                 if let ServiceError::NotFound(message) = error {
-                    assert_eq!(message, "Dishes document not found".to_string());
+                    assert_eq!(message, "Dish document not found".to_string());
                     Ok(())
-                }
-                else {
+                } else {
                     Err(format!("The find should return a NotFound"))
                 }
-            }
-            else {
+            } else {
                 Err(format!("The find should return an error"))
             }
         })
@@ -139,7 +142,7 @@ mod read {
         with_db(|pool| {
             let query = Dish::query().filter(Filter::new(Comparison::field("name").equals_str("Quiche")));
 
-            tokio_test::block_on(query.call::<Dish>(pool)).unwrap().uniq().unwrap();
+            tokio_test::block_on(Dish::get(query, pool)).unwrap().uniq().unwrap();
             Ok(())
         }).unwrap();
     }
@@ -207,13 +210,12 @@ mod read {
             // Sorting
             let query = Dish::query().sort("name", None);
             let found_records = tokio_test::block_on(Dish::get(query, pool)).unwrap().documents;
-            for (i,value) in ["Pasta", "Pizza", "Quiche", "Steak"].iter().enumerate() {
+            for (i, value) in ["Pasta", "Pizza", "Quiche", "Steak"].iter().enumerate() {
                 common::expect_assert_eq(*value, &found_records[i].record.name)?;
             }
-
             let query = Dish::query().sort("price", None).sort("name", None);
             let found_records = tokio_test::block_on(Dish::get(query, pool)).unwrap().documents;
-            for (i,value) in ["Pasta", "Quiche", "Pizza", "Steak"].iter().enumerate() {
+            for (i, value) in ["Pasta", "Quiche", "Pizza", "Steak"].iter().enumerate() {
                 common::expect_assert_eq(*value, &found_records[i].record.name)?;
             }
             Ok(())
@@ -231,5 +233,58 @@ mod read {
             common::expect_assert_eq(res, true)?;
             Ok(())
         })
+    }
+
+    mod graph_querying {
+        use aragog::query::Query;
+
+        use super::*;
+
+        mod aql {
+            use super::*;
+
+            #[test]
+            fn from_record() -> Result<(), String> {
+                with_db(|pool| {
+                    let dish = create_dishes(&pool);
+                    let query = dish.outbound_query(2, 5, "edges");
+                    common::expect_assert_eq(query.to_aql(), format!("\
+                        FOR a in 2..5 OUTBOUND \'{}\' edges \
+                        return a\
+                    ", &dish.id))?;
+                    Ok(())
+                })
+            }
+
+            #[test]
+            fn explicit() -> Result<(), String> {
+                with_db(|pool| {
+                    let dish = create_dishes(&pool);
+                    let query = Query::outbound(2, 5, "edges", &dish.id);
+                    common::expect_assert_eq(query.to_aql(), format!("\
+                        FOR a in 2..5 OUTBOUND \'{}\' edges \
+                        return a\
+                    ", &dish.id))?;
+                    Ok(())
+                })
+            }
+
+            #[test]
+            fn complex_query() -> Result<(), String> {
+                with_db(|pool| {
+                    let dish = create_dishes(&pool);
+                    let query = dish.outbound_query(2, 5, "edges")
+                        .filter(compare!(field "price").greater_than(10).into())
+                        .sort("_id", None);
+                    common::expect_assert_eq(query.to_aql(), format!("\
+                        FOR a in 2..5 OUTBOUND \'{}\' edges \
+                            FILTER a.price > 10 \
+                            SORT a._id ASC \
+                            return a\
+                    ", &dish.id))?;
+                    Ok(())
+                })
+            }
+        }
     }
 }

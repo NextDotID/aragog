@@ -1,9 +1,10 @@
-use arangors::{Document};
+use arangors::{Document, Collection};
 use arangors::document::options::{InsertOptions, RemoveOptions, UpdateOptions};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 use crate::{Record, DatabaseConnectionPool, ServiceError, DatabaseRecord};
+use arangors::client::reqwest::ReqwestClient;
 
 pub async fn update_record<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, ServiceError> {
     let collection = db_pool.get_collection(collection_name);
@@ -22,11 +23,10 @@ pub async fn update_record<T: DeserializeOwned + Serialize + Clone + Record>(obj
             return Err(ServiceError::from(error));
         }
     };
-    DatabaseRecord::from(response)
+    DatabaseRecord::from_response(response)
 }
 
-pub async fn create_record<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, ServiceError> {
-    let collection = db_pool.get_collection(collection_name);
+pub async fn create_document<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, collection: &Collection<ReqwestClient>) -> Result<DatabaseRecord<T>, ServiceError> {
     // log::debug!("Trying to create a document in {:?}: {}", model, &db_pool.collections[model].collection_name);
     let response = match collection.create_document(
         obj,
@@ -41,7 +41,17 @@ pub async fn create_record<T: DeserializeOwned + Serialize + Clone + Record>(obj
             return Err(ServiceError::from(error));
         }
     };
-    DatabaseRecord::from(response)
+    DatabaseRecord::from_response(response)
+}
+
+pub async fn create_record<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, ServiceError> {
+    let collection = db_pool.get_collection(collection_name);
+    create_document(obj, collection).await
+}
+
+pub async fn create_edge_record<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, ServiceError> {
+    let collection = db_pool.get_edge_collection(collection_name);
+    create_document(obj, collection).await
 }
 
 pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, ServiceError> {
@@ -57,12 +67,7 @@ pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(k
             return Err(err);
         }
     };
-    Ok(
-        DatabaseRecord {
-            key: String::from(key),
-            record: record.document,
-        }
-    )
+    Ok(DatabaseRecord::from(record))
 }
 
 pub async fn remove_record<T: Serialize + DeserializeOwned + Clone + Record>(key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<(), ServiceError> {

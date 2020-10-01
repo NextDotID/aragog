@@ -1,11 +1,11 @@
 {
   "collections": [
     {
-      "name": "Orders",
+      "name": "Order",
       "indexes": []
     },
     {
-      "name": "Dishes",
+      "name": "Dish",
       "indexes": [
         {
           "name": "by_name",
@@ -22,8 +22,13 @@
       ]
     },
     {
-      "name": "Users",
+      "name": "User",
       "indexes": []
+    }
+  ],
+  "edge_collections": [
+    {
+      "name": "PartOf"
     }
   ]
 }

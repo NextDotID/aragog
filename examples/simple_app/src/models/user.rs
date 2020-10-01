@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use aragog::{Record, Validate, AuthorizeAction, DatabaseRecord};
 use crate::models::dish::Dish;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Record)]
 pub struct User {
    pub username: String,
    pub first_name: String,
@@ -10,12 +10,6 @@ pub struct User {
    pub age: usize,
    pub is_cook: bool,
    pub money: u16,
-}
-
-impl Record for User {
-   fn collection_name() -> &'static str {
-       "Users"
-   }
 }
 
 impl Validate for User {

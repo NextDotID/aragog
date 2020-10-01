@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::Display;
 use num::Num;
 use crate::query::Filter;
 
@@ -55,7 +55,8 @@ macro_rules! compare {
 /// [`Comparison`]: struct.Comparison.html
 #[derive(Clone, Debug)]
 pub struct ComparisonBuilder {
-    field: String
+    is_field: bool,
+    statement: String
 }
 
 /// Struct representing one AQL comparison in a [`Query`].
@@ -63,6 +64,7 @@ pub struct ComparisonBuilder {
 /// [`Query`]: struct.Query.html
 #[derive(Clone, Debug)]
 pub struct Comparison {
+    is_field: bool,
     left_value: String,
     comparator: String,
     right_value: String
@@ -83,7 +85,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn equals_str(self, value: &str) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "==".to_string(),
             right_value: format!(r#""{}""#, value)
         }
@@ -102,7 +105,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn different_than_str(self, value: &str) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "!=".to_string(),
             right_value: format!(r#""{}""#, value)
         }
@@ -121,7 +125,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn matches(self, regular_expression: &str) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "=~".to_string(),
             right_value: format!(r#""{}""#, regular_expression)
         }
@@ -140,7 +145,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn does_not_match(self, regular_expression: &str) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "!~".to_string(),
             right_value: format!(r#""{}""#, regular_expression)
         }
@@ -159,7 +165,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn like(self, pattern: &str) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "LIKE".to_string(),
             right_value: format!(r#""{}""#, pattern)
         }
@@ -178,7 +185,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn not_like(self, pattern: &str) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "NOT LIKE".to_string(),
             right_value: format!(r#""{}""#, pattern)
         }
@@ -197,7 +205,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn equals<T>(self, value: T) -> Comparison where T: Num + Display {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "==".to_string(),
             right_value: format!(r#"{}"#, value)
         }
@@ -216,7 +225,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn different_than<T>(self, value: T) -> Comparison where T: Num + Display {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "!=".to_string(),
             right_value: format!(r#"{}"#, value)
         }
@@ -235,7 +245,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn greater_than<T>(self, value: T) -> Comparison where T: Num + Display {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: ">".to_string(),
             right_value: format!(r#"{}"#, value)
         }
@@ -254,7 +265,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn greater_or_equal<T>(self, value: T) -> Comparison where T: Num + Display {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: ">=".to_string(),
             right_value: format!(r#"{}"#, value)
         }
@@ -273,7 +285,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn lesser_than<T>(self, value: T) -> Comparison where T: Num + Display {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "<".to_string(),
             right_value: format!(r#"{}"#, value)
         }
@@ -292,7 +305,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn lesser_or_equal<T>(self, value: T) -> Comparison where T: Num + Display {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "<=".to_string(),
             right_value: format!(r#"{}"#, value)
         }
@@ -311,7 +325,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn in_array<T>(self, array: &[T]) -> Comparison where T: Num + Display {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "IN".to_string(),
             right_value: format!(r#"{}"#, Self::string_from_array(array))
         }
@@ -330,7 +345,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn not_in_array<T>(self, array: &[T]) -> Comparison where T: Num + Display {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "NOT IN".to_string(),
             right_value: format!(r#"{}"#, Self::string_from_array(array))
         }
@@ -349,7 +365,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn in_str_array(self, array: &[&str]) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "IN".to_string(),
             right_value: format!(r#"{}"#, Self::string_from_array_str(array))
         }
@@ -368,7 +385,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn not_in_str_array(self, array: &[&str]) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "NOT IN".to_string(),
             right_value: format!(r#"{}"#, Self::string_from_array_str(array))
         }
@@ -386,7 +404,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn is_null(self) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "==".to_string(),
             right_value: "null".to_string()
         }
@@ -404,7 +423,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn not_null(self) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "!=".to_string(),
             right_value: "null".to_string()
         }
@@ -423,7 +443,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn is_true(self) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "==".to_string(),
             right_value: "true".to_string()
         }
@@ -442,7 +463,8 @@ impl ComparisonBuilder {
     /// ```
     pub fn is_false(self) -> Comparison {
         Comparison {
-            left_value: self.field,
+            is_field: self.is_field,
+            left_value: self.statement,
             comparator: "==".to_string(),
             right_value: "false".to_string()
         }
@@ -483,7 +505,8 @@ impl Comparison {
     /// ```
     pub fn field(field_name: &str) -> ComparisonBuilder {
         ComparisonBuilder {
-            field: format!("i.{}", field_name.to_string())
+            is_field: true,
+            statement: format!("{}", field_name.to_string())
         }
     }
 
@@ -502,7 +525,8 @@ impl Comparison {
     /// ```
     pub fn all(array_field_name: &str) -> ComparisonBuilder {
         ComparisonBuilder {
-            field: format!("i.{} ALL", array_field_name)
+            is_field: true,
+            statement: format!("{} ALL", array_field_name)
         }
     }
 
@@ -520,7 +544,8 @@ impl Comparison {
     /// ```
     pub fn none(array_field_name: &str) -> ComparisonBuilder {
         ComparisonBuilder {
-            field: format!("i.{} NONE", array_field_name)
+            is_field: true,
+            statement: format!("{} NONE", array_field_name)
         }
     }
     /// Instantiates a new builder for a `Comparison` with the specified `array_field_name`.
@@ -538,7 +563,8 @@ impl Comparison {
     /// ```
     pub fn any(array_field_name: &str) -> ComparisonBuilder {
         ComparisonBuilder {
-            field: format!("i.{} ANY", array_field_name)
+            is_field: true,
+            statement: format!("{} ANY", array_field_name)
         }
     }
 
@@ -555,7 +581,8 @@ impl Comparison {
     /// ```
     pub fn statement(statement: &str) -> ComparisonBuilder {
         ComparisonBuilder {
-            field: statement.to_string()
+            is_field: false,
+            statement: statement.to_string()
         }
     }
 
@@ -566,7 +593,7 @@ impl Comparison {
     /// /// Both are equivalent
     /// let a = Filter::new(Comparison::field("age").greater_than(10)).and(Comparison::field("age").lesser_or_equal(18));
     /// let b = Comparison::field("age").greater_than(10).and(Comparison::field("age").lesser_or_equal(18));
-    /// assert_eq!(a.render(), b.render());
+    /// assert_eq!(a.to_aql("i"), b.to_aql("i"));
     /// ```
     pub fn and(self, comparison: Comparison) -> Filter {
         Filter::new(self).and(comparison)
@@ -579,21 +606,42 @@ impl Comparison {
     /// /// Both are equivalent
     /// let a = Filter::new(Comparison::field("age").greater_than(10)).or(Comparison::field("age").lesser_or_equal(18));
     /// let b = Comparison::field("age").greater_than(10).or(Comparison::field("age").lesser_or_equal(18));
-    /// assert_eq!(a.render(), b.render());
+    /// assert_eq!(a.to_aql("i"), b.to_aql("i"));
     /// ```
     pub fn or(self, comparison: Comparison) -> Filter {
         Filter::new(self).or(comparison)
     }
-}
 
-impl Display for Comparison {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{} {} {}", self.left_value, self.comparator, self.right_value)
+    /// Renders `self` in a valid AQL format.
+    /// `collection_id` is simply the collection identifier, it can be any string.
+    ///
+    /// # Note
+    ///
+    /// You should not use this method except for debug purpose, use [`Query`]::[`to_aql`] instead
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use aragog::query::Comparison;
+    /// let comparison = Comparison::field("age").greater_than(18);
+    ///
+    /// assert_eq!(comparison.to_aql("i").as_str(), "i.age > 18")
+    /// ```
+    ///
+    /// [`Query`]: struct.Query.html
+    /// [`to_aql`]: struct.Query.html#method.to_aql
+    pub fn to_aql(&self, collection_id: &str) -> String {
+        let id = if self.is_field {
+            format!("{}.", collection_id)
+        } else {
+            String::new()
+        };
+        format!("{}{} {} {}", id, &self.left_value, &self.comparator, &self.right_value)
     }
 }
 
-impl Into<Filter> for Comparison {
-    fn into(self) -> Filter {
-        Filter::new(self)
+impl From<Comparison> for Filter {
+    fn from(comparison: Comparison) -> Self {
+        Self::new(comparison)
     }
 }

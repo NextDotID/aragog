@@ -1,6 +1,7 @@
-//! `aragog` is a simple lightweight ODM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
+//! `aragog` is a simple lightweight ODM and OGM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
 //! The main concept is to provide behaviors allowing to synchronize documents and structs as simply an lightly as possible.
-//! In the future versions `aragog` will also be able to act as a ORM and OGM for [ArangoDB][ArangoDB]
+//!
+//! The crate provides a powerful AQL querying tool allowing complex graph queries in *Rust*
 //!
 //! ### Features
 //!
@@ -56,33 +57,38 @@
 //! ### Schema and collections
 //!
 //! In order for everything yo work you need to specify a `schema.json` file. The path of the schema must be set in `SCHEMA_PATH` environment variable or by default the pool will look for it in `src/config/db/schema.json`.
-//! > There is an example `schema.json` file in [/examples/simple_app][example_path]
+//! > There are example `schema.json` files in [/examples/][example_path]
 //!
 //! The json must look like this:
 //!
 //! ```json
 //! {
-//!    "collections": [
-//!        {
-//!            "name": "collection1",
-//!            "indexes": []
-//!        },
-//!        {
-//!            "name": "collection2",
-//!            "indexes": [
-//!                {
-//!                    "name": "byUsernameAndEmail",
-//!                    "fields": ["username", "email"],
-//!                    "settings": {
-//!                        "type": "persistent",
-//!                        "unique": true,
-//!                        "sparse": false,
-//!                        "deduplicate": false
-//!                    }
-//!                }
-//!            ]
-//!        }
-//!    ]
+//!   "collections": [
+//!     {
+//!       "name": "Collection1",
+//!       "indexes": []
+//!     },
+//!     {
+//!       "name": "Collection2",
+//!       "indexes": [
+//!         {
+//!           "name": "byUsernameAndEmail",
+//!           "fields": ["username", "email"],
+//!           "settings": {
+//!             "type": "persistent",
+//!             "unique": true,
+//!             "sparse": false,
+//!             "deduplicate": false
+//!           }
+//!         }
+//!       ]
+//!     }
+//!   ],
+//!   "edge_collections": [
+//!     {
+//!       "name": "EdgeCollection1"
+//!     }
+//!   ]
 //! }
 //! ```
 //!
@@ -95,13 +101,19 @@
 //! * `name`: the index name,
 //! * `fields`: an array of the fields concerned on that compound index,
 //! * `settings`: this json bloc must be the serialized version of an [IndexSettings][IndexSettings] variant from [arangors][arangors] driver.
+//! > There is no indexing for `edge_collections`
 //!
 //! #### Database Record
 //!
-//! The global architecture is simple, every *Model* you define that can be synced with the database must implement `Record` and derive from `serde::Serialize`, `serde::Deserialize` and `Clone`.
-//! If you want any of the other behaviors you can implement the associated *trait*
+//! The global architecture is simple, every *model* you define that can be synced with the database must implement `serde::Serialize`, `serde::Deserialize` and `Clone`.
+//! To declare a `struct` as a Model you can either:
+//! * Derive from `aragog::Record` (the collection name must be the same as the struct)
+//! * Implement `aragog::Record` yourself and specify the collection name
 //!
-//! The final *Model* structure will be an **Exact** representation of the content of a ArangoDB *document*, so without its `_key`, `_id` and `_rev`.
+//! If you want any of the other behaviors you can implement the associated *trait*:
+//! * Implement
+//!
+//! The final *model* structure will be an **Exact** representation of the content of a ArangoDB *document*, so without its `_key`, `_id` and `_rev`.
 //! Your project should contain some `models` folder with every `struct` representation of your database documents.
 //!
 //! The real representation of a complete document is `DatabaseRecord<T>` where `T` is your model structure.
@@ -113,7 +125,7 @@
 //! use serde::{Serialize, Deserialize};
 //! use tokio;
 //!
-//! #[derive(Serialize, Deserialize, Clone)]
+//! #[derive(Serialize, Deserialize, Clone, Record, Validate)]
 //! pub struct User {
 //!     pub username: String,
 //!     pub first_name: String,
@@ -121,18 +133,10 @@
 //!     pub age: usize
 //! }
 //!
-//! impl Record for User {
-//!     fn collection_name() -> &'static str { "Users" }
-//! }
-//!
-//! impl Validate for User {
-//!     fn validations(&self,errors: &mut Vec<String>) { }
-//! }
-//!
 //! #[tokio::main]
 //! async fn main() {
 //! // Database connection Setup
-//! # std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
+//! # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
 //!
 //!     let database_pool = DatabaseConnectionPool::new(
 //!         &std::env::var("DB_HOST").unwrap(),
@@ -168,25 +172,17 @@
 //! # use aragog::query::{Comparison, Filter};
 //! # use tokio;
 //! #
-//! # #[derive(Serialize, Deserialize, Clone)]
+//! # #[derive(Serialize, Deserialize, Clone, Record, Validate)]
 //! # pub struct User {
 //! #     pub username: String,
 //! #     pub first_name: String,
 //! #     pub last_name: String,
 //! #     pub age: usize
 //! # }
-//!#
-//! # impl Record for User {
-//! #     fn collection_name() -> &'static str { "Users" }
-//! # }
-//!#
-//! # impl Validate for User {
-//! #     fn validations(&self,errors: &mut Vec<String>) { }
-//! # }
 //! #
 //! # #[tokio::main]
 //! # async fn main() {
-//! # std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
+//! # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
 //! # let database_pool = DatabaseConnectionPool::new(
 //! #       &std::env::var("DB_HOST").unwrap(),
 //! #       &std::env::var("DB_NAME").unwrap(),
@@ -216,7 +212,7 @@
 //! // This syntax is valid...
 //! let user_records = User::get(query, &database_pool).await.unwrap();
 //! // ... This one too
-//! let user_records = clone_query.call::<User>(&database_pool).await.unwrap();
+//! let user_records = clone_query.call(&database_pool).await.unwrap().get_records::<User>();
 //! # }
 //! ```
 //! You can simplify the previous queries with some tweaks and macros:
@@ -228,16 +224,12 @@
 //! # use aragog::query::{Query, Comparison, Filter};
 //! # use tokio;
 //! #
-//! # #[derive(Serialize, Deserialize, Clone)]
+//! # #[derive(Serialize, Deserialize, Clone, Record)]
 //! # pub struct User {
 //! #     pub username: String,
 //! #     pub first_name: String,
 //! #     pub last_name: String,
 //! #     pub age: usize
-//! # }
-//!#
-//! # impl Record for User {
-//! #     fn collection_name() -> &'static str { "Users" }
 //! # }
 //!#
 //! # impl Validate for User {
@@ -246,7 +238,7 @@
 //! #
 //! # #[tokio::main]
 //! # async fn main() {
-//! # std::env::set_var("SCHEMA_PATH", "examples/simple_app/schema.json");
+//! # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
 //! # let database_pool = DatabaseConnectionPool::new(
 //! #       &std::env::var("DB_HOST").unwrap(),
 //! #       &std::env::var("DB_NAME").unwrap(),
@@ -274,19 +266,113 @@
 //! // This syntax is valid...
 //! let user_records = User::get(query, &database_pool).await.unwrap();
 //! // ... This one too
-//! let user_records = clone_query.call::<User>(&database_pool).await.unwrap();
+//! let user_records = clone_query.call(&database_pool).await.unwrap().get_records::<User>();
 //! # }
 //! ```
+//! ##### Query Object
+//!
+//! You can intialize a query in the following ways:
+//! * `Query::new("CollectionName")`
+//! * `Object.query()` (only works if `Object` implements `Record`)
+//! * `query!("CollectionName")`
+//!
+//! You can customize the query with the following methods:
+//! * `filter()` you can specify AQL comparisons
+//! * `sort()` you can specify fields to sort with
+//! * `limit()` you can skip and limit the query results
+//! * `distinct()` you can skip duplicate documents
+//! > The order of operations will be respected in the rendered AQL query (except for `distinct`)
+//!
+//! you can then call a query in the following ways:
+//! * `query.call::<Object>(&database_connection_pool)`
+//! * `Object::get(query, &database_connection_pool`
+//!
+//! Which will return a `JsonQueryResult` containing a `Vec` of `serde_json::Value`.
+//! `JsonQueryResult` can return deserialized models as `DatabaseRecord` by calling `.get_records::<T>()`
+//!
+//! ###### Filter
+//!
+//! You can initialize a `Filter` with `Filter::new(comparison)`
+//!
+//! Each comparison is a `Comparison` struct built via `ComparisonBuilder`:
+//! ```rust ignore
+//! // for a simple field comparison
+//!
+//! // Explicit
+//! Comparison::field("some_field").some_comparison("compared_value");
+//! // Macro
+//! compare!(field "some_field").some_comparison("compared_value");
+//!
+//! // for field arrays (see ArangoDB operators)
+//!
+//! // Explicit
+//! Comparison::all("some_field_array").some_comparison("compared_value");
+//! // Macro
+//! compare!(all "some_field_array").some_comparison("compared_value");
+//!
+//! // Explicit
+//! Comparison::any("some_field_array").some_comparison("compared_value");
+//! // Macro
+//! compare!(any "some_field_array").some_comparison("compared_value");
+//!
+//! // Explicit
+//! Comparison::none("some_field_array").some_comparison("compared_value");
+//! // Macro
+//! compare!(none "some_field_array").some_comparison("compared_value");
+//! ```
+//! All the currently implemented comparison methods are listed under [ComparisonBuilder][ComparisonBuilder] documentation page.
 //!
 //! Filters can be defined explicitely like this:
 //! ```rust
-//! # use aragog::query::{Filter, Comparison};
+//! # use aragog::query::{Comparison, Filter};
 //! let filter = Filter::new(Comparison::field("name").equals_str("felix"));
 //! ```
 //! or
 //! ```rust
-//! # use aragog::query::{Filter, Comparison};
+//! # use aragog::query::{Comparison, Filter};
 //! let filter :Filter = Comparison::field("name").equals_str("felix").into();
+//! ```
+//!
+//! ##### Graph Querying
+//!
+//! You can use graph features with sub-queries with different ways:
+//!
+//! ###### Straightforward graph query
+//!
+//! * Explicit way
+//! ```rust
+//! # use aragog::query::Query;
+//! let query = Query::outbound(1, 2, "edgeCollection", "User/123");
+//! let query = Query::inbound(1, 2, "edgeCollection", "User/123",);
+//! ```
+//! * Implicit way from a `DatabaseRecor<T>`
+//! ```rust ignore
+//! # use aragog::query::Query;
+//! let query = user_record.outbound_query(1, 2, "edgeCollection");
+//! let query = user_record.inbound_query(1, 2, "edgeCollection");
+//! ```
+//! ###### Sub queries
+//!
+//! * Queries can be joined together this way
+//! ```rust
+//! # use aragog::query::Query;
+//! let query = Query::new("User")
+//!     .join_inbound(1, 2, Query::new("edgeCollection"));
+//! ```
+//! * It works with complex queries:
+//! ```rust
+//! # use aragog::query::{Query, Comparison};
+//! let query = Query::new("User")
+//!     .filter(Comparison::field("age").greater_than(10).into())
+//!     .join_inbound(1, 2,
+//!         Query::new("edgeCollection")
+//!             .sort("_key", None)
+//!             .join_outbound(1, 5,
+//!                 Query::new("otherEdgeCollection")
+//!                     .filter(Comparison::any("roles").like("%Manager%").into())
+//!                     .distinct()
+//!         )
+//!     );
 //! ```
 //! [arangors]: https://docs.rs/arangors
 //! [argonautica]: https://github.com/bcmyers/argonautica
@@ -295,19 +381,22 @@
 //! [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
 //! [actix]: https://actix.rs/ "Actix Homepage"
 //! [paperclip]: https://github.com/wafflespeanut/paperclip "Paperclip Github"
+//! [ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html
 #![forbid(missing_docs)]
 
 pub use {
     authenticate::Authenticate,
-    db::database_record::DatabaseRecord,
+    authorize_action::AuthorizeAction,
     db::database_connection_pool::DatabaseConnectionPool,
+    db::database_record::DatabaseRecord,
     error::ServiceError,
     new::New,
     record::Record,
     update::Update,
     validate::Validate,
-    authorize_action::AuthorizeAction,
 };
+#[doc(hidden)]
+pub use aragog_macros::*;
 
 /// Contains useful tools to parse json value and to valiate string formats.
 pub mod helpers;

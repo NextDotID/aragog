@@ -4,7 +4,7 @@
 
 * Query filters can be built via comparisons (syntax cleaning no breaking changes)
 * Added Paperclip feature
-* Renamed actic feature
+* Renamed actix feature
 
 ## 0.5.0
 
