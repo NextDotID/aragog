@@ -10,21 +10,17 @@ use serde::{Serialize, de::DeserializeOwned};
 /// # use aragog::{AuthorizeAction, DatabaseRecord, Record, Validate};
 /// # use serde::{Deserialize, Serialize};
 /// #
-/// #[derive(Serialize, Deserialize, Clone, Record)]
+/// #[derive(Serialize, Deserialize, Clone, Record, Validate)]
 /// pub struct Employee {
 ///     pub is_cook: bool,
 ///     pub is_accountant: bool,
 /// }
 ///
-/// #[derive(Serialize, Deserialize, Clone, Record)]
+/// #[derive(Serialize, Deserialize, Clone, Record, Validate)]
 /// pub struct Company {
 ///     pub taxes_payed: bool,
 ///     pub is_cooking_done: bool,
 /// }
-/// #
-/// # impl Validate for Company {
-/// #     fn validations(&self,errors: &mut Vec<String>) { }
-/// # }
 ///
 /// pub enum EmployeeAction {
 ///     Cook,

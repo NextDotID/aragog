@@ -7,8 +7,8 @@ use serde::export::Formatter;
 
 use crate::{DatabaseConnectionPool, ServiceError};
 use crate::query::Filter;
-use crate::query::filter::AqlOperation;
 use crate::query::graph_query::{GraphQueryData, GraphQueryDirection};
+use crate::query::operations::{AqlOperation, OperationContainer};
 use crate::query::query_id_helper::get_str_identifier;
 use crate::query::query_result::JsonQueryResult;
 
@@ -87,7 +87,7 @@ impl Display for SortDirection {
 pub struct Query {
     collection: String,
     graph_data: Option<GraphQueryData>,
-    operations: Vec<AqlOperation>,
+    operations: OperationContainer,
     distinct: bool,
     sub_query: Option<String>,
     item_identifier: usize,
@@ -111,28 +111,28 @@ impl Query {
         Self {
             collection: String::from(collection_name),
             graph_data: None,
-            operations: vec![],
+            operations: OperationContainer(vec![]),
             distinct: false,
             sub_query: None,
             item_identifier: 0,
         }
     }
 
-    /// Creates a new outbound `Query`.
+    /// Creates a new outbound traversing `Query` though a `edge_collection`.
     /// You can call `filter`, `sort`, `limit` and `distinct` to customize the query afterwards
     ///
     /// # Arguments
     ///
     /// * `min` - The minimum depth of the graph request
     /// * `max` - The maximum depth of the graph request
-    /// * `edge_collection`- The name of the queried edge collection
+    /// * `edge_collection`- The name of the traversed edge collection
     /// * `vertex` - The `_id` of the starting document (`User/123` for example)
     ///
     /// # Example
     ///
     /// ```rust
     /// # use aragog::query::Query;
-    /// let query = Query::outbound(1, 2, "ChildOf", "USer/123");
+    /// let query = Query::outbound(1, 2, "ChildOf", "User/123");
     /// ```
     pub fn outbound(min: u16, max: u16, edge_collection: &str, vertex: &str) -> Self {
         Self {
@@ -141,26 +141,114 @@ impl Query {
                 start_vertex: format!(r#"'{}'"#, vertex),
                 min,
                 max,
+                named_graph: false,
             }),
             ..Self::new(edge_collection)
         }
     }
 
-    /// Creates a new inbound `Query`.
+    /// Creates a new outbound traversing `Query` though a `named_grah`.
     /// You can call `filter`, `sort`, `limit` and `distinct` to customize the query afterwards
     ///
     /// # Arguments
     ///
     /// * `min` - The minimum depth of the graph request
     /// * `max` - The maximum depth of the graph request
-    /// * `edge_collection`- The name of the queried edge collection
+    /// * `named_graph`- The named graph to traverse
     /// * `vertex` - The `_id` of the starting document (`User/123` for example)
     ///
     /// # Example
     ///
     /// ```rust
     /// # use aragog::query::Query;
-    /// let query = Query::inbound(1, 2, "ChildOf", "USer/123");
+    /// let query = Query::outbound_graph(1, 2, "SomeGraph", "User/123");
+    /// ```
+    pub fn outbound_graph(min: u16, max: u16, named_graph: &str, vertex: &str) -> Self {
+        Self {
+            graph_data: Some(GraphQueryData {
+                direction: GraphQueryDirection::Outbound,
+                start_vertex: format!(r#"'{}'"#, vertex),
+                min,
+                max,
+                named_graph: true,
+            }),
+            ..Self::new(named_graph)
+        }
+    }
+
+    /// Creates a new `ANY` traversing `Query` though a `edge_collection`.
+    /// You can call `filter`, `sort`, `limit` and `distinct` to customize the query afterwards
+    ///
+    /// # Arguments
+    ///
+    /// * `min` - The minimum depth of the graph request
+    /// * `max` - The maximum depth of the graph request
+    /// * `edge_collection`- The name of the traversed edge collection
+    /// * `vertex` - The `_id` of the starting document (`User/123` for example)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::Query;
+    /// let query = Query::outbound(1, 2, "ChildOf", "User/123");
+    /// ```
+    pub fn any(min: u16, max: u16, edge_collection: &str, vertex: &str) -> Self {
+        Self {
+            graph_data: Some(GraphQueryData {
+                direction: GraphQueryDirection::Any,
+                start_vertex: format!(r#"'{}'"#, vertex),
+                min,
+                max,
+                named_graph: false,
+            }),
+            ..Self::new(edge_collection)
+        }
+    }
+
+    /// Creates a new `ANY` traversing `Query` though a `named_grah`.
+    /// You can call `filter`, `sort`, `limit` and `distinct` to customize the query afterwards
+    ///
+    /// # Arguments
+    ///
+    /// * `min` - The minimum depth of the graph request
+    /// * `max` - The maximum depth of the graph request
+    /// * `named_graph`- The named graph to traverse
+    /// * `vertex` - The `_id` of the starting document (`User/123` for example)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::Query;
+    /// let query = Query::outbound_graph(1, 2, "SomeGraph", "User/123");
+    /// ```
+    pub fn any_graph(min: u16, max: u16, named_graph: &str, vertex: &str) -> Self {
+        Self {
+            graph_data: Some(GraphQueryData {
+                direction: GraphQueryDirection::Any,
+                start_vertex: format!(r#"'{}'"#, vertex),
+                min,
+                max,
+                named_graph: true,
+            }),
+            ..Self::new(named_graph)
+        }
+    }
+
+    /// Creates a new inbound traversing `Query` though a `edge_collection`.
+    /// You can call `filter`, `sort`, `limit` and `distinct` to customize the query afterwards
+    ///
+    /// # Arguments
+    ///
+    /// * `min` - The minimum depth of the graph request
+    /// * `max` - The maximum depth of the graph request
+    /// * `edge_collection`- The name of the traversed edge collection
+    /// * `vertex` - The `_id` of the starting document (`User/123` for example)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::Query;
+    /// let query = Query::inbound(1, 2, "ChildOf", "User/123");
     /// ```
     pub fn inbound(min: u16, max: u16, edge_collection: &str, vertex: &str) -> Self {
         Self {
@@ -169,67 +257,142 @@ impl Query {
                 start_vertex: format!(r#"'{}'"#, vertex),
                 min,
                 max,
+                named_graph: false,
             }),
             ..Self::new(edge_collection)
         }
     }
 
-    fn join(mut self, min: u16, max: u16, mut query: Query, direction: GraphQueryDirection) -> Self {
+    /// Creates a new inbound traversing `Query` though a `named_grah`.
+    /// You can call `filter`, `sort`, `limit` and `distinct` to customize the query afterwards
+    ///
+    /// # Arguments
+    ///
+    /// * `min` - The minimum depth of the graph request
+    /// * `max` - The maximum depth of the graph request
+    /// * `named_graph`- The named graph to traverse
+    /// * `vertex` - The `_id` of the starting document (`User/123` for example)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::Query;
+    /// let query = Query::inbound_graph(1, 2, "SomeGraph", "User/123");
+    /// ```
+    pub fn inbound_graph(min: u16, max: u16, named_graph: &str, vertex: &str) -> Self {
+        Self {
+            graph_data: Some(GraphQueryData {
+                direction: GraphQueryDirection::Inbound,
+                start_vertex: format!(r#"'{}'"#, vertex),
+                min,
+                max,
+                named_graph: true,
+            }),
+            ..Self::new(named_graph)
+        }
+    }
+
+    fn join(mut self, min: u16, max: u16, mut query: Query, direction: GraphQueryDirection, named_graph: bool) -> Self {
         self.item_identifier = query.item_identifier + 1;
         query.graph_data = Some(GraphQueryData {
             direction,
             start_vertex: get_str_identifier(self.item_identifier),
             min,
             max,
+            named_graph,
         });
         self.sub_query = Some(query.to_aql());
         self
     }
 
-    /// Adds an outbound graph query to the current `Query`.
+    /// Adds an outbound traversing query to the current `Query`.
     ///
     /// # Arguments
     ///
     /// * `min` - The minimum depth of the graph request
     /// * `max` - The maximum depth of the graph request
+    /// * `named_graph` - Is the following query on a Named graph?
     /// * `query` - The sub query to add
     ///
     /// # Example
     ///
     /// ```rust
     /// # use aragog::query::Query;
-    /// let query = Query::new("User").join_outbound(1, 2, Query::new("ChildOf"));
+    /// let query = Query::new("User").join_outbound(1, 2, false, Query::new("ChildOf"));
     /// assert_eq!(query.to_aql(), String::from("\
     ///     FOR b in User \
     ///         FOR a in 1..2 OUTBOUND b ChildOf \
     ///         return a\
     /// "));
+    /// let query = Query::new("User").join_outbound(1, 2, true, Query::new("NamedGraph"));
+    /// assert_eq!(query.to_aql(), String::from("\
+    ///     FOR b in User \
+    ///         FOR a in 1..2 OUTBOUND b GRAPH NamedGraph \
+    ///         return a\
+    /// "));
     /// ```
-    pub fn join_outbound(self, min: u16, max: u16, query: Query) -> Self {
-        self.join(min, max, query, GraphQueryDirection::Outbound)
+    pub fn join_outbound(self, min: u16, max: u16, named_graph: bool, query: Query) -> Self {
+        self.join(min, max, query, GraphQueryDirection::Outbound, named_graph)
     }
 
-    /// Adds an inbound graph query to the current `Query`.
+    /// Adds an inbound traversing query to the current `Query`.
     ///
     /// # Arguments
     ///
     /// * `min` - The minimum depth of the graph request
     /// * `max` - The maximum depth of the graph request
+    /// * `named_graph` - Is the following query on a Named graph?
     /// * `query` - The sub query to add
     ///
     /// # Example
     ///
     /// ```rust
     /// # use aragog::query::Query;
-    /// let query = Query::new("User").join_inbound(1, 2, Query::new("ChildOf"));
+    /// let query = Query::new("User").join_inbound(1, 2, false, Query::new("ChildOf"));
     /// assert_eq!(query.to_aql(), String::from("\
     ///     FOR b in User \
     ///         FOR a in 1..2 INBOUND b ChildOf \
     ///         return a\
     /// "));
+    /// let query = Query::new("User").join_inbound(1, 2, true, Query::new("NamedGraph"));
+    /// assert_eq!(query.to_aql(), String::from("\
+    ///     FOR b in User \
+    ///         FOR a in 1..2 INBOUND b GRAPH NamedGraph \
+    ///         return a\
+    /// "));
     /// ```
-    pub fn join_inbound(self, min: u16, max: u16, query: Query) -> Self {
-        self.join(min, max, query, GraphQueryDirection::Inbound)
+    pub fn join_inbound(self, min: u16, max: u16, named_graph: bool, query: Query) -> Self {
+        self.join(min, max, query, GraphQueryDirection::Inbound, named_graph)
+    }
+
+    /// Adds an `ANY` traversing query to the current `Query`.
+    ///
+    /// # Arguments
+    ///
+    /// * `min` - The minimum depth of the graph request
+    /// * `max` - The maximum depth of the graph request
+    /// * `named_graph` - Is the following query on a Named graph?
+    /// * `query` - The sub query to add
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::Query;
+    /// let query = Query::new("User").join_any(1, 2, false, Query::new("ChildOf"));
+    /// assert_eq!(query.to_aql(), String::from("\
+    ///     FOR b in User \
+    ///         FOR a in 1..2 ANY b ChildOf \
+    ///         return a\
+    /// "));
+    /// let query = Query::new("User").join_any(1, 2, true, Query::new("NamedGraph"));
+    /// assert_eq!(query.to_aql(), String::from("\
+    ///     FOR b in User \
+    ///         FOR a in 1..2 ANY b GRAPH NamedGraph \
+    ///         return a\
+    /// "));
+    /// ```
+    pub fn join_any(self, min: u16, max: u16, named_graph: bool, query: Query) -> Self {
+        self.join(min, max, query, GraphQueryDirection::Any, named_graph)
     }
 
     /// Allows to sort a current `Query` by different field names. The fields must exist or the query won't work.
@@ -257,7 +420,7 @@ impl Query {
     /// );
     /// ```
     pub fn sort(mut self, field: &str, direction: Option<SortDirection>) -> Self {
-        self.operations.push(AqlOperation::Sort {
+        self.operations.0.push(AqlOperation::Sort {
             field: field.to_string(),
             direction: direction.unwrap_or(SortDirection::Asc),
         });
@@ -275,7 +438,26 @@ impl Query {
     /// let query = Query::new("User").filter(Comparison::field("age").greater_than(18).into());
     /// ```
     pub fn filter(mut self, filter: Filter) -> Self {
-        self.operations.push(AqlOperation::Filter(filter));
+        self.operations.0.push(AqlOperation::Filter(filter));
+        self
+    }
+
+    /// Allows to filter a current `Query` by different comparisons but using the `PRUNE` keyword.
+    ///
+    /// # Note
+    ///
+    /// The `prune` operation only works for graph queries (See ArangoDB documentation)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::{Query, Filter, Comparison};
+    /// let query = Query::outbound(1, 2, "ChildOf", "User/123").prune(Filter::new(Comparison::field("age").greater_than(18)));
+    /// // or
+    /// let query = Query::outbound(1, 2, "ChildOf", "User/123").prune(Comparison::field("age").greater_than(18).into());
+    /// ```
+    pub fn prune(mut self, filter: Filter) -> Self {
+        self.operations.0.push(AqlOperation::Prune(filter));
         self
     }
 
@@ -294,7 +476,7 @@ impl Query {
     /// let query = Query::new("User").limit(10, Some(5));
     /// ```
     pub fn limit(mut self, limit: u32, skip: Option<u32>) -> Self {
-        self.operations.push(AqlOperation::Limit { skip, limit });
+        self.operations.0.push(AqlOperation::Limit { skip, limit });
         self
     }
 
@@ -337,42 +519,20 @@ impl Query {
         if self.graph_data.is_some() {
             let graph_data = self.graph_data.as_ref().unwrap();
             res = format!(
-                "FOR {} in {}..{} {} {} {}",
+                "FOR {} in {}..{} {} {} {}{}",
                 collection_id,
                 graph_data.min,
                 graph_data.max,
                 graph_data.direction,
                 &graph_data.start_vertex,
+                if graph_data.named_graph { "GRAPH " } else { "" },
                 &self.collection
             );
         } else {
             res = format!("FOR {} in {}", collection_id, &self.collection);
         }
-        let mut last_was_sort = false;
-        for operation in self.operations.iter() {
-            match operation {
-                AqlOperation::Limit { skip, limit } => {
-                    let skip_str = match skip {
-                        None => String::new(),
-                        Some(val) => format!("{}, ", val)
-                    };
-                    res = format!("{} LIMIT {}{}", res, skip_str, limit);
-                    last_was_sort = false;
-                }
-                AqlOperation::Filter(filter) => {
-                    res = format!("{} {}", res, filter.to_aql(&collection_id));
-                    last_was_sort = false;
-                }
-                AqlOperation::Sort { field, direction } => {
-                    if !last_was_sort {
-                        res += " SORT";
-                    } else {
-                        res += ",";
-                    }
-                    res = format!("{} {}.{} {}", res, &collection_id, field, direction);
-                    last_was_sort = true;
-                }
-            }
+        if self.operations.0.len() > 0 {
+            res = format!("{} {}", res, self.operations.to_aql(&collection_id));
         }
         if self.sub_query.is_some() {
             res = format!("{} {}", res, self.sub_query.as_ref().unwrap())

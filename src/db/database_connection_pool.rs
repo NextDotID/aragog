@@ -20,8 +20,6 @@ const SCHEMA_COLLECTION_NAME: &str = "name";
 pub struct DatabaseConnectionPool {
     /// Map between a collection name and a `DatabaseCollection` instance
     pub collections: HashMap<String, DatabaseCollection>,
-    /// Map between a collection name and a `DatabaseEdgeCollection` instance
-    pub edge_collections: HashMap<String, DatabaseCollection>,
     /// The database accessor
     pub database: Database<ReqwestClient>,
 }
@@ -49,12 +47,6 @@ impl DatabaseConnectionPool {
     /// Can panic if the key matching `collection` is missing
     pub fn get_collection(&self, collection: &str) -> &Collection<ReqwestClient> {
         &self.collections[collection].collection
-    }
-
-    /// Simple wrapper to retrieve a Edge Collection without using the HashMap directly.
-    /// Can panic if the key matching `edge_collection` is missing
-    pub fn get_edge_collection(&self, edge_collection: &str) -> &Collection<ReqwestClient> {
-        &self.edge_collections[edge_collection].collection
     }
 
     /// **DESTRUCTIVE OPERATION**
@@ -95,15 +87,14 @@ impl DatabaseConnectionPool {
         if let Value::Array(values) = &json[SCHEMA_COLLECTION_KEY] {
             json_collections = values.clone();
         }
-        let collections = Self::load_collections(&database, json_collections).await.unwrap();
+        let mut collections = Self::load_collections(&database, json_collections).await.unwrap();
         let mut json_collections: Vec<Value> = Vec::new();
         if let Value::Array(values) = &json[SCHEMA_EDGE_COLLECTION_KEY] {
             json_collections = values.clone();
         }
-        let edge_collections = Self::load_edge_collections(&database, json_collections).await.unwrap();
+        Self::load_edge_collections(&database, json_collections, &mut collections).await.unwrap();
         Ok(DatabaseConnectionPool {
             collections,
-            edge_collections,
             database,
         })
     }
@@ -128,8 +119,7 @@ impl DatabaseConnectionPool {
         Ok(collections_map)
     }
 
-    async fn load_edge_collections(database: &Database<ReqwestClient>, json_collections: Vec<Value>) -> Result<HashMap<String, DatabaseCollection>, String> {
-        let mut collections_map = HashMap::new();
+    async fn load_edge_collections(database: &Database<ReqwestClient>, json_collections: Vec<Value>, collections :& mut HashMap<String, DatabaseCollection>) -> Result<(), String> {
         for json_collection in json_collections {
             let collection_name = json_helper::load_json_string_key(&json_collection, &SCHEMA_COLLECTION_NAME)?;
             let collection: Collection<ReqwestClient>;
@@ -142,9 +132,9 @@ impl DatabaseConnectionPool {
                 }
             }
             let collection_container = DatabaseCollection { collection_name, collection };
-            collections_map.insert(collection_container.collection_name.clone(), collection_container);
+            collections.insert(collection_container.collection_name.clone(), collection_container);
         }
-        Ok(collections_map)
+        Ok(())
     }
 
     async fn handle_index(database: &Database<ReqwestClient>, json_collection: Value, collection: &DatabaseCollection) -> Result<(), String> {

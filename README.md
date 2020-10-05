@@ -112,12 +112,10 @@ The array of Index in `indexes` must have that exact format:
 * `settings`: this json bloc must be the serialized version of an [IndexSettings][IndexSettings] variant from [arangors][arangors] driver.
 > There is no indexing for `edge_collections`
 
-#### Database Record
+#### Record
 
 The global architecture is simple, every *model* you define that can be synced with the database must implement `serde::Serialize`, `serde::Deserialize` and `Clone`.
-To declare a `struct` as a Model you can either:
-* Derive from `aragog::Record` (the collection name must be the same as the struct)
-* Implement `aragog::Record` yourself and specify the collection name
+To declare a `struct` as a Model it must derive from `aragog::Record` (the collection name must be the same as the struct)
 
 The model needs to have *Validations* so you'll need to either:
 * Implement `aragog::Validate` and specify validations
@@ -162,6 +160,48 @@ async fn main() {
     user_record.record.username = String::from("LeRevenant1524356");
     // And directly save it
     user_record.save(&database_pool).await;
+}
+```
+
+#### Edge Record
+
+You can declare Edge collection models by deriving from `aragog::EdgeRecord`, the structure requires two string fields: `_from` and `_to`.
+When deriving from `EdgeRecord` the struct will also automatically derive from `Record` so you'll need to implement `Validate` as well.
+
+**Example:**
+```rust
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
+pub struct Dish {
+    pub name: String,
+    pub price: usize
+}
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
+pub struct Order {
+    pub name: String,
+}
+#[derive(Serialize, Deserialize, Clone, EdgeRecord, Validate)]
+pub struct PartOf {
+    pub _from: String,
+    pub _to: String,
+}
+#[tokio::main]
+async fn main() {
+   let database_pool = DatabaseConnectionPool::new("http://localhost:8529", "db", "user", "password").await;
+    // Define a document
+    let mut dish = DatabaseRecord::create(Dish {
+        name: "Pizza".to_string(),
+        price: 10,
+    }, &database_pool).await.unwrap();
+    let mut order = DatabaseRecord::create(Order {
+        name: "Order 1".to_string(),
+    }, &database_pool).await.unwrap();
+    let edge = DatabaseRecord::link(&dish, &order, &database_pool, |_from, _to| {
+        PartOf { _from, _to }
+    }).await.unwrap();
+    assert_eq!(&edge.record._from(), &dish.id);
+    assert_eq!(&edge.record._to(), &order.id);
+    assert_eq!(&edge.record._from_key(), &dish.key);
+    assert_eq!(&edge.record._to_key(), &order.key);
 }
 ```
 
@@ -212,6 +252,7 @@ You can intialize a query in the following ways:
 
 You can customize the query with the following operations:
 * `filter()` you can specify AQL comparisons
+* `prune()` you can specify blocking AQL comparisons for traversal queries
 * `sort()` you can specify fields to sort with
 * `limit()` you can skip and limit the query results
 * `distinct()` you can skip duplicate documents
@@ -266,17 +307,23 @@ or
 let filter :Filter = Comparison::field("name").equals_str("felix").into();
 ```
 
-##### Graph Querying
+##### Traversal Querying
 
 You can use graph features with sub-queries with different ways:
 
-###### Straightforward graph query
+###### Straightforward traversal query
 
 * Explicit way
 ```rust
-# use aragog::query::Query;
+use aragog::query::Query;
+
 let query = Query::outbound(1, 2, "edgeCollection", "User/123");
 let query = Query::inbound(1, 2, "edgeCollection", "User/123");
+let query = Query::any(1, 2, "edgeCollection", "User/123");
+// Named graph
+let query = Query::outbound_graph(1, 2, "NamedGraph", "User/123");
+let query = Query::inbound_graph(1, 2, "NamedGraph", "User/123");
+let query = Query::any_graph(1, 2, "NamedGraph", "User/123");
 ```
 * Implicit way from a `DatabaseRecord<T>`
 ```rust
@@ -286,22 +333,29 @@ let query = user_record.inbound_query(1, 2, "edgeCollection");
 ```
 ###### Sub queries
 
--  Queries can be joined together this way
+Queries can be joined together through
+* Edge traversal:
 ```rust
 # use aragog::query::Query;
 let query = Query::new("User")
-    .join_inbound(1, 2, Query::new("edgeCollection"));
+    .join_inbound(1, 2, false, Query::new("edgeCollection"));
 ```
-- It works with complex queries:
+* Named Graph traversal:
+```rust
+# use aragog::query::Query;
+let query = Query::new("User")
+    .join_inbound(1, 2, true, Query::new("SomeGraph"));
+```
+It works with complex queries:
 ```rust
 # use aragog::query::{Query, Comparison};
 let query = Query::new("User")
     .filter(Comparison::field("age").greater_than(10).into())
-    .join_inbound(1, 2,
+    .join_inbound(1, 2, false,
         Query::new("edgeCollection")
             .sort("_key", None)
-            .join_outbound(1, 5,
-                Query::new("otherEdgeCollection")
+            .join_outbound(1, 5, true,
+                Query::new("SomeGraph")
                     .filter(Comparison::any("roles").like("%Manager%").into())
                     .distinct()
         )
@@ -314,6 +368,8 @@ let query = Query::new("User")
     - [ ] Advanced query system supporting:
         - [X] Array variant querying (`ANY`, `NONE`, `ALL`)
         - [X] Sort, limit and distinct methods
+        - [ ] Custom return system
+        - [X] `PRUNE` operation
         - [ ] Procedural Macros for syntax simplification and field presence validation at compile time
         - [ ] ArangoDB functions (`LENGTH`, `ABS`, etc.)
 * ORM and OGM
@@ -326,6 +382,8 @@ let query = Query::new("User")
     - [ ] Handle revisions/concurrency correctly
     - [ ] Code Generation
         - [X] Record `derive` macro
+        - [X] EdgeRecord `derive` macro checking `_from` and `_to` presence at compile time
+        - [ ] Handle a `attribute` macro for indexes and generate the schema at compile time
         - [ ] Handle Migrations
     - [ ] Define possible `async` validations for database advance state check
 
@@ -352,6 +410,11 @@ $> arangosh --server.username $DB_USER --server.database $DB_NAME
 
 * How can I customize the `collection_name` of my `Record` ?
 > Instead of deriving from `aragog::Record` you can implement `aragog::Record` directly and declare `collection_name()` as a string litteral
+> This is not recommended as it will not be possible in the future with automatic schema generation
+>
+* How can I customize the `collection_name` of my `EdgeRecord` ?
+> Instead of deriving from `aragog::EdgeRecord` you can implement `aragog::EdgeRecord` and `aragog::Record` directly and declare `collection_name()` as a string litteral.
+> This is not recommended as it will not be possible in the future with automatic schema generation
 
 ### License
 
