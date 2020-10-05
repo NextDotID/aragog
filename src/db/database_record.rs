@@ -4,9 +4,8 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::{Authenticate, DatabaseConnectionPool, Record, ServiceError, Validate};
+use crate::{Authenticate, DatabaseConnectionPool, EdgeRecord, Record, ServiceError, Validate};
 use crate::db::database_service;
-use crate::db::edge_model::EdgeModel;
 use crate::query::{Query, RecordQueryResult};
 
 /// Struct representing database stored documents
@@ -211,25 +210,78 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
         Query::inbound(min, max, edge_collection, &self.id)
     }
 
-    /// Creates an edge between `self` and `target` on the specified `edge_collection`.
+    /// Creates a new outbound graph `Query` with `self` as a start vertex
+    ///
+    /// # Arguments
+    ///
+    /// * `min` - The minimum depth of the graph request
+    /// * `max` - The maximum depth of the graph request
+    /// * `named_graph`- The named graph to traverse
     ///
     /// # Example
     /// ```rust ignore
+    /// # use aragog::query::Query;
+    ///
+    /// let record = User::find("123", &database_pool).await.unwrap();
+    /// // Both statements are equivalent
+    /// let q = record.outbound_graph(1, 2, "SomeGraph");
+    /// let q = Query::outbound_graph(1, 2, "SomeGraph", record.id);
+    /// ```
+    pub fn outbound_graph(&self, min: u16, max: u16, named_graph: &str) -> Query {
+        Query::outbound_graph(min, max, named_graph, &self.id)
+    }
+
+    /// Creates a new inbound graph `Query` with `self` as a start vertex
+    ///
+    /// # Arguments
+    ///
+    /// * `min` - The minimum depth of the graph request
+    /// * `max` - The maximum depth of the graph request
+    /// * `named_graph`- The named graph to traverse
+    ///
+    /// # Example
+    /// ```rust ignore
+    /// # use aragog::query::Query;
+    ///
+    /// let record = User::find("123", &database_pool).await.unwrap();
+    /// // Both statements are equivalent
+    /// let q = record.inbound_graph(1, 2, "SomeGraph");
+    /// let q = Query::inbound_graph(1, 2, "SomeGraph", record.id);
+    /// ```
+    pub fn inbound_graph(&self, min: u16, max: u16, named_graph: &str) -> Query {
+        Query::inbound_graph(min, max, named_graph, &self.id)
+    }
+
+    /// Creates and returns edge between `from_record` and `target_record`
+    ///
+    /// # Example
+    /// ```rust ignore
+    /// # use aragog::{DatabaseRecord, EdgeRecord, Record, Validate};
+    /// # use serde::{Serialize, Deserialize, de::DeserializeOwned}
+    /// #
+    /// #[derive(Clone, EdgeRecord, Validate, Serialize, Deserialize)]
+    /// struct Edge {
+    ///     _from: String,
+    ///     _to: String,
+    ///     description: String,
+    /// }
+    ///
     /// let record_a = Character::find("123", &database_connection_pool).await.unwrap();
     /// let record_b = Character::find("234", &database_connection_pool).await.unwrap();
     ///
-    /// record_a.link_to(record_b, "ChildOf", &database_connection_pool).await.unwrap();
+    /// let edge = DatabaseRecord::link(record_a, record_b, &database_connection_pool, |_from, _to| {
+    ///     Edge { _from, _to, description: "description".to_string() }
+    /// }).await.unwrap();
     /// ```
-    pub async fn link_to<U>(&self, target_record: &DatabaseRecord<U>, edge_collection: &str, db_pool: &DatabaseConnectionPool)
-                            -> Result<DatabaseRecord<EdgeModel>, ServiceError>
-        where U: Serialize + DeserializeOwned + Clone + Record
+    pub async fn link<U, V, W>(from_record: &DatabaseRecord<U>, to_record: &DatabaseRecord<V>, db_pool: &DatabaseConnectionPool, document: W)
+                               -> Result<DatabaseRecord<T>, ServiceError>
+        where U: Serialize + DeserializeOwned + Clone + Record,
+              V: Serialize + DeserializeOwned + Clone + Record,
+              T: EdgeRecord,
+              W: FnOnce(String, String) -> T
     {
-        let edge = EdgeModel {
-            _from: self.id.clone(),
-            _to: target_record.id.clone(),
-        };
-        edge.validate()?;
-        database_service::create_edge_record(edge, &db_pool, edge_collection).await
+        let edge = document(from_record.id.clone(), to_record.id.clone());
+        database_service::create_record(edge, &db_pool, T::collection_name()).await
     }
 
     /// Checks if any document matching the associated conditions exist

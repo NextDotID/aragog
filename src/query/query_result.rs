@@ -44,7 +44,7 @@ impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     pub fn uniq(self) -> Result<DatabaseRecord<T>, ServiceError> {
-        if self.doc_count <= 0 || self.doc_count > 1 {
+        if self.is_empty() || self.doc_count > 1 {
             log::error!("Wrong number of {} returned: {}", T::collection_name(), self.doc_count);
             return Err(ServiceError::NotFound(format!("{} document not found", T::collection_name())));
         }
@@ -54,7 +54,7 @@ impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
     /// Returns the first document of the current `QueryResult`.
     /// Returns `None` if there are no documents
     pub fn first(self) -> Option<DatabaseRecord<T>> {
-        if self.doc_count <= 0 {
+        if self.is_empty() {
             return None;
         }
         Some(self.documents.into_iter().nth(0).unwrap())
@@ -63,7 +63,7 @@ impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
     /// Returns the last document of the current `QueryResult`.
     /// Returns `None` if there are no documents
     pub fn last(self) -> Option<DatabaseRecord<T>> {
-        if self.doc_count <= 0 {
+        if self.is_empty() {
             return None;
         }
         Some(self.documents.into_iter().nth(self.doc_count - 1).unwrap())
@@ -71,6 +71,9 @@ impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
 
     /// Returns the length of `documents`
     pub fn len(&self) -> usize { self.doc_count }
+
+    /// Returns `true` if no documents were returned
+    pub fn is_empty(&self) -> bool { self.doc_count == 0 }
 }
 
 impl JsonQueryResult {
@@ -119,6 +122,9 @@ impl JsonQueryResult {
 
     /// Returns the length of `documents`
     pub fn len(&self) -> usize { self.doc_count }
+
+    /// Returns `true` if no documents were returned
+    pub fn is_empty(&self) -> bool { self.doc_count == 0 }
 }
 
 impl<T: Record + Clone + Serialize + DeserializeOwned> From<JsonQueryResult> for RecordQueryResult<T> {

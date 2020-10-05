@@ -4,6 +4,7 @@ mod filter;
 mod query_result;
 mod graph_query;
 mod query_id_helper;
+mod operations;
 
 pub use {
     query::Query,

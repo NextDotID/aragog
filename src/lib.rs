@@ -103,12 +103,10 @@
 //! * `settings`: this json bloc must be the serialized version of an [IndexSettings][IndexSettings] variant from [arangors][arangors] driver.
 //! > There is no indexing for `edge_collections`
 //!
-//! #### Database Record
+//! #### Record
 //!
 //! The global architecture is simple, every *model* you define that can be synced with the database must implement `serde::Serialize`, `serde::Deserialize` and `Clone`.
-//! To declare a `struct` as a Model you can either:
-//! * Derive from `aragog::Record` (the collection name must be the same as the struct)
-//! * Implement `aragog::Record` yourself and specify the collection name
+//! To declare a `struct` as a Model it must derive from `aragog::Record` (the collection name must be the same as the struct)
 //!
 //! If you want any of the other behaviors you can implement the associated *trait*:
 //! * Implement
@@ -157,6 +155,63 @@
 //!     user_record.record.username = String::from("LeRevenant1524356");
 //!     // And directly save it
 //!     user_record.save(&database_pool).await;
+//! }
+//! ```
+//! #### Edge Record
+//!
+//! You can declare Edge collection models by deriving from `aragog::EdgeRecord`, the structure requires two string fields: `_from` and `_to`.
+//! When deriving from `EdgeRecord` the struct will also automatically derive from `Record` so you'll need to implement `Validate` as well.
+//!
+//! **Example:**
+//!
+//! ```rust
+//! # use aragog::{Record, EdgeRecord, DatabaseConnectionPool, DatabaseRecord, Validate};
+//! # use serde::{Serialize, Deserialize};
+//! # use tokio;
+//! #
+//! #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+//! pub struct Dish {
+//!     pub name: String,
+//!     pub price: usize
+//! }
+//!
+//! #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+//! pub struct Order {
+//!     pub name: String,
+//! }
+//!
+//! #[derive(Serialize, Deserialize, Clone, EdgeRecord, Validate)]
+//! pub struct PartOf {
+//!     pub _from: String,
+//!     pub _to: String,
+//! }
+//!
+//! #[tokio::main]
+//! async fn main() {
+//! # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
+//! #
+//! #  let database_pool = DatabaseConnectionPool::new(
+//! #        &std::env::var("DB_HOST").unwrap(),
+//! #        &std::env::var("DB_NAME").unwrap(),
+//! #        &std::env::var("DB_USER").unwrap(),
+//! #        &std::env::var("DB_PWD").unwrap()).await;
+//! #  database_pool.truncate().await;
+//!     // Define a document
+//!     let mut dish = DatabaseRecord::create(Dish {
+//!         name: "Pizza".to_string(),
+//!         price: 10,
+//!     }, &database_pool).await.unwrap();
+//!     let mut order = DatabaseRecord::create(Order {
+//!         name: "Order 1".to_string(),
+//!     }, &database_pool).await.unwrap();
+//!
+//!     let edge = DatabaseRecord::link(&dish, &order, &database_pool, |_from, _to| {
+//!         PartOf { _from, _to }
+//!     }).await.unwrap();
+//!     assert_eq!(&edge.record._from(), &dish.id);
+//!     assert_eq!(&edge.record._to(), &order.id);
+//!     assert_eq!(&edge.record._from_key(), &dish.key);
+//!     assert_eq!(&edge.record._to_key(), &order.key);
 //! }
 //! ```
 //!
@@ -278,6 +333,7 @@
 //!
 //! You can customize the query with the following methods:
 //! * `filter()` you can specify AQL comparisons
+//! * `prune()` you can specify blocking AQL comparisons for traversal queries
 //! * `sort()` you can specify fields to sort with
 //! * `limit()` you can skip and limit the query results
 //! * `distinct()` you can skip duplicate documents
@@ -333,45 +389,60 @@
 //! let filter :Filter = Comparison::field("name").equals_str("felix").into();
 //! ```
 //!
-//! ##### Graph Querying
+//! ##### Traversal Querying
 //!
 //! You can use graph features with sub-queries with different ways:
 //!
-//! ###### Straightforward graph query
+//! ###### Straightforward Traversal query
 //!
 //! * Explicit way
 //! ```rust
 //! # use aragog::query::Query;
 //! let query = Query::outbound(1, 2, "edgeCollection", "User/123");
-//! let query = Query::inbound(1, 2, "edgeCollection", "User/123",);
+//! let query = Query::inbound(1, 2, "edgeCollection", "User/123");
+//! let query = Query::any(1, 2, "edgeCollection", "User/123");
+//! // Named graph
+//! let query = Query::outbound_graph(1, 2, "NamedGraph", "User/123");
+//! let query = Query::inbound_graph(1, 2, "NamedGraph", "User/123");
+//! let query = Query::any_graph(1, 2, "NamedGraph", "User/123");
 //! ```
 //! * Implicit way from a `DatabaseRecor<T>`
 //! ```rust ignore
 //! # use aragog::query::Query;
 //! let query = user_record.outbound_query(1, 2, "edgeCollection");
 //! let query = user_record.inbound_query(1, 2, "edgeCollection");
+//! // Named graph
+//! let query = user_record.outbound_graph(1, 2, "NamedGraph");
+//! let query = user_record.inbound_graph(1, 2, "NamedGraph");
 //! ```
 //! ###### Sub queries
 //!
-//! * Queries can be joined together this way
+//! Queries can be joined together through
+//! * Edge traversal:
 //! ```rust
 //! # use aragog::query::Query;
 //! let query = Query::new("User")
-//!     .join_inbound(1, 2, Query::new("edgeCollection"));
+//!     .join_inbound(1, 2, false, Query::new("edgeCollection"));
 //! ```
-//! * It works with complex queries:
+//! * Named Graph traversal:
+//! ```rust
+//! # use aragog::query::Query;
+//! let query = Query::new("User")
+//!     .join_inbound(1, 2, true, Query::new("SomeGraph"));
+//! ```
+//! It works with complex queries:
 //! ```rust
 //! # use aragog::query::{Query, Comparison};
 //! let query = Query::new("User")
 //!     .filter(Comparison::field("age").greater_than(10).into())
-//!     .join_inbound(1, 2,
+//!     .join_inbound(1, 2, false,
 //!         Query::new("edgeCollection")
 //!             .sort("_key", None)
-//!             .join_outbound(1, 5,
-//!                 Query::new("otherEdgeCollection")
+//!             .join_outbound(1, 5, true,
+//!                 Query::new("SomeGraph")
 //!                     .filter(Comparison::any("roles").like("%Manager%").into())
 //!                     .distinct()
-//!         )
+//!                 )
 //!     );
 //! ```
 //! [arangors]: https://docs.rs/arangors
@@ -384,19 +455,21 @@
 //! [ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html
 #![forbid(missing_docs)]
 
+#[doc(hidden)]
+pub use aragog_macros::*;
+
 pub use {
     authenticate::Authenticate,
     authorize_action::AuthorizeAction,
     db::database_connection_pool::DatabaseConnectionPool,
     db::database_record::DatabaseRecord,
+    edge_record::EdgeRecord,
     error::ServiceError,
     new::New,
     record::Record,
     update::Update,
     validate::Validate,
 };
-#[doc(hidden)]
-pub use aragog_macros::*;
 
 /// Contains useful tools to parse json value and to valiate string formats.
 pub mod helpers;
@@ -410,3 +483,4 @@ mod validate;
 mod new;
 mod error;
 mod authorize_action;
+mod edge_record;

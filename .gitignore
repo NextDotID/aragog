@@ -3,6 +3,7 @@
 .idea/
 /target/
 aragog_macros/target/
+aragog_macros/data_struct_example
 examples/simple_app/target/
 examples/graph_example/target/
 

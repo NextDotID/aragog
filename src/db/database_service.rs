@@ -49,11 +49,6 @@ pub async fn create_record<T: DeserializeOwned + Serialize + Clone + Record>(obj
     create_document(obj, collection).await
 }
 
-pub async fn create_edge_record<T: DeserializeOwned + Serialize + Clone + Record>(obj: T, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, ServiceError> {
-    let collection = db_pool.get_edge_collection(collection_name);
-    create_document(obj, collection).await
-}
-
 pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(key: &str, db_pool: &DatabaseConnectionPool, collection_name: &str) -> Result<DatabaseRecord<T>, ServiceError> {
     let collection = db_pool.get_collection(collection_name);
     let record: Document<T> = match collection.document(key).await {

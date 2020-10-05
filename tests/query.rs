@@ -198,7 +198,7 @@ mod filter {
             Comparison::field("age").greater_than(15)
         );
         let filter_str = filter.to_aql("i");
-        common::expect_assert_eq(filter_str.as_str(), r#"FILTER i.username == "felix" && i.age > 15"#)?;
+        common::expect_assert_eq(filter_str.as_str(), r#"i.username == "felix" && i.age > 15"#)?;
         Ok(())
     }
 
@@ -216,7 +216,7 @@ mod filter {
         let filter_str = filter.to_aql("i");
         common::expect_assert_eq(
             filter_str.as_str(),
-            "FILTER \
+            "\
             i.company_name NOT LIKE \"%google%\" && \
             i.company_age > 15 || \
             i.emails ANY LIKE \"%gmail.com\" && \
@@ -228,7 +228,7 @@ mod filter {
 mod query {
     use super::*;
 
-    mod graph {
+    mod edge_traversing {
         use super::*;
 
         #[test]
@@ -236,9 +236,9 @@ mod query {
             let query = Query::new("Companies")
                 .filter(Filter::new(Comparison::any("emails").like("%gmail.com")))
                 .sort("company_name", None)
-                .join_outbound(1, 2, Query::new("MemberOf")
+                .join_outbound(1, 2, false,Query::new("MemberOf")
                     .sort("_id", None)
-                    .filter(Comparison::statement("1").equals(1).into()),
+                    .prune(Comparison::statement("1").equals(1).into()),
                 );
             common::expect_assert_eq(
                 query.to_aql().as_str(),
@@ -248,7 +248,7 @@ mod query {
                 SORT b.company_name ASC \
                     FOR a in 1..2 OUTBOUND b MemberOf \
                         SORT a._id ASC \
-                        FILTER 1 == 1 \
+                        PRUNE 1 == 1 \
                         return a",
             )?;
             Ok(())
@@ -259,11 +259,11 @@ mod query {
             let query = Query::new("Companies")
                 .filter(Filter::new(Comparison::any("emails").like("%gmail.com")))
                 .sort("company_name", None)
-                .join_outbound(1, 2, Query::new("MemberOf")
+                .join_outbound(1, 2, false, Query::new("MemberOf")
                     .sort("_id", None)
                     .filter(Comparison::statement("1").equals(1).into())
-                    .join_inbound(1, 5, Query::new("BelongsTo")
-                        .join_outbound(2, 2, Query::new("HasFriend"))),
+                    .join_inbound(1, 5, false,Query::new("BelongsTo")
+                        .join_outbound(2, 2, false,Query::new("HasFriend"))),
                 );
             common::expect_assert_eq(
                 query.to_aql().as_str(),
@@ -281,6 +281,61 @@ mod query {
             Ok(())
         }
     }
+
+    mod named_graph {
+        use super::*;
+
+        #[test]
+        fn sub_graph_query_works() -> Result<(), String> {
+            let query = Query::new("Companies")
+                .filter(Filter::new(Comparison::any("emails").like("%gmail.com")))
+                .sort("company_name", None)
+                .join_outbound(1, 2, true,Query::new("GraphName")
+                    .sort("_id", None)
+                    .prune(Comparison::statement("1").equals(1).into()),
+                );
+            common::expect_assert_eq(
+                query.to_aql().as_str(),
+                "\
+            FOR b in Companies \
+                FILTER b.emails ANY LIKE \"%gmail.com\" \
+                SORT b.company_name ASC \
+                    FOR a in 1..2 OUTBOUND b GRAPH GraphName \
+                        SORT a._id ASC \
+                        PRUNE 1 == 1 \
+                        return a",
+            )?;
+            Ok(())
+        }
+
+        #[test]
+        fn complex_sub_graph_query_works() -> Result<(), String> {
+            let query = Query::new("Companies")
+                .filter(Filter::new(Comparison::any("emails").like("%gmail.com")))
+                .sort("company_name", None)
+                .join_outbound(1, 2, true, Query::new("SomeGraph")
+                    .sort("_id", None)
+                    .filter(Comparison::statement("1").equals(1).into())
+                    .join_inbound(1, 5, false,Query::new("BelongsTo")
+                        .join_outbound(2, 2, true,Query::new("OtherGraph"))),
+                );
+            common::expect_assert_eq(
+                query.to_aql().as_str(),
+                "\
+            FOR d in Companies \
+                FILTER d.emails ANY LIKE \"%gmail.com\" \
+                SORT d.company_name ASC \
+                    FOR c in 1..2 OUTBOUND d GRAPH SomeGraph \
+                        SORT c._id ASC \
+                        FILTER 1 == 1 \
+                            FOR b in 1..5 INBOUND c BelongsTo \
+                                FOR a in 2..2 OUTBOUND b GRAPH OtherGraph \
+                                return a",
+            )?;
+            Ok(())
+        }
+    }
+
 
     #[test]
     fn complex_query_works() -> Result<(), String> {
@@ -335,7 +390,7 @@ mod query {
                     SORT a.age ASC \
                     LIMIT 5 \
                     FILTER a.gender == \"f\" \
-                    return a"
+                    return a",
         )?;
         Ok(())
     }
@@ -371,7 +426,7 @@ mod query {
 mod call {
     use serde::{Deserialize, Serialize};
 
-    use aragog::{DatabaseConnectionPool, DatabaseRecord, Record, Validate};
+    use aragog::{DatabaseConnectionPool, DatabaseRecord, EdgeRecord, Record, Validate};
 
     use super::*;
 
@@ -383,6 +438,16 @@ mod call {
     #[derive(Clone, Serialize, Deserialize, Record, Validate)]
     pub struct Order {
         pub name: String
+    }
+
+    #[derive(Clone, Serialize, Deserialize, EdgeRecord, Validate)]
+    pub struct PartOf {
+        pub _from: String,
+        pub _to: String,
+    }
+
+    fn linker(_from: String, _to: String) -> PartOf {
+        PartOf { _from, _to }
     }
 
     fn factory(db_pool: &DatabaseConnectionPool) {
@@ -397,17 +462,17 @@ mod call {
         let m3 = tokio_test::block_on(DatabaseRecord::create(Order { name: "Menu Pasta".to_string() }, db_pool)).unwrap();
 
         // Menu 1
-        tokio_test::block_on(p1.link_to(&m1, "PartOf", &db_pool)).unwrap();
-        tokio_test::block_on(wi.link_to(&m1, "PartOf", &db_pool)).unwrap();
-        tokio_test::block_on(ic.link_to(&m1, "PartOf", &db_pool)).unwrap();
+        tokio_test::block_on(DatabaseRecord::link(&p1, &m1, &db_pool, linker)).unwrap();
+        tokio_test::block_on(DatabaseRecord::link(&wi, &m1, &db_pool, linker)).unwrap();
+        tokio_test::block_on(DatabaseRecord::link(&ic, &m1, &db_pool, linker)).unwrap();
         // Menu 2
-        tokio_test::block_on(p2.link_to(&m2, "PartOf", &db_pool)).unwrap();
-        tokio_test::block_on(wi.link_to(&m2, "PartOf", &db_pool)).unwrap();
-        tokio_test::block_on(ic.link_to(&m2, "PartOf", &db_pool)).unwrap();
+        tokio_test::block_on(DatabaseRecord::link(&p2, &m2, &db_pool, linker)).unwrap();
+        tokio_test::block_on(DatabaseRecord::link(&wi, &m2, &db_pool, linker)).unwrap();
+        tokio_test::block_on(DatabaseRecord::link(&ic, &m2, &db_pool, linker)).unwrap();
         // Menu 3
-        tokio_test::block_on(pa.link_to(&m3, "PartOf", &db_pool)).unwrap();
-        tokio_test::block_on(wi.link_to(&m3, "PartOf", &db_pool)).unwrap();
-        tokio_test::block_on(ic.link_to(&m3, "PartOf", &db_pool)).unwrap();
+        tokio_test::block_on(DatabaseRecord::link(&pa, &m3, &db_pool, linker)).unwrap();
+        tokio_test::block_on(DatabaseRecord::link(&wi, &m3, &db_pool, linker)).unwrap();
+        tokio_test::block_on(DatabaseRecord::link(&ic, &m3, &db_pool, linker)).unwrap();
     }
 
     #[test]
@@ -416,7 +481,7 @@ mod call {
             factory(&pool);
             let query = Query::new("Dish")
                 .filter(compare!(field "name").like("Pizza%").into())
-                .join_outbound(1, 1, Query::new("PartOf"));
+                .join_outbound(1, 1, false,PartOf::query());
             let res = tokio_test::block_on(query.call(&pool)).unwrap();
             common::expect_assert_eq(res.len(), 2)?;
             let res = res.get_records::<Order>();
@@ -436,7 +501,7 @@ mod call {
             factory(&pool);
             let query = Query::new("Order")
                 .filter(compare!(field "name").equals_str("Menu Pizza").into())
-                .join_inbound(1, 1, Query::new("PartOf"));
+                .join_inbound(1, 1, false, PartOf::query());
             let res = tokio_test::block_on(query.call(&pool)).unwrap();
             common::expect_assert_eq(res.len(), 3)?;
             let res = res.get_records::<Dish>();
@@ -455,8 +520,8 @@ mod call {
         common::with_db(|pool| {
             factory(&pool);
             let query = Query::new("Dish")
-                .join_outbound(1, 1, Query::new("PartOf")
-                    .join_inbound(1, 1, Query::new("PartOf").distinct()),
+                .join_outbound(1, 1, false,PartOf::query()
+                    .join_inbound(1, 1, false, PartOf::query().distinct()),
                 );
             let res = tokio_test::block_on(query.call(&pool)).unwrap();
             common::expect_assert_eq(res.len(), 5)?;

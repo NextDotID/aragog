@@ -1,3 +1,7 @@
-mod characters;
+pub use {
+    characters::Character,
+    child_of::ChildOf,
+};
 
-pub use characters::Character;
+mod characters;
+mod child_of;

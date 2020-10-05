@@ -9,17 +9,12 @@ use common::with_db;
 
 pub mod common;
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record, Validate)]
 pub struct Dish {
     pub name: String,
     pub description: String,
     pub price: u16,
 }
-
-impl Validate for Dish {
-    fn validations(&self, _errors: &mut Vec<String>) {}
-}
-
 fn init_dish() -> Dish {
     Dish {
         name: "Quiche".to_string(),

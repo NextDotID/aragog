@@ -2,7 +2,7 @@ use std::fmt::{Display, Result};
 
 use serde::export::Formatter;
 
-use crate::query::{Comparison, SortDirection};
+use crate::query::Comparison;
 
 #[derive(Clone, Debug)]
 enum Operator {
@@ -17,13 +17,6 @@ impl Display for Operator {
             Self::OR => "||",
         })
     }
-}
-
-#[derive(Debug, Clone)]
-pub enum AqlOperation {
-    Filter(Filter),
-    Limit { skip: Option<u32>, limit: u32 },
-    Sort { field: String, direction: SortDirection },
 }
 
 /// Allows to filter a query according to different [`Comparison`].
@@ -93,10 +86,10 @@ impl Filter {
     /// # use aragog::query::{Comparison, Filter};
     /// let mut filter = Filter::new(Comparison::field("age").greater_than(10)).
     ///     or(Comparison::field("username").in_str_array(&["felix", "felixm"]));
-    /// assert_eq!(filter.to_aql("i"), String::from(r#"FILTER i.age > 10 || i.username IN ["felix", "felixm"]"#));
+    /// assert_eq!(filter.to_aql("i"), String::from(r#"i.age > 10 || i.username IN ["felix", "felixm"]"#));
     /// ```
     pub fn to_aql(&self, collection_id: &str) -> String {
-        let mut res = String::from("FILTER");
+        let mut res = String::new();
         for (i, comparison) in self.comparisons.iter().enumerate() {
             let operator_str = if i >= self.operators.len() {
                 String::new()
@@ -105,6 +98,6 @@ impl Filter {
             };
             res = format!("{} {}{}", res, comparison.to_aql(collection_id), operator_str)
         }
-        res
+        String::from(res.trim_start())
     }
 }
