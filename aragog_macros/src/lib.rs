@@ -62,7 +62,6 @@ pub fn edge_record_macro_derive(attr: TokenStream) -> TokenStream {
                             None => ()
                         }
                     }
-
                 }
                 _ => {}
             }

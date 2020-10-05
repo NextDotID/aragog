@@ -36,7 +36,7 @@ To do so you can add to your `cargo.toml` the following `feature`: `actix`. This
 aragog = { version = "^0.5", features = ["actix"] }
 ```
 
-If you also want to be able to use [paperclip][paperclip], you may want the `aragog` to be compatible.
+If you also want to be able to use [paperclip][paperclip], you may want `aragog` elements to be compatible.
 To do so you can add to your `cargo.toml` the following `feature`: `open-api`.
 
 ```toml

@@ -4,6 +4,36 @@ use crate::ServiceError;
 /// This trait provides the possibility to validate an instance or its fields formats or logic. Its main use
 /// it to validate a new or updated [`Record`] model instance before saving it.
 ///
+/// # Example
+///
+/// ```rust
+/// # use aragog::{Record, Validate};
+/// # use serde::{Deserialize, Serialize};
+/// use aragog::helpers::string_validators::*;
+///
+/// #[derive(Record, Clone, Deserialize, Serialize)]
+/// pub struct User {
+///     pub name: String,
+///     pub age: u32,
+///     pub email: String,
+///     pub job: Option<String>,
+///     pub phone: String,
+/// }
+///
+/// impl Validate for User {
+///     fn validations(&self, errors: &mut Vec<String>) {
+///         if self.age > 18 {
+///             Self::validate_field_presence("job", &self.job, errors);
+///         }
+///         validate_min_len("name", &self.name, 6, errors);
+///         validate_len("phone", &self.phone, 10, errors);
+///         validate_numeric_string("phone", &self.phone, errors);
+///         if self.age < 13 {
+///             errors.push("You are too young to use this website".to_string());
+///         }
+///     }
+/// }
+/// ```
 /// [`Record`]: record/trait.Record.html
 pub trait Validate {
     /// Validates the object field formats, logic or anything. Calls the [`validations`] method
