@@ -1,4 +1,3 @@
-
 /// Trait for structures that can be stored in Database as a ArangoDB EdgeCollection.
 /// The trait must be implemented to be used as a edge record in [`DatabaseRecord`].
 ///
@@ -128,6 +127,7 @@ pub trait EdgeRecord {
     fn _to_collection_name(&self) -> String {
         self._to().split('/').next().unwrap().to_string()
     }
+
     /// Parses the `_from()` returned `id` and returns the document collection name
     ///
     /// # Panic
@@ -153,5 +153,17 @@ pub trait EdgeRecord {
     /// ```
     fn _from_collection_name(&self) -> String {
         self._from().split('/').next().unwrap().to_string()
+    }
+
+    /// Validation method for `EdgeRecord` to use on [`Validate`] implementation.
+    /// Verifies that both `_from` and `_to` fields have correct format.
+    fn validate_edge_fields(&self, errors: &mut Vec<String>) {
+        let array = [("_from", self._from()), ("_to", self._to())];
+        for (name, field) in array.iter() {
+            let split = field.split('/');
+            if split.count() != 2 {
+                errors.push(format!(r#"{} "{}" has wrong format"#, name, field));
+            }
+        }
     }
 }

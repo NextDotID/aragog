@@ -330,7 +330,7 @@ mod query {
                         FILTER 1 == 1 \
                             FOR b in 1..5 INBOUND c BelongsTo \
                                 FOR a in 2..2 OUTBOUND b GRAPH OtherGraph \
-                                return a",
+                                    return a",
             )?;
             Ok(())
         }
