@@ -6,6 +6,7 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Crates.io](https://img.shields.io/crates/v/aragog.svg)](https://crates.io/crates/aragog)
 [![aragog](https://docs.rs/aragog/badge.svg)](https://docs.rs/aragog)
+[![Discord](https://img.shields.io/discord/763034131335741440.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Xyx3hUP)
 
 `aragog` is a simple lightweight ODM/OGM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
 The main concept is to provide behaviors allowing to synchronize documents and structs as simply an lightly as possible.
@@ -23,6 +24,8 @@ By now the available features are:
     * `Validate`: The structure can perform simple validations before being created or saved into the database.
     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example) (see `password_hashing` section)
     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
+    * `Link`: The structure can define relations with other models based on defined queries. 
+    * `ForeignLink`: The structure can define relations with other models based on defined foreign key.
 * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 
 #### Cargo features
@@ -374,9 +377,10 @@ let query = Query::new("User")
         - [ ] ArangoDB functions (`LENGTH`, `ABS`, etc.)
 * ORM and OGM
     - [X] Pundit like authorizations (authorize actions on model)
-    - [ ] Relations
+    - [X] Relations
         - [X] Handle graph vertices and edges
-        - [ ] Handle SQL-like relations (foreign keys)
+        - [X] Handle SQL-like relations (foreign keys)
+        - [X] Handle queried relations
     - [ ] Handle key-value pair system (redis like)
 * Middle and long term:
     - [ ] Handle revisions/concurrency correctly
@@ -384,6 +388,7 @@ let query = Query::new("User")
         - [X] Record `derive` macro
         - [X] EdgeRecord `derive` macro checking `_from` and `_to` presence at compile time
         - [ ] Handle a `attribute` macro for indexes and generate the schema at compile time
+        - [ ] Handle a `attribute` macro for relations to provide the link methods automatically
         - [ ] Handle Migrations
     - [ ] Define possible `async` validations for database advance state check
 

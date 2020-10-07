@@ -14,6 +14,8 @@
 //!     * `Validate`: The structure can perform simple validations before being created or saved into the database.
 //!     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
 //!     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
+//!     * `Link`: The structure can define relations with other models based on defined queries.
+//!     * `ForeignLink`: The structure can define relations with other models based on defined foreign key.
 //! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 //!
 //! #### Cargo features
@@ -469,9 +471,11 @@ pub use {
     record::Record,
     update::Update,
     validate::Validate,
+    link::Link,
+    foreign_link::ForeignLink,
 };
 
-/// Contains useful tools to parse json value and to valiate string formats.
+/// Contains useful tools to parse json value and to validate string formats.
 pub mod helpers;
 /// contains querying struct and functions.
 pub mod query;
@@ -484,3 +488,5 @@ mod new;
 mod error;
 mod authorize_action;
 mod edge_record;
+mod link;
+mod foreign_link;
