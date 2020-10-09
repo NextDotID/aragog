@@ -29,11 +29,17 @@ fn create_order(pool: &DatabaseConnectionPool) -> DatabaseRecord<Order> {
 }
 
 
-#[derive(Clone, EdgeRecord, Validate, Serialize, Deserialize)]
+#[derive(Clone, EdgeRecord, Serialize, Deserialize)]
 pub struct PartOf {
     _from: String,
     _to: String,
     description: String,
+}
+
+impl Validate for PartOf {
+    fn validations(&self, errors: &mut Vec<String>) {
+        self.validate_edge_fields(errors);
+    }
 }
 
 #[test]
@@ -70,4 +76,40 @@ fn edge_can_be_created_with_a_simple_link() -> Result<(), String> {
         common::expect_assert_eq(record.record._to_collection_name().as_str(), Order::collection_name())?;
         Ok(())
     })
+}
+
+
+#[test]
+fn edge_validated_format() -> Result<(), String> {
+    let edge = PartOf {
+        _from: "Dish/123".to_string(),
+        _to: "Dish/234".to_string(),
+        description: "part of".to_string(),
+    };
+    common::expect_assert(edge.is_valid())?;
+    let edge = PartOf {
+        _from: "Dish/".to_string(),
+        _to: "Dish/234".to_string(),
+        description: "part of".to_string(),
+    };
+    common::expect_assert(!edge.is_valid())?;
+    let edge = PartOf {
+        _from: "Dish//123".to_string(),
+        _to: "Dish/234".to_string(),
+        description: "part of".to_string(),
+    };
+    common::expect_assert(!edge.is_valid())?;
+    let edge = PartOf {
+        _from: "Dish/dish".to_string(),
+        _to: "Dish/234".to_string(),
+        description: "part of".to_string(),
+    };
+    common::expect_assert(!edge.is_valid())?;
+    let edge = PartOf {
+        _from: "/123".to_string(),
+        _to: "Dish/234".to_string(),
+        description: "part of".to_string(),
+    };
+    common::expect_assert(!edge.is_valid())?;
+    Ok(())
 }

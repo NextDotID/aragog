@@ -1,3 +1,5 @@
+use crate::helpers::string_validators::{validate_min_len, validate_numeric_string};
+
 /// Trait for structures that can be stored in Database as a ArangoDB EdgeCollection.
 /// The trait must be implemented to be used as a edge record in [`DatabaseRecord`].
 ///
@@ -160,10 +162,15 @@ pub trait EdgeRecord {
     fn validate_edge_fields(&self, errors: &mut Vec<String>) {
         let array = [("_from", self._from()), ("_to", self._to())];
         for (name, field) in array.iter() {
-            let split = field.split('/');
-            if split.count() != 2 {
+            let split = field.split('/').collect::<Vec<&str>>();
+            if split.len() != 2 {
                 errors.push(format!(r#"{} "{}" has wrong format"#, name, field));
             }
+            let left_part = &split.first().unwrap();
+            validate_min_len("_from", left_part, 2, errors);
+            let right_part = &split.last().unwrap();
+            validate_min_len("_to", right_part, 2, errors);
+            validate_numeric_string("_to", right_part, errors);
         }
     }
 }
