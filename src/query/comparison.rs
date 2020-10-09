@@ -1,6 +1,6 @@
 use std::fmt::Display;
 use num::Num;
-use crate::query::Filter;
+use crate::query::{Filter, string_array_from_array, string_array_from_array_str};
 
 /// Macro to simplify the [`Comparison`] construction:
 ///
@@ -328,7 +328,7 @@ impl ComparisonBuilder {
             is_field: self.is_field,
             left_value: self.statement,
             comparator: "IN".to_string(),
-            right_value: format!(r#"{}"#, Self::string_from_array(array))
+            right_value: format!(r#"{}"#, string_array_from_array(array))
         }
     }
 
@@ -348,7 +348,7 @@ impl ComparisonBuilder {
             is_field: self.is_field,
             left_value: self.statement,
             comparator: "NOT IN".to_string(),
-            right_value: format!(r#"{}"#, Self::string_from_array(array))
+            right_value: format!(r#"{}"#, string_array_from_array(array))
         }
     }
 
@@ -368,7 +368,7 @@ impl ComparisonBuilder {
             is_field: self.is_field,
             left_value: self.statement,
             comparator: "IN".to_string(),
-            right_value: format!(r#"{}"#, Self::string_from_array_str(array))
+            right_value: format!(r#"{}"#, string_array_from_array_str(array))
         }
     }
 
@@ -388,7 +388,7 @@ impl ComparisonBuilder {
             is_field: self.is_field,
             left_value: self.statement,
             comparator: "NOT IN".to_string(),
-            right_value: format!(r#"{}"#, Self::string_from_array_str(array))
+            right_value: format!(r#"{}"#, string_array_from_array_str(array))
         }
     }
 
@@ -468,26 +468,6 @@ impl ComparisonBuilder {
             comparator: "==".to_string(),
             right_value: "false".to_string()
         }
-    }
-
-    fn string_from_array<T>(array: &[T]) -> String where T: Num + Display {
-        let mut array_str = String::from("[");
-        for (i, element) in array.iter().enumerate() {
-            array_str = format!("{}{}", array_str, element);
-            if i < array.len() - 1 { array_str += ", " }
-        }
-        array_str += "]";
-        array_str
-    }
-
-    fn string_from_array_str(array: &[&str]) -> String where {
-        let mut array_str = String::from("[");
-        for (i, element) in array.iter().enumerate() {
-            array_str = format!(r#"{}"{}""#, array_str, element);
-            if i < array.len() - 1 { array_str += ", " }
-        }
-        array_str += "]";
-        array_str
     }
 }
 

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde::export::Formatter;
 
 use crate::{DatabaseConnectionPool, ServiceError};
-use crate::query::Filter;
+use crate::query::{Filter, string_from_array, OptionalQueryString};
 use crate::query::graph_query::{GraphQueryData, GraphQueryDirection};
 use crate::query::operations::{AqlOperation, OperationContainer};
 use crate::query::query_id_helper::get_str_identifier;
@@ -85,6 +85,7 @@ impl Display for SortDirection {
 /// [`to_aql`]: struct.Query.html#method.to_aql
 #[derive(Clone, Debug)]
 pub struct Query {
+    with_collections: OptionalQueryString,
     collection: String,
     graph_data: Option<GraphQueryData>,
     operations: OperationContainer,
@@ -109,6 +110,7 @@ impl Query {
     /// ```
     pub fn new(collection_name: &str) -> Self {
         Self {
+            with_collections: OptionalQueryString(None),
             collection: String::from(collection_name),
             graph_data: None,
             operations: OperationContainer(vec![]),
@@ -394,6 +396,28 @@ impl Query {
     pub fn join_any(self, min: u16, max: u16, named_graph: bool, query: Query) -> Self {
         self.join(min, max, query, GraphQueryDirection::Any, named_graph)
     }
+    /// Allow the current traversing `Query` to filter the traversed collections and avoid potentian deadlocks.
+    ///
+    /// # Arguments
+    ///
+    /// * `collections` - The names of the collections the query can traverse
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::Query;
+    /// let query = Query::new("User").with_collections(&["User", "Client"]).join_any(1, 2, false, Query::new("ChildOf"));
+    /// assert_eq!(query.to_aql(), String::from("\
+    ///     WITH User, Client \
+    ///     FOR b in User \
+    ///         FOR a in 1..2 ANY b ChildOf \
+    ///         return a\
+    /// "));
+    /// ```
+    pub fn with_collections(mut self, collections: &[&str]) -> Self {
+        self.with_collections = OptionalQueryString(Some(format!("WITH {} ", string_from_array(collections))));
+        self
+    }
 
     /// Allows to sort a current `Query` by different field names. The fields must exist or the query won't work.
     /// Every time the method is called, a new sorting condition is added.
@@ -514,12 +538,13 @@ impl Query {
     /// "));
     /// ```
     pub fn to_aql(&self) -> String {
-        let mut res;
         let collection_id = get_str_identifier(self.item_identifier);
+        let mut res = self.with_collections.to_string();
         if self.graph_data.is_some() {
             let graph_data = self.graph_data.as_ref().unwrap();
             res = format!(
-                "FOR {} in {}..{} {} {} {}{}",
+                "{}FOR {} in {}..{} {} {} {}{}",
+                res,
                 collection_id,
                 graph_data.min,
                 graph_data.max,
@@ -529,7 +554,7 @@ impl Query {
                 &self.collection
             );
         } else {
-            res = format!("FOR {} in {}", collection_id, &self.collection);
+            res = format!("{}FOR {} in {}", res, collection_id, &self.collection);
         }
         if self.operations.0.len() > 0 {
             res = format!("{} {}", res, self.operations.to_aql(&collection_id));
