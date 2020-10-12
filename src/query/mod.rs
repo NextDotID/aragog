@@ -34,7 +34,7 @@ fn string_from_array<T>(array: &[T]) -> String where T: Display {
     array_str
 }
 
-fn string_array_from_array_str(array: &[&str]) -> String where {
+fn string_array_from_array_str<T>(array: &[T]) -> String where T: Display {
     let mut array_str = String::from("[");
     for (i, element) in array.iter().enumerate() {
         array_str = format!(r#"{}"{}""#, array_str, element);
