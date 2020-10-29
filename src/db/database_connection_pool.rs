@@ -34,7 +34,7 @@ impl DatabaseConnectionPool {
     /// If any of the required env variables are missing the function will panic with a explanation
     pub async fn new(db_host: &str, db_name: &str, db_user: &str, db_password: &str) -> Self {
         log::info!("Connecting to database server...");
-        let db_connection = Connection::establish_basic_auth(
+        let db_connection = Connection::establish_jwt(
             db_host,
             db_user,
             db_password).await.unwrap();
