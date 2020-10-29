@@ -8,6 +8,6 @@ edition = "2018"
 tokio = { version = "0.2", features = ["macros", "tcp", "dns", "io-util"] }
 serde = "1.0.116"
 chrono = "0.4.19"
-aragog = { path = "../../../aragog" }
+aragog = { path = "../../../aragog", features = ["password_hashing"] }
 # Change it to:
 # aragog = { git = "https://gitlab.com/qonfucius/aragog.git", branch = "master" }
