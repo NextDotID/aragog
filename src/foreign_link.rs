@@ -9,7 +9,7 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 /// # Example
 ///
 /// ```rust
-/// # use aragog::{Record, Validate, ForeignLink, DatabaseConnectionPool, DatabaseRecord};
+/// # use aragog::{Record, Validate, ForeignLink, DatabaseConnectionPool, DatabaseRecord, AuthMode};
 /// # use serde::{Deserialize, Serialize};
 /// # use std::borrow::Borrow;
 /// #
@@ -35,7 +35,8 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 /// #       &std::env::var("DB_HOST").unwrap_or("http://localhost:8529".to_string()),
 /// #       &std::env::var("DB_NAME").unwrap_or("aragog_test".to_string()),
 /// #       &std::env::var("DB_USER").unwrap_or("test".to_string()),
-/// #       &std::env::var("DB_PWD").unwrap_or("test".to_string())).await;
+/// #       &std::env::var("DB_PWD").unwrap_or("test".to_string()),
+/// #       AuthMode::Basic).await;
 /// # database_pool.truncate().await;
 /// let user = DatabaseRecord::create(User {}, &database_pool).await.unwrap();
 /// let order = Order {

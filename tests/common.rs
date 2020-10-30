@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use aragog::DatabaseConnectionPool;
+use aragog::{DatabaseConnectionPool, AuthMode};
 
 const DEFAULT_DB_HOST: &str = "http://localhost:8529";
 const DEFAULT_DB_NAME: &str = "aragog_test";
@@ -15,6 +15,7 @@ pub fn setup_db() -> DatabaseConnectionPool {
         &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
         &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
         &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
+        AuthMode::Basic
     ));
     tokio_test::block_on(pool.truncate());
     pool

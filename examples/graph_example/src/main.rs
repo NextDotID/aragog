@@ -1,5 +1,5 @@
 use aragog::{DatabaseConnectionPool, DatabaseRecord};
-use aragog::query::Query;
+use aragog::{query::Query, AuthMode};
 
 use crate::models::{Character, ChildOf};
 
@@ -24,6 +24,7 @@ async fn main() {
         &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
         &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
         &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
+        AuthMode::Jwt
     ).await;
     // Testing purposes
     db_pool.truncate().await;
