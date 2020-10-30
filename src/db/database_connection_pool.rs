@@ -24,20 +24,57 @@ pub struct DatabaseConnectionPool {
     pub database: Database<ReqwestClient>,
 }
 
+/// Defines which ArangoDB authentication mode will be used
+#[derive(Debug, Clone)]
+pub enum AuthMode {
+    /// Basic Username/Password authentication mode
+    Basic,
+    /// Recommended JWT authentication.
+    ///
+    /// # Note:
+    /// The JWT has a 1 month validity (see [arangors] documentation)
+    /// And can lead to issues on docker
+    ///
+    /// [arangors]: https://github.com/fMeow/arangors
+    Jwt,
+}
+
+impl Default for AuthMode {
+    fn default() -> Self {
+        Self::Basic
+    }
+}
+
 impl DatabaseConnectionPool {
     /// Creates and returns a new struct instance.
     /// This function will base itself on environment variables and on the schema json file:
     /// `./src/config/db/schema.json`
     ///
+    /// # Arguments
+    ///
+    /// * `db_host` - The ArangoDB host to connect to (`http://localhost:8529` by default or `http://arangodb:8529` on docker containers
+    /// * `db_name` - The name of the ArangoDB database to connect to
+    /// * `db_user` - The username of a ArangoDb user with access to the database
+    /// * `db_password` - The password associated with `db_user`
+    /// * `auth_mode` - The chosen authentication mode, if set to `default` the basic auth will be used
+    ///
     /// # Panics
     ///
     /// If any of the required env variables are missing the function will panic with a explanation
-    pub async fn new(db_host: &str, db_name: &str, db_user: &str, db_password: &str) -> Self {
+    pub async fn new(db_host: &str, db_name: &str, db_user: &str, db_password: &str, auth_mode: AuthMode) -> Self {
         log::info!("Connecting to database server...");
-        let db_connection = Connection::establish_jwt(
-            db_host,
-            db_user,
-            db_password).await.unwrap();
+        let db_connection = match auth_mode {
+            AuthMode::Basic => Connection::establish_basic_auth(
+                db_host,
+                db_user,
+                db_password,
+            ).await.unwrap(),
+            AuthMode::Jwt => Connection::establish_jwt(
+                db_host,
+                db_user,
+                db_password,
+            ).await.unwrap(),
+        };
         log::info!("Connected to database server.");
         let database = db_connection.db(&db_name).await.unwrap();
         DatabaseConnectionPool::load_schema(database).await.unwrap()
@@ -119,7 +156,7 @@ impl DatabaseConnectionPool {
         Ok(collections_map)
     }
 
-    async fn load_edge_collections(database: &Database<ReqwestClient>, json_collections: Vec<Value>, collections :& mut HashMap<String, DatabaseCollection>) -> Result<(), String> {
+    async fn load_edge_collections(database: &Database<ReqwestClient>, json_collections: Vec<Value>, collections: &mut HashMap<String, DatabaseCollection>) -> Result<(), String> {
         for json_collection in json_collections {
             let collection_name = json_helper::load_json_string_key(&json_collection, &SCHEMA_COLLECTION_NAME)?;
             let collection: Collection<ReqwestClient>;

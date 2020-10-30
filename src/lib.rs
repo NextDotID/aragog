@@ -121,7 +121,7 @@
 //! **Example:**
 //!
 //! ```rust
-//! use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
+//! use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
 //! use serde::{Serialize, Deserialize};
 //! use tokio;
 //!
@@ -142,7 +142,8 @@
 //!         &std::env::var("DB_HOST").unwrap(),
 //!         &std::env::var("DB_NAME").unwrap(),
 //!         &std::env::var("DB_USER").unwrap(),
-//!         &std::env::var("DB_PWD").unwrap()).await;
+//!         &std::env::var("DB_PWD").unwrap(),
+//!         AuthMode::default()).await;
 //! #     database_pool.truncate().await;
 //!     // Define a document
 //!     let mut user = User {
@@ -167,7 +168,7 @@
 //! **Example:**
 //!
 //! ```rust
-//! # use aragog::{Record, EdgeRecord, DatabaseConnectionPool, DatabaseRecord, Validate};
+//! # use aragog::{Record, EdgeRecord, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use tokio;
 //! #
@@ -196,7 +197,8 @@
 //! #        &std::env::var("DB_HOST").unwrap(),
 //! #        &std::env::var("DB_NAME").unwrap(),
 //! #        &std::env::var("DB_USER").unwrap(),
-//! #        &std::env::var("DB_PWD").unwrap()).await;
+//! #        &std::env::var("DB_PWD").unwrap(),
+//! #        AuthMode::default()).await;
 //! #  database_pool.truncate().await;
 //!     // Define a document
 //!     let mut dish = DatabaseRecord::create(Dish {
@@ -224,7 +226,7 @@
 //!
 //! **Example**
 //! ```rust
-//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
+//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use aragog::query::{Comparison, Filter};
 //! # use tokio;
@@ -244,7 +246,8 @@
 //! #       &std::env::var("DB_HOST").unwrap(),
 //! #       &std::env::var("DB_NAME").unwrap(),
 //! #       &std::env::var("DB_USER").unwrap(),
-//! #       &std::env::var("DB_PWD").unwrap()).await;
+//! #       &std::env::var("DB_PWD").unwrap(),
+//! #       AuthMode::default()).await;
 //! # database_pool.truncate().await;
 //! # let mut user = User {
 //! #     username: String::from("LeRevenant1234"),
@@ -276,7 +279,7 @@
 //! ```rust
 //! #[macro_use]
 //! extern crate aragog;
-//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
+//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use aragog::query::{Query, Comparison, Filter};
 //! # use tokio;
@@ -300,7 +303,8 @@
 //! #       &std::env::var("DB_HOST").unwrap(),
 //! #       &std::env::var("DB_NAME").unwrap(),
 //! #       &std::env::var("DB_USER").unwrap(),
-//! #       &std::env::var("DB_PWD").unwrap()).await;
+//! #       &std::env::var("DB_PWD").unwrap(),
+//! #       AuthMode::default()).await;
 //! # database_pool.truncate().await;
 //! # let mut user = User {
 //! #     username: String::from("LeRevenant1234"),
@@ -464,6 +468,7 @@ pub use {
     authenticate::Authenticate,
     authorize_action::AuthorizeAction,
     db::database_connection_pool::DatabaseConnectionPool,
+    db::database_connection_pool::AuthMode,
     db::database_record::DatabaseRecord,
     edge_record::EdgeRecord,
     error::ServiceError,

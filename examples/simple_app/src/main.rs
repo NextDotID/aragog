@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate aragog;
 
-use aragog::{DatabaseConnectionPool, DatabaseRecord, New, Record, ServiceError, Update};
+use aragog::{DatabaseConnectionPool, DatabaseRecord, New, Record, ServiceError, Update, AuthMode};
 use aragog::query::{Comparison, Filter};
 
 use crate::models::dish::{Dish, DishDTO};
@@ -25,6 +25,7 @@ async fn main() {
         &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
         &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
         &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
+        AuthMode::default()
     ).await;
     // Testing purposes
     db_pool.truncate().await;

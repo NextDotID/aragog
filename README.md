@@ -134,7 +134,7 @@ The real representation of a complete document is `DatabaseRecord<T>` where `T` 
 **Example:**
 
 ```rust
-use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate};
+use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
 use serde::{Serialize, Deserialize};
 use tokio;
 
@@ -149,7 +149,7 @@ pub struct User {
 #[tokio::main]
 async fn main() {
     // Database connection Setup
-    let database_pool = DatabaseConnectionPool::new("http://localhost:8529", "db", "user", "password").await;
+    let database_pool = DatabaseConnectionPool::new("http://localhost:8529", "db", "user", "password", AuthMode::default()).await;
     // Define a document
     let mut user = User {
         username: String::from("LeRevenant1234"),
@@ -189,7 +189,7 @@ pub struct PartOf {
 }
 #[tokio::main]
 async fn main() {
-   let database_pool = DatabaseConnectionPool::new("http://localhost:8529", "db", "user", "password").await;
+   let database_pool = DatabaseConnectionPool::new("http://localhost:8529", "db", "user", "password", AuthMode::Jwt).await;
     // Define a document
     let mut dish = DatabaseRecord::create(Dish {
         name: "Pizza".to_string(),
