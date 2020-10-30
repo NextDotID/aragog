@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0
+
+* Added `EdgeRecord` trait representing Edge Collections
+* `Record` and `EdgeRecord` can be derived
+* `Query` can handle sub queries and new operations
+* Added linking methods between `DatabaseRecord` through edges
+* New `ForeignLink` and `Link` traits to define useful relations between models
+* New Authentication mode enums for `DatabaseConnectionPool`
+
 ## 0.5.1
 
 * Query filters can be built via comparisons (syntax cleaning no breaking changes)
