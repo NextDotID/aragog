@@ -40,12 +40,9 @@ num = "0.3.1"
 # Self depedencies
 aragog-macros = { path = "aragog_macros" }
 
-paperclip = { version = "0.5.0", optional = true, features = ["actix"] }
 actix-web = { version = "3.2.0", optional = true, default-features = false }
 argonautica = { version = "0.2.0", optional = true }
-
-[patch.crates-io]
-paperclip = { git = "https://github.com/wafflespeanut/paperclip", branch = "master" }
+paperclip = { git = "https://github.com/wafflespeanut/paperclip", branch = "master", optional = true, features = ["actix"] }
 
 [dev-dependencies]
 tokio-test = "0.2.1"
