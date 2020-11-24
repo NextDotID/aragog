@@ -46,21 +46,21 @@ impl Default for AuthMode {
 }
 
 impl DatabaseConnectionPool {
-    /// Creates and returns a new struct instance.
-    /// This function will base itself on environment variables and on the schema json file:
-    /// `./src/config/db/schema.json`
+    /// Creates and returns a new instance according to provided parameters.
     ///
     /// # Arguments
     ///
-    /// * `db_host` - The ArangoDB host to connect to (`http://localhost:8529` by default or `http://arangodb:8529` on docker containers
+    /// * `db_host` - The ArangoDB host to connect to (`http://localhost:8529` by default or `http://arangodb:8529` on docker containers)
     /// * `db_name` - The name of the ArangoDB database to connect to
     /// * `db_user` - The username of a ArangoDb user with access to the database
     /// * `db_password` - The password associated with `db_user`
     /// * `auth_mode` - The chosen authentication mode, if set to `default` the basic auth will be used
     ///
+    /// To load the schema this function will try to access `SCHEMA_PATH` env var or use the default value: `./src/config/db/schema.json`
+    ///
     /// # Panics
     ///
-    /// If any of the required env variables are missing the function will panic with a explanation
+    /// If the provided credentials are wrong or if the database is not running  the function will panic.
     pub async fn new(db_host: &str, db_name: &str, db_user: &str, db_password: &str, auth_mode: AuthMode) -> Self {
         log::info!("Connecting to database server...");
         let db_connection = match auth_mode {
@@ -80,9 +80,35 @@ impl DatabaseConnectionPool {
         DatabaseConnectionPool::load_schema(database).await.unwrap()
     }
 
+    /// Creates and returns a pool instance based on env variables, reducing boilerplate code.
+    ///
+    /// # Environnment
+    ///
+    /// * `DB_HOST` - The ArangoDB host to connect to (`http://localhost:8529` by default or `http://arangodb:8529` on docker containers)
+    /// * `DB_NAME` - The name of the ArangoDB database to connect to
+    /// * `DB_USER` - The username of a ArangoDb user with access to the database
+    /// * `DB_PASSWORD` - The password associated with `db_user`
+    ///
+    /// To load the schema this function will try to access `SCHEMA_PATH` env var or use the default value: `./src/config/db/schema.json`
+    ///
+    /// # Panics
+    ///
+    /// If the provided credentials are wrong or if the database is not running  the function will panic.
+    /// If any of the previous env var is not specified the function will panic with an explanation message.
+    pub async fn auto_setup() -> Self {
+        let db_host = std::env::var("DB_HOST").expect("Please define DB_HOST env var.");
+        let db_name = std::env::var("DB_NAME").expect("Please define DB_NAME env var.");
+        let db_user = std::env::var("DB_USER").expect("Please define DB_USER env var.");
+        let db_password = std::env::var("DB_PASSWORD").expect("Please define DB_PASSWORD env var.");
+        DatabaseConnectionPool::new(&db_host, &db_name, &db_user, &db_password, AuthMode::default()).await
+    }
+
     /// Simple wrapper to retrieve a Collection without using the HashMap directly.
     /// Can panic if the key matching `collection` is missing
     pub fn get_collection(&self, collection: &str) -> &Collection<ReqwestClient> {
+        if !self.collections.contains_key(collection) {
+            panic!("Undefined collection {}, check your schema.json file", collection)
+        }
         &self.collections[collection].collection
     }
 
