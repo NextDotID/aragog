@@ -75,9 +75,13 @@ pub trait ForeignLink<T: Record + Serialize + DeserializeOwned + Clone> {
     fn foreign_key(&self) -> &str;
 
     /// Retrieves the record matching the defined `foreign_key`. Type inference may be required.
-    async fn linked_model(&self, db_pool: &DatabaseConnectionPool) -> Result<DatabaseRecord<T>, ServiceError>
-        where Self: Sized,
-              T: 'async_trait
+    async fn linked_model(
+        &self,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<DatabaseRecord<T>, ServiceError>
+    where
+        Self: Sized,
+        T: 'async_trait,
     {
         DatabaseRecord::find(self.foreign_key(), db_pool).await
     }

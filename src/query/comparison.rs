@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use num::Num;
 
-use crate::query::{Filter, string_array_from_array, string_array_from_array_str};
+use crate::query::{string_array_from_array, string_array_from_array_str, Filter};
 
 /// Macro to simplify the [`Comparison`] construction:
 ///
@@ -103,7 +103,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Product").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Product FILTER a.price == 10.5 return a");
     /// ```
-    pub fn equals_str<T>(self, value: T) -> Comparison where T: Display {
+    pub fn equals_str<T>(self, value: T) -> Comparison
+    where
+        T: Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -142,7 +145,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Product").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Product FILTER a.price != 10.5 return a");
     /// ```
-    pub fn different_than_str<T>(self, value: T) -> Comparison where T: Display {
+    pub fn different_than_str<T>(self, value: T) -> Comparison
+    where
+        T: Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -267,7 +273,10 @@ impl ComparisonBuilder {
     /// ```
     ///
     /// [`equals_str`]: struct.ComparisonBuilder.html#method.equals_str
-    pub fn equals<T>(self, value: T) -> Comparison where T: Display {
+    pub fn equals<T>(self, value: T) -> Comparison
+    where
+        T: Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -308,7 +317,10 @@ impl ComparisonBuilder {
     /// ```
     ///
     /// [`different_than_str`]: struct.ComparisonBuilder.html#method.different_than_str
-    pub fn different_than<T>(self, value: T) -> Comparison where T: Display {
+    pub fn different_than<T>(self, value: T) -> Comparison
+    where
+        T: Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -329,7 +341,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Users FILTER a.age > 18 return a");
     /// ```
-    pub fn greater_than<T>(self, value: T) -> Comparison where T: Num + Display {
+    pub fn greater_than<T>(self, value: T) -> Comparison
+    where
+        T: Num + Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -350,7 +365,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Users FILTER a.age >= 18 return a");
     /// ```
-    pub fn greater_or_equal<T>(self, value: T) -> Comparison where T: Num + Display {
+    pub fn greater_or_equal<T>(self, value: T) -> Comparison
+    where
+        T: Num + Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -371,7 +389,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Users FILTER a.age < 18 return a");
     /// ```
-    pub fn lesser_than<T>(self, value: T) -> Comparison where T: Num + Display {
+    pub fn lesser_than<T>(self, value: T) -> Comparison
+    where
+        T: Num + Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -392,7 +413,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Users FILTER a.age <= 18 return a");
     /// ```
-    pub fn lesser_or_equal<T>(self, value: T) -> Comparison where T: Num + Display {
+    pub fn lesser_or_equal<T>(self, value: T) -> Comparison
+    where
+        T: Num + Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -413,7 +437,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Users FILTER a.age IN [1, 11, 16, 18] return a");
     /// ```
-    pub fn in_array<T>(self, array: &[T]) -> Comparison where T: Display {
+    pub fn in_array<T>(self, array: &[T]) -> Comparison
+    where
+        T: Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -434,7 +461,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Users FILTER a.age NOT IN [1, 11, 16, 18] return a");
     /// ```
-    pub fn not_in_array<T>(self, array: &[T]) -> Comparison where T: Display {
+    pub fn not_in_array<T>(self, array: &[T]) -> Comparison
+    where
+        T: Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -455,7 +485,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), r#"FOR a in Users FILTER a.username IN ["felix", "123felix"] return a"#);
     /// ```
-    pub fn in_str_array<T>(self, array: &[T]) -> Comparison where T: Display {
+    pub fn in_str_array<T>(self, array: &[T]) -> Comparison
+    where
+        T: Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -476,7 +509,10 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), r#"FOR a in Users FILTER a.username NOT IN ["felix", "123felix"] return a"#);
     /// ```
-    pub fn not_in_str_array<T>(self, array: &[T]) -> Comparison where T: Display {
+    pub fn not_in_str_array<T>(self, array: &[T]) -> Comparison
+    where
+        T: Display,
+    {
         Comparison {
             is_field: self.is_field,
             left_value: self.statement,
@@ -713,7 +749,10 @@ impl Comparison {
         } else {
             String::new()
         };
-        format!("{}{} {} {}", id, &self.left_value, &self.comparator, &self.right_value)
+        format!(
+            "{}{} {} {}",
+            id, &self.left_value, &self.comparator, &self.right_value
+        )
     }
 }
 

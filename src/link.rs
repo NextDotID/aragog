@@ -1,8 +1,8 @@
 use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 use crate::query::{Query, RecordQueryResult};
+use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 
 /// The `Link` trait of the Aragog library.
 /// It allows to define a query relation between different models.
@@ -81,9 +81,13 @@ pub trait Link<T: Record + Serialize + DeserializeOwned + Clone> {
     fn link_query(&self) -> Query;
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
-    async fn linked_models(&self, db_pool: &DatabaseConnectionPool) -> Result<RecordQueryResult<T>, ServiceError>
-        where Self: Sized,
-              T: 'async_trait
+    async fn linked_models(
+        &self,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<RecordQueryResult<T>, ServiceError>
+    where
+        Self: Sized,
+        T: 'async_trait,
     {
         DatabaseRecord::get(self.link_query(), db_pool).await
     }

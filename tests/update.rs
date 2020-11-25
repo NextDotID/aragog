@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use aragog::{ServiceError, Update};
+use serde::{Deserialize, Serialize};
 
 pub mod common;
 
@@ -33,12 +33,12 @@ fn can_succeed() {
     let mut dish = Dish {
         name: "Pizza Regina".to_string(),
         description: "Tomate, Jambon, Oeuf, Mozzarella".to_string(),
-        price: 5
+        price: 5,
     };
     let form = DishForm {
         form_name: String::from("Pizza Savoyarde"),
         form_description: String::from("Base crème, oignons, champignons, reublochon, poitrine"),
-        price: 13
+        price: 13,
     };
     dish.update(&form).unwrap();
     assert_eq!(&dish.name, &form.form_name);
@@ -52,12 +52,12 @@ fn can_fail() {
     let mut dish = Dish {
         name: "Pizza Regina".to_string(),
         description: "Tomate, Jambon, Oeuf, Mozzarella".to_string(),
-        price: 5
+        price: 5,
     };
     let form = DishForm {
         form_name: String::from("Pizza Savoyarde"),
         form_description: String::from("Base crème, oignons, champignons, reublochon, poitrine"),
-        price: 0
+        price: 0,
     };
     dish.update(&form).unwrap();
 }

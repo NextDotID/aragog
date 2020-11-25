@@ -19,10 +19,14 @@ pub struct GraphQueryData {
 
 impl Display for GraphQueryDirection {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", match self {
-            Self::Inbound => "INBOUND",
-            Self::Outbound => "OUTBOUND",
-            _ => "ANY"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Inbound => "INBOUND",
+                Self::Outbound => "OUTBOUND",
+                _ => "ANY",
+            }
+        )
     }
 }

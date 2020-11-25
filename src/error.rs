@@ -1,9 +1,9 @@
-use thiserror::Error;
-use arangors::{ClientError};
 #[cfg(feature = "actix")]
 use actix_web::{error, http::StatusCode};
+use arangors::ClientError;
 #[cfg(feature = "open-api")]
 use paperclip::actix::api_v2_errors;
+use thiserror::Error;
 
 /// Error enum used for the Arango ORM mapped as potential Http errors
 ///
@@ -65,8 +65,8 @@ impl error::ResponseError for ServiceError {
             Self::UnprocessableEntity => StatusCode::UNPROCESSABLE_ENTITY,
             Self::Unauthorized => StatusCode::UNAUTHORIZED,
             Self::Forbidden => StatusCode::FORBIDDEN,
-            Self::Conflict=> StatusCode::CONFLICT,
-            _ => StatusCode::INTERNAL_SERVER_ERROR
+            Self::Conflict => StatusCode::CONFLICT,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -82,7 +82,7 @@ impl ServiceError {
             ServiceError::Unauthorized => "401".to_string(),
             ServiceError::Forbidden => "403".to_string(),
             ServiceError::Timeout => "408".to_string(),
-            _ => "500".to_string()
+            _ => "500".to_string(),
         }
     }
 }
@@ -90,18 +90,19 @@ impl ServiceError {
 impl From<ClientError> for ServiceError {
     fn from(error: ClientError) -> Self {
         match error {
-            ClientError::Arango(arango_error) => {
-                match arango_error.code() {
-                    404 => Self::NotFound(arango_error.message().to_string()),
-                    409 => Self::Conflict,
-                    403 => Self::Forbidden,
-                    401 => Self::Unauthorized,
-                    408 => Self::Timeout,
-                    _ => Self::UnprocessableEntity
-                }
+            ClientError::Arango(arango_error) => match arango_error.code() {
+                404 => Self::NotFound(arango_error.message().to_string()),
+                409 => Self::Conflict,
+                403 => Self::Forbidden,
+                401 => Self::Unauthorized,
+                408 => Self::Timeout,
+                _ => Self::UnprocessableEntity,
             },
             ClientError::Serde(_serde_error) => Self::UnprocessableEntity,
-            ClientError::InsufficientPermission { permission: _permission, operation: _operation } => Self::Unauthorized,
+            ClientError::InsufficientPermission {
+                permission: _permission,
+                operation: _operation,
+            } => Self::Unauthorized,
             ClientError::InvalidServer(_server) => Self::Unauthorized,
             ClientError::HttpClient(_client) => Self::UnprocessableEntity,
         }

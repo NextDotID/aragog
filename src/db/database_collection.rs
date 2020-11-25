@@ -1,9 +1,9 @@
-use arangors::{Collection, Database, ClientError};
-use arangors::client::reqwest::ReqwestClient;
-use arangors::index::{IndexCollection, Index, IndexSettings};
-use serde_json::Value;
 use crate::helpers::json_helper;
 use crate::ServiceError;
+use arangors::client::reqwest::ReqwestClient;
+use arangors::index::{Index, IndexCollection, IndexSettings};
+use arangors::{ClientError, Collection, Database};
+use serde_json::Value;
 
 /// Struct containing the connection information on a ArangoDB collection
 #[derive(Debug, Clone)]
@@ -25,7 +25,10 @@ impl DatabaseCollection {
     ///
     /// On success a instance of `arangors::index:IndexCollection` is returned, an `arangors::ClientError` is raised
     /// on failure.
-    pub async fn get_indexes(&self, database: &Database<ReqwestClient>) -> Result<IndexCollection, ClientError> {
+    pub async fn get_indexes(
+        &self,
+        database: &Database<ReqwestClient>,
+    ) -> Result<IndexCollection, ClientError> {
         database.indexes(&self.collection_name).await
     }
 
@@ -39,9 +42,15 @@ impl DatabaseCollection {
     /// # Returns
     ///
     /// `true` on success, a `arangors::ClientError` on failure
-    pub async fn index_exists(&self, database: &Database<ReqwestClient>, index: &Index) -> Result<bool, ClientError> {
+    pub async fn index_exists(
+        &self,
+        database: &Database<ReqwestClient>,
+        index: &Index,
+    ) -> Result<bool, ClientError> {
         let indexes = self.get_indexes(database).await?.indexes;
-        if indexes.is_empty() { return Ok(false); }
+        if indexes.is_empty() {
+            return Ok(false);
+        }
         for idx in indexes {
             if idx.name == index.name && idx.fields == index.fields {
                 return Ok(true);
@@ -85,13 +94,13 @@ impl DatabaseCollection {
     /// On success a `i32` is returned as the document count.
     /// On failure a ServiceError wil be returned.
     pub async fn record_count(&self) -> Result<u32, ServiceError> {
-       let properties = match self.collection.document_count().await {
-           Ok(value) => value,
-           Err(client_error) => return Err(ServiceError::from(client_error))
-       };
-       match properties.info.count {
-           Some(value) => Ok(value),
-           None => Ok(0)
-       }
+        let properties = match self.collection.document_count().await {
+            Ok(value) => value,
+            Err(client_error) => return Err(ServiceError::from(client_error)),
+        };
+        match properties.info.count {
+            Some(value) => Ok(value),
+            None => Ok(0),
+        }
     }
 }

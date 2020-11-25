@@ -465,33 +465,25 @@
 pub use aragog_macros::*;
 
 pub use {
-    authenticate::Authenticate,
-    authorize_action::AuthorizeAction,
-    db::database_connection_pool::DatabaseConnectionPool,
-    db::database_connection_pool::AuthMode,
-    db::database_record::DatabaseRecord,
-    edge_record::EdgeRecord,
-    error::ServiceError,
-    new::New,
-    record::Record,
-    update::Update,
+    authenticate::Authenticate, authorize_action::AuthorizeAction,
+    db::database_connection_pool::AuthMode, db::database_connection_pool::DatabaseConnectionPool,
+    db::database_record::DatabaseRecord, edge_record::EdgeRecord, error::ServiceError,
+    foreign_link::ForeignLink, link::Link, new::New, record::Record, update::Update,
     validate::Validate,
-    link::Link,
-    foreign_link::ForeignLink,
 };
 
+mod authenticate;
+mod authorize_action;
+mod db;
+mod edge_record;
+mod error;
+mod foreign_link;
 /// Contains useful tools to parse json value and to validate string formats.
 pub mod helpers;
+mod link;
+mod new;
 /// contains querying struct and functions.
 pub mod query;
-mod db;
 mod record;
-mod authenticate;
 mod update;
 mod validate;
-mod new;
-mod error;
-mod authorize_action;
-mod edge_record;
-mod link;
-mod foreign_link;

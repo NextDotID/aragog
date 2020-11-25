@@ -2,8 +2,8 @@ use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
-use crate::{ServiceError, DatabaseConnectionPool, DatabaseRecord};
 use crate::query::{Query, RecordQueryResult};
+use crate::{DatabaseConnectionPool, DatabaseRecord, ServiceError};
 
 /// The main trait of the Aragog library.
 /// Trait for structures that can be stored in Database.
@@ -17,9 +17,13 @@ pub trait Record {
     ///
     /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
     /// [`find`]: db/database_record/struct.DatabaseRecord.html#method.find
-    async fn find(key: &str, db_pool: &DatabaseConnectionPool)
-                  -> Result<DatabaseRecord<Self>, ServiceError>
-        where Self: DeserializeOwned + Serialize + Clone {
+    async fn find(
+        key: &str,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<DatabaseRecord<Self>, ServiceError>
+    where
+        Self: DeserializeOwned + Serialize + Clone,
+    {
         DatabaseRecord::find(key, &db_pool).await
     }
 
@@ -28,9 +32,13 @@ pub trait Record {
     ///
     /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
     /// [`get`]: db/database_record/struct.DatabaseRecord.html#method.get
-    async fn get(query: Query, db_pool: &DatabaseConnectionPool)
-                 -> Result<RecordQueryResult<Self>, ServiceError>
-        where Self: DeserializeOwned + Serialize + Clone {
+    async fn get(
+        query: Query,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<RecordQueryResult<Self>, ServiceError>
+    where
+        Self: DeserializeOwned + Serialize + Clone,
+    {
         DatabaseRecord::get(query, &db_pool).await
     }
 
@@ -40,7 +48,8 @@ pub trait Record {
     /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
     /// [`exists`]: db/database_record/struct.DatabaseRecord.html#method.exists
     async fn exists(query: Query, db_pool: &DatabaseConnectionPool) -> bool
-        where Self: DeserializeOwned + Serialize + Clone
+    where
+        Self: DeserializeOwned + Serialize + Clone,
     {
         DatabaseRecord::<Self>::exists(query, &db_pool).await
     }

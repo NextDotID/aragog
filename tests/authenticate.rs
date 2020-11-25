@@ -1,5 +1,5 @@
+use aragog::{Authenticate, ServiceError};
 use serde::{Deserialize, Serialize};
-use aragog::{ServiceError, Authenticate};
 
 pub mod common;
 
@@ -24,7 +24,7 @@ fn can_succeed() {
     let user = User {
         username: "MichelPolnareff4Ever".to_string(),
         email: "michou@gmail.net".to_string(),
-        encrypted_password: "password".to_string()
+        encrypted_password: "password".to_string(),
     };
     user.authenticate("password").unwrap();
 }
@@ -35,7 +35,7 @@ fn can_fail() {
     let user = User {
         username: "MichelPolnareff4Ever".to_string(),
         email: "michou@gmail.net".to_string(),
-        encrypted_password: "password".to_string()
+        encrypted_password: "password".to_string(),
     };
     user.authenticate("wrong").unwrap();
 }
@@ -51,7 +51,7 @@ mod password_hashing {
 
         match User::hash_password(password, secret_key) {
             Ok(_value) => Ok(()),
-            Err(_error) => Err("Failed to hash password".to_string())
+            Err(_error) => Err("Failed to hash password".to_string()),
         }
     }
 
@@ -62,10 +62,9 @@ mod password_hashing {
 
         match User::hash_password(password, secret_key) {
             Ok(_value) => Err("Should have failed".to_string()),
-            Err(_error) => Ok(())
+            Err(_error) => Ok(()),
         }
     }
-
 
     #[test]
     fn verify_password() -> Result<(), String> {
@@ -75,7 +74,7 @@ mod password_hashing {
 
         match User::verify_password(password, &hashed_password, secret_key) {
             Ok(_value) => Ok(()),
-            Err(_error) => Err("Failed to verify password".to_string())
+            Err(_error) => Err("Failed to verify password".to_string()),
         }
     }
 
@@ -87,15 +86,15 @@ mod password_hashing {
 
         match User::verify_password("wrong password", &hashed_password, secret_key) {
             Ok(_value) => return Err("Should have failed".to_string()),
-            Err(_error) => ()
+            Err(_error) => (),
         };
         match User::verify_password(password, "wrong hash", secret_key) {
             Ok(_value) => return Err("Should have failed".to_string()),
-            Err(_error) => ()
+            Err(_error) => (),
         };
         match User::verify_password(password, &hashed_password, "wrong key") {
             Ok(_value) => return Err("Should have failed".to_string()),
-            Err(_error) => ()
+            Err(_error) => (),
         };
         Ok(())
     }

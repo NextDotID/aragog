@@ -47,9 +47,17 @@ pub fn validate_numeric_string(field_path: &str, str: &str, errors: &mut Vec<Str
 /// [`Validate`]: trait.Validate.html
 /// [`validations`]: validate/trait.Validate.html#tymethod.validations
 #[allow(dead_code)]
-pub fn validate_max_len(field_path: &str, str: &str, max_len: usize, errors: &mut Vec<String>) -> bool {
+pub fn validate_max_len(
+    field_path: &str,
+    str: &str,
+    max_len: usize,
+    errors: &mut Vec<String>,
+) -> bool {
     if str.len() > max_len {
-        errors.push(format!("{} '{}' is too long, max length: {}", field_path, str, max_len));
+        errors.push(format!(
+            "{} '{}' is too long, max length: {}",
+            field_path, str, max_len
+        ));
         return false;
     }
     true
@@ -74,9 +82,17 @@ pub fn validate_max_len(field_path: &str, str: &str, max_len: usize, errors: &mu
 /// [`Validate`]: trait.Validate.html
 /// [`validations`]: validate/trait.Validate.html#tymethod.validations
 #[allow(dead_code)]
-pub fn validate_min_len(field_path: &str, str: &str, min_len: usize, errors: &mut Vec<String>) -> bool {
+pub fn validate_min_len(
+    field_path: &str,
+    str: &str,
+    min_len: usize,
+    errors: &mut Vec<String>,
+) -> bool {
     if str.len() < min_len {
-        errors.push(format!("{} '{}' is too short, min length: {}", field_path, str, min_len));
+        errors.push(format!(
+            "{} '{}' is too short, min length: {}",
+            field_path, str, min_len
+        ));
         return false;
     }
     true
@@ -103,7 +119,10 @@ pub fn validate_min_len(field_path: &str, str: &str, min_len: usize, errors: &mu
 #[allow(dead_code)]
 pub fn validate_len(field_path: &str, str: &str, len: usize, errors: &mut Vec<String>) -> bool {
     if str.len() != len {
-        errors.push(format!("{} '{}' has wrong length, please specify {} characters", field_path, str, len));
+        errors.push(format!(
+            "{} '{}' has wrong length, please specify {} characters",
+            field_path, str, len
+        ));
         return false;
     }
     true
@@ -128,16 +147,18 @@ pub fn validate_len(field_path: &str, str: &str, len: usize, errors: &mut Vec<St
 /// [`Validate`]: trait.Validate.html
 /// [`validations`]: validate/trait.Validate.html#tymethod.validations
 #[allow(dead_code)]
-pub fn validate_regex(field_path: &str, str :&str, regex :&str, errors: &mut Vec<String>) -> bool {
+pub fn validate_regex(field_path: &str, str: &str, regex: &str, errors: &mut Vec<String>) -> bool {
     let reg = match Regex::new(regex) {
-        Ok(value) => { value },
+        Ok(value) => value,
         Err(error) => {
             log::error!("FATAL: Wrong regex: {}", error);
             return false;
         }
     };
     let result = reg.is_match(str);
-    if result { return true; }
+    if result {
+        return true;
+    }
     errors.push(format!("{} '{}' has incorrect format", field_path, str));
     false
 }
@@ -185,10 +206,16 @@ mod tests {
             let correct_str = "0123456789";
             let wrong_strs = ["+33122334", "01 02 03", "1.23"];
 
-            assert_eq!(validate_numeric_string(STRING_EMPTY, correct_str, &mut errors), true);
+            assert_eq!(
+                validate_numeric_string(STRING_EMPTY, correct_str, &mut errors),
+                true
+            );
             assert_eq!(errors.is_empty(), true);
             for wrong_str in wrong_strs.iter() {
-                assert_eq!(validate_numeric_string(STRING_EMPTY, wrong_str, &mut errors), false);
+                assert_eq!(
+                    validate_numeric_string(STRING_EMPTY, wrong_str, &mut errors),
+                    false
+                );
                 assert_eq!(errors.is_empty(), false);
                 errors.pop().unwrap();
                 assert_eq!(errors.is_empty(), true);
@@ -204,14 +231,35 @@ mod tests {
             let mut errors = Vec::new();
             let max = 10;
             let correct_strs = ["hello", "foo1", "bar-++", "0102030405"];
-            let wrong_strs = ["hello678911", "foobarfoobar1", "bar-+123lkdzacdeee+", "010203040005"];
+            let wrong_strs = [
+                "hello678911",
+                "foobarfoobar1",
+                "bar-+123lkdzacdeee+",
+                "010203040005",
+            ];
 
             for correct_str in correct_strs.iter() {
-                assert_eq!(validate_max_len(STRING_EMPTY, &String::from(correct_str.deref()), max, &mut errors), true);
+                assert_eq!(
+                    validate_max_len(
+                        STRING_EMPTY,
+                        &String::from(correct_str.deref()),
+                        max,
+                        &mut errors
+                    ),
+                    true
+                );
                 assert_eq!(errors.is_empty(), true);
             }
             for wrong_str in wrong_strs.iter() {
-                assert_eq!(validate_max_len(STRING_EMPTY, &String::from(wrong_str.deref()), max, &mut errors), false);
+                assert_eq!(
+                    validate_max_len(
+                        STRING_EMPTY,
+                        &String::from(wrong_str.deref()),
+                        max,
+                        &mut errors
+                    ),
+                    false
+                );
                 assert_eq!(errors.is_empty(), false);
                 errors.pop().unwrap();
                 assert_eq!(errors.is_empty(), true);
@@ -226,15 +274,36 @@ mod tests {
         fn validates_only_correct_strings() {
             let mut errors = Vec::new();
             let min = 10;
-            let correct_strs = ["hello678911", "foobarfoobar1", "bar-+123lkdzacdeee+", "010203040005"];
+            let correct_strs = [
+                "hello678911",
+                "foobarfoobar1",
+                "bar-+123lkdzacdeee+",
+                "010203040005",
+            ];
             let wrong_strs = ["hello", "foo1", "bar-++", "010203040"];
 
             for correct_str in correct_strs.iter() {
-                assert_eq!(validate_min_len(STRING_EMPTY, &String::from(correct_str.deref()), min, &mut errors), true);
+                assert_eq!(
+                    validate_min_len(
+                        STRING_EMPTY,
+                        &String::from(correct_str.deref()),
+                        min,
+                        &mut errors
+                    ),
+                    true
+                );
                 assert_eq!(errors.is_empty(), true);
             }
             for wrong_str in wrong_strs.iter() {
-                assert_eq!(validate_min_len(STRING_EMPTY, &String::from(wrong_str.deref()), min, &mut errors), false);
+                assert_eq!(
+                    validate_min_len(
+                        STRING_EMPTY,
+                        &String::from(wrong_str.deref()),
+                        min,
+                        &mut errors
+                    ),
+                    false
+                );
                 assert_eq!(errors.is_empty(), false);
                 errors.pop().unwrap();
                 assert_eq!(errors.is_empty(), true);
@@ -253,11 +322,27 @@ mod tests {
             let wrong_strs = ["hello", "foo1barbarbar", "bar-++", "01020304051123"];
 
             for correct_str in correct_strs.iter() {
-                assert_eq!(validate_len(STRING_EMPTY, &String::from(correct_str.deref()), length, &mut errors), true);
+                assert_eq!(
+                    validate_len(
+                        STRING_EMPTY,
+                        &String::from(correct_str.deref()),
+                        length,
+                        &mut errors
+                    ),
+                    true
+                );
                 assert_eq!(errors.is_empty(), true);
             }
             for wrong_str in wrong_strs.iter() {
-                assert_eq!(validate_len(STRING_EMPTY, &String::from(wrong_str.deref()), length, &mut errors), false);
+                assert_eq!(
+                    validate_len(
+                        STRING_EMPTY,
+                        &String::from(wrong_str.deref()),
+                        length,
+                        &mut errors
+                    ),
+                    false
+                );
                 assert_eq!(errors.is_empty(), false);
                 errors.pop().unwrap();
                 assert_eq!(errors.is_empty(), true);
@@ -268,7 +353,7 @@ mod tests {
     mod regex {
         use super::*;
 
-        const REGEX :&str = "^[a-z]{1,10}$";
+        const REGEX: &str = "^[a-z]{1,10}$";
 
         #[test]
         fn validate_regex_works() {
@@ -277,11 +362,17 @@ mod tests {
             let wrong_strs = ["abc1", "hellotherebro", "felix de_manevi11e", "a bc"];
 
             for valid_str in valid_strs.iter() {
-                assert_eq!(validate_regex(STRING_EMPTY, valid_str.deref(), REGEX, &mut errors), true);
+                assert_eq!(
+                    validate_regex(STRING_EMPTY, valid_str.deref(), REGEX, &mut errors),
+                    true
+                );
                 assert!(errors.is_empty());
             }
             for wrong_str in wrong_strs.iter() {
-                assert_eq!(validate_regex(STRING_EMPTY, wrong_str.deref(), REGEX, &mut errors), false);
+                assert_eq!(
+                    validate_regex(STRING_EMPTY, wrong_str.deref(), REGEX, &mut errors),
+                    false
+                );
                 assert!(!errors.is_empty());
                 errors.pop();
                 assert!(errors.is_empty());

@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use aragog::{New, ServiceError};
+use serde::{Deserialize, Serialize};
 
 pub mod common;
 
@@ -8,7 +8,7 @@ pub struct Dish {
     pub name: String,
     pub description: String,
     price: u16,
-    created_at: u64
+    created_at: u64,
 }
 
 #[derive(Clone)]
@@ -24,7 +24,7 @@ impl New<DishForm> for Dish {
             name: form.form_name,
             description: form.form_description,
             price: form.price,
-            created_at: 1000
+            created_at: 1000,
         };
         if res.price == 0 {
             return Err(ServiceError::ValidationError(String::from("Wrong price")));
@@ -38,7 +38,7 @@ fn can_succeed() {
     let form = DishForm {
         form_name: String::from("Pizza Savoyarde"),
         form_description: String::from("Base crème, oignons, champignons, reublochon, poitrine"),
-        price: 13
+        price: 13,
     };
     let dish = Dish::new(form.clone()).unwrap();
     assert_eq!(&dish.name, &form.form_name);
@@ -52,7 +52,7 @@ fn can_fail() {
     let form = DishForm {
         form_name: String::from("Pizza Regina"),
         form_description: String::from("Base tomate, jambon, Mozzarella, Jambon"),
-        price: 0
+        price: 0,
     };
     Dish::new(form).unwrap();
 }
