@@ -4,9 +4,7 @@ use serde::Serialize;
 use crate::{DatabaseRecord, Record, ServiceError};
 use serde_json::Value;
 
-pub trait QueryResult {
-
-}
+pub trait QueryResult {}
 
 /// Typed Query result
 #[derive(Debug)]
@@ -45,8 +43,15 @@ impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     pub fn uniq(self) -> Result<DatabaseRecord<T>, ServiceError> {
         if self.is_empty() || self.doc_count > 1 {
-            log::error!("Wrong number of {} returned: {}", T::collection_name(), self.doc_count);
-            return Err(ServiceError::NotFound(format!("{} document not found", T::collection_name())));
+            log::error!(
+                "Wrong number of {} returned: {}",
+                T::collection_name(),
+                self.doc_count
+            );
+            return Err(ServiceError::NotFound(format!(
+                "{} document not found",
+                T::collection_name()
+            )));
         }
         Ok(self.documents.into_iter().nth(0).unwrap())
     }
@@ -70,10 +75,14 @@ impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
     }
 
     /// Returns the length of `documents`
-    pub fn len(&self) -> usize { self.doc_count }
+    pub fn len(&self) -> usize {
+        self.doc_count
+    }
 
     /// Returns `true` if no documents were returned
-    pub fn is_empty(&self) -> bool { self.doc_count == 0 }
+    pub fn is_empty(&self) -> bool {
+        self.doc_count == 0
+    }
 }
 
 impl JsonQueryResult {
@@ -97,7 +106,9 @@ impl JsonQueryResult {
     /// let topic_results = json_results.get_records::<Topic>();
     /// let role_results = json_results.get_records::<Role>();
     /// ```
-    pub fn get_records<T: Record + Clone + Serialize + DeserializeOwned>(&self) -> Vec<DatabaseRecord<T>> {
+    pub fn get_records<T: Record + Clone + Serialize + DeserializeOwned>(
+        &self,
+    ) -> Vec<DatabaseRecord<T>> {
         let mut res = Vec::new();
         for value in self.documents.iter() {
             let key = value["_key"].as_str();
@@ -121,13 +132,19 @@ impl JsonQueryResult {
     }
 
     /// Returns the length of `documents`
-    pub fn len(&self) -> usize { self.doc_count }
+    pub fn len(&self) -> usize {
+        self.doc_count
+    }
 
     /// Returns `true` if no documents were returned
-    pub fn is_empty(&self) -> bool { self.doc_count == 0 }
+    pub fn is_empty(&self) -> bool {
+        self.doc_count == 0
+    }
 }
 
-impl<T: Record + Clone + Serialize + DeserializeOwned> From<JsonQueryResult> for RecordQueryResult<T> {
+impl<T: Record + Clone + Serialize + DeserializeOwned> From<JsonQueryResult>
+    for RecordQueryResult<T>
+{
     fn from(query_result: JsonQueryResult) -> Self {
         Self::new(query_result.get_records())
     }

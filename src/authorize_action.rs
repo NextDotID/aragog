@@ -1,5 +1,5 @@
-use crate::{ServiceError, DatabaseRecord, Record};
-use serde::{Serialize, de::DeserializeOwned};
+use crate::{DatabaseRecord, Record, ServiceError};
+use serde::{de::DeserializeOwned, Serialize};
 
 /// The `AuthorizeAction` trait of the Aragog library.
 /// This traits allows provides the ability to authorize a [`Record`] to execute a custom action on
@@ -52,11 +52,21 @@ pub trait AuthorizeAction<T: Serialize + DeserializeOwned + Clone + Record> {
     ///
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`Forbidden`]: enum.ServiceError.html#variant.Forbidden
-    fn authorize_action(&self, action: Self::Action, target: Option<&DatabaseRecord<T>>) -> Result<(), ServiceError> {
-        if self.is_action_authorized(action, target) { return Ok(()) }
+    fn authorize_action(
+        &self,
+        action: Self::Action,
+        target: Option<&DatabaseRecord<T>>,
+    ) -> Result<(), ServiceError> {
+        if self.is_action_authorized(action, target) {
+            return Ok(());
+        }
         Err(ServiceError::Forbidden)
     }
 
     /// Returns true if the object is authorized to do `action` on `target`
-    fn is_action_authorized(&self, action: Self::Action, target: Option<&DatabaseRecord<T>>) -> bool;
+    fn is_action_authorized(
+        &self,
+        action: Self::Action,
+        target: Option<&DatabaseRecord<T>>,
+    ) -> bool;
 }

@@ -12,10 +12,14 @@ enum Operator {
 
 impl Display for Operator {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", match self {
-            Self::AND => "&&",
-            Self::OR => "||",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::AND => "&&",
+                Self::OR => "||",
+            }
+        )
     }
 }
 
@@ -96,7 +100,12 @@ impl Filter {
             } else {
                 format!(" {}", self.operators[i].to_string())
             };
-            res = format!("{} {}{}", res, comparison.to_aql(collection_id), operator_str)
+            res = format!(
+                "{} {}{}",
+                res,
+                comparison.to_aql(collection_id),
+                operator_str
+            )
         }
         String::from(res.trim_start())
     }

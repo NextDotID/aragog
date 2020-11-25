@@ -46,13 +46,13 @@ pub trait Authenticate {
     fn hash_password(password: &str, secret_key: &str) -> Result<String, ServiceError> {
         let mut hasher = Hasher::new();
 
-        let res = hasher.
-            with_password(password).
-            with_secret_key(secret_key).
-            hash();
+        let res = hasher
+            .with_password(password)
+            .with_secret_key(secret_key)
+            .hash();
         match res {
             Ok(value) => Ok(value),
-            Err(_error) => Err(ServiceError::UnprocessableEntity)
+            Err(_error) => Err(ServiceError::UnprocessableEntity),
         }
     }
 
@@ -76,18 +76,27 @@ pub trait Authenticate {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`Unauthorized`]: enum.ServiceError.html#variant.Unauthorized
     #[cfg(feature = "password_hashing")]
-    fn verify_password(password: &str, password_hash: &str, secret_key: &str) -> Result<(), ServiceError> {
+    fn verify_password(
+        password: &str,
+        password_hash: &str,
+        secret_key: &str,
+    ) -> Result<(), ServiceError> {
         let mut verifier = Verifier::new();
 
-        match verifier.
-            with_hash(password_hash).
-            with_password(password).
-            with_secret_key(secret_key).
-            verify() {
+        match verifier
+            .with_hash(password_hash)
+            .with_password(password)
+            .with_secret_key(secret_key)
+            .verify()
+        {
             Ok(value) => {
-                if value { Ok(()) } else { Err(ServiceError::Unauthorized) }
+                if value {
+                    Ok(())
+                } else {
+                    Err(ServiceError::Unauthorized)
+                }
             }
-            Err(_error) => Err(ServiceError::UnprocessableEntity)
+            Err(_error) => Err(ServiceError::UnprocessableEntity),
         }
     }
 }

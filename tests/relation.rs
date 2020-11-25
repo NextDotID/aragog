@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use aragog::{DatabaseRecord, Record, Link, Validate, ForeignLink};
 use aragog::query::{Comparison, Query, RecordQueryResult};
+use aragog::{DatabaseRecord, ForeignLink, Link, Record, Validate};
 use std::borrow::Borrow;
 
 mod common;
@@ -31,27 +31,39 @@ impl ForeignLink<Order> for Dish {
     }
 }
 
-
 impl Link<Dish> for Dish {
     fn link_query(&self) -> Query {
-        Dish::query().filter(Comparison::field("order_id").equals_str(&self.order_id).into())
+        Dish::query().filter(
+            Comparison::field("order_id")
+                .equals_str(&self.order_id)
+                .into(),
+        )
     }
 }
 
 #[test]
 fn relation_work() -> Result<(), String> {
     common::with_db(|pool| {
-        let order = tokio_test::block_on(DatabaseRecord::create(Order {
-            name: "Test".to_string()
-        }, pool)).unwrap();
-        let dish = tokio_test::block_on(DatabaseRecord::create(Dish {
-            name: "DishTest".to_string(),
-            description: "relation Test".to_string(),
-            price: 10,
-            order_id: order.key.clone(),
-        }, pool)).unwrap();
+        let order = tokio_test::block_on(DatabaseRecord::create(
+            Order {
+                name: "Test".to_string(),
+            },
+            pool,
+        ))
+        .unwrap();
+        let dish = tokio_test::block_on(DatabaseRecord::create(
+            Dish {
+                name: "DishTest".to_string(),
+                description: "relation Test".to_string(),
+                price: 10,
+                order_id: order.key.clone(),
+            },
+            pool,
+        ))
+        .unwrap();
 
-        let relation: RecordQueryResult<Order> = tokio_test::block_on(dish.record.linked_models(&pool)).unwrap();
+        let relation: RecordQueryResult<Order> =
+            tokio_test::block_on(dish.record.linked_models(&pool)).unwrap();
         common::expect_assert_eq(&relation.uniq().unwrap().key, &order.key)?;
         Ok(())
     })
@@ -60,17 +72,26 @@ fn relation_work() -> Result<(), String> {
 #[test]
 fn foreign_key_relation_work() -> Result<(), String> {
     common::with_db(|pool| {
-        let order = tokio_test::block_on(DatabaseRecord::create(Order {
-            name: "Test".to_string()
-        }, pool)).unwrap();
-        let dish = tokio_test::block_on(DatabaseRecord::create(Dish {
-            name: "DishTest".to_string(),
-            description: "relation Test".to_string(),
-            price: 10,
-            order_id: order.key.clone(),
-        }, pool)).unwrap();
+        let order = tokio_test::block_on(DatabaseRecord::create(
+            Order {
+                name: "Test".to_string(),
+            },
+            pool,
+        ))
+        .unwrap();
+        let dish = tokio_test::block_on(DatabaseRecord::create(
+            Dish {
+                name: "DishTest".to_string(),
+                description: "relation Test".to_string(),
+                price: 10,
+                order_id: order.key.clone(),
+            },
+            pool,
+        ))
+        .unwrap();
 
-        let relation: DatabaseRecord<Order> = tokio_test::block_on(dish.record.linked_model(&pool)).unwrap();
+        let relation: DatabaseRecord<Order> =
+            tokio_test::block_on(dish.record.linked_model(&pool)).unwrap();
         common::expect_assert_eq(&relation.key, &order.key)?;
         Ok(())
     })

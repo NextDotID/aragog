@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::fs;
 
-use arangors::{Collection, Connection, Database};
 use arangors::client::reqwest::ReqwestClient;
+use arangors::{Collection, Connection, Database};
 use serde_json::Value;
 
 use crate::db::database_collection::DatabaseCollection;
@@ -61,19 +61,21 @@ impl DatabaseConnectionPool {
     /// # Panics
     ///
     /// If the provided credentials are wrong or if the database is not running  the function will panic.
-    pub async fn new(db_host: &str, db_name: &str, db_user: &str, db_password: &str, auth_mode: AuthMode) -> Self {
+    pub async fn new(
+        db_host: &str,
+        db_name: &str,
+        db_user: &str,
+        db_password: &str,
+        auth_mode: AuthMode,
+    ) -> Self {
         log::info!("Connecting to database server...");
         let db_connection = match auth_mode {
-            AuthMode::Basic => Connection::establish_basic_auth(
-                db_host,
-                db_user,
-                db_password,
-            ).await.unwrap(),
-            AuthMode::Jwt => Connection::establish_jwt(
-                db_host,
-                db_user,
-                db_password,
-            ).await.unwrap(),
+            AuthMode::Basic => Connection::establish_basic_auth(db_host, db_user, db_password)
+                .await
+                .unwrap(),
+            AuthMode::Jwt => Connection::establish_jwt(db_host, db_user, db_password)
+                .await
+                .unwrap(),
         };
         log::info!("Connected to database server.");
         let database = db_connection.db(&db_name).await.unwrap();
@@ -100,14 +102,24 @@ impl DatabaseConnectionPool {
         let db_name = std::env::var("DB_NAME").expect("Please define DB_NAME env var.");
         let db_user = std::env::var("DB_USER").expect("Please define DB_USER env var.");
         let db_password = std::env::var("DB_PASSWORD").expect("Please define DB_PASSWORD env var.");
-        DatabaseConnectionPool::new(&db_host, &db_name, &db_user, &db_password, AuthMode::default()).await
+        DatabaseConnectionPool::new(
+            &db_host,
+            &db_name,
+            &db_user,
+            &db_password,
+            AuthMode::default(),
+        )
+        .await
     }
 
     /// Simple wrapper to retrieve a Collection without using the HashMap directly.
     /// Can panic if the key matching `collection` is missing
     pub fn get_collection(&self, collection: &str) -> &Collection<ReqwestClient> {
         if !self.collections.contains_key(collection) {
-            panic!("Undefined collection {}, check your schema.json file", collection)
+            panic!(
+                "Undefined collection {}, check your schema.json file",
+                collection
+            )
         }
         &self.collections[collection].collection
     }
@@ -129,7 +141,7 @@ impl DatabaseConnectionPool {
     /// Runs an AQL query and returns the found documents
     pub async fn aql_get(&self, aql: &str) -> Result<JsonQueryResult, ServiceError> {
         let query_result: Vec<Value> = match self.database.aql_str(aql).await {
-            Ok(value) => { value }
+            Ok(value) => value,
             Err(error) => {
                 log::error!("{}", error);
                 return Err(ServiceError::from(error));
@@ -138,69 +150,108 @@ impl DatabaseConnectionPool {
         Ok(JsonQueryResult::new(query_result))
     }
 
-    async fn load_schema(database: Database<ReqwestClient>) -> Result<DatabaseConnectionPool, String> {
+    async fn load_schema(
+        database: Database<ReqwestClient>,
+    ) -> Result<DatabaseConnectionPool, String> {
         let schema_path = match std::env::var("SCHEMA_PATH") {
             Ok(path) => path,
-            Err(_err) => SCHEMA_DEFAULT_PATH.to_string()
+            Err(_err) => SCHEMA_DEFAULT_PATH.to_string(),
         };
-        let file = fs::File::open(&schema_path).expect(&format!("{} doesn't open correctly", &schema_path));
-        let json: Value = serde_json::from_reader(file).expect(&format!("{} is not formatted correctly", &schema_path));
+        let file = fs::File::open(&schema_path)
+            .expect(&format!("{} doesn't open correctly", &schema_path));
+        let json: Value = serde_json::from_reader(file)
+            .expect(&format!("{} is not formatted correctly", &schema_path));
 
         let mut json_collections: Vec<Value> = Vec::new();
         if let Value::Array(values) = &json[SCHEMA_COLLECTION_KEY] {
             json_collections = values.clone();
         }
-        let mut collections = Self::load_collections(&database, json_collections).await.unwrap();
+        let mut collections = Self::load_collections(&database, json_collections)
+            .await
+            .unwrap();
         let mut json_collections: Vec<Value> = Vec::new();
         if let Value::Array(values) = &json[SCHEMA_EDGE_COLLECTION_KEY] {
             json_collections = values.clone();
         }
-        Self::load_edge_collections(&database, json_collections, &mut collections).await.unwrap();
+        Self::load_edge_collections(&database, json_collections, &mut collections)
+            .await
+            .unwrap();
         Ok(DatabaseConnectionPool {
             collections,
             database,
         })
     }
 
-    async fn load_collections(database: &Database<ReqwestClient>, json_collections: Vec<Value>) -> Result<HashMap<String, DatabaseCollection>, String> {
+    async fn load_collections(
+        database: &Database<ReqwestClient>,
+        json_collections: Vec<Value>,
+    ) -> Result<HashMap<String, DatabaseCollection>, String> {
         let mut collections_map = HashMap::new();
         for json_collection in json_collections {
-            let collection_name = json_helper::load_json_string_key(&json_collection, &SCHEMA_COLLECTION_NAME)?;
+            let collection_name =
+                json_helper::load_json_string_key(&json_collection, &SCHEMA_COLLECTION_NAME)?;
             let collection: Collection<ReqwestClient>;
 
             match database.collection(&collection_name).await {
-                Ok(coll) => { collection = coll }
+                Ok(coll) => collection = coll,
                 Err(_error) => {
                     log::info!("Collection {} not found, creating...", &collection_name);
                     collection = database.create_collection(&collection_name).await.unwrap()
                 }
             }
-            let collection_container = DatabaseCollection { collection_name, collection };
+            let collection_container = DatabaseCollection {
+                collection_name,
+                collection,
+            };
             Self::handle_index(&database, json_collection, &collection_container).await?;
-            collections_map.insert(collection_container.collection_name.clone(), collection_container);
+            collections_map.insert(
+                collection_container.collection_name.clone(),
+                collection_container,
+            );
         }
         Ok(collections_map)
     }
 
-    async fn load_edge_collections(database: &Database<ReqwestClient>, json_collections: Vec<Value>, collections: &mut HashMap<String, DatabaseCollection>) -> Result<(), String> {
+    async fn load_edge_collections(
+        database: &Database<ReqwestClient>,
+        json_collections: Vec<Value>,
+        collections: &mut HashMap<String, DatabaseCollection>,
+    ) -> Result<(), String> {
         for json_collection in json_collections {
-            let collection_name = json_helper::load_json_string_key(&json_collection, &SCHEMA_COLLECTION_NAME)?;
+            let collection_name =
+                json_helper::load_json_string_key(&json_collection, &SCHEMA_COLLECTION_NAME)?;
             let collection: Collection<ReqwestClient>;
 
             match database.collection(&collection_name).await {
-                Ok(coll) => { collection = coll }
+                Ok(coll) => collection = coll,
                 Err(_error) => {
-                    log::info!("Edge Collection {} not found, creating...", &collection_name);
-                    collection = database.create_edge_collection(&collection_name).await.unwrap()
+                    log::info!(
+                        "Edge Collection {} not found, creating...",
+                        &collection_name
+                    );
+                    collection = database
+                        .create_edge_collection(&collection_name)
+                        .await
+                        .unwrap()
                 }
             }
-            let collection_container = DatabaseCollection { collection_name, collection };
-            collections.insert(collection_container.collection_name.clone(), collection_container);
+            let collection_container = DatabaseCollection {
+                collection_name,
+                collection,
+            };
+            collections.insert(
+                collection_container.collection_name.clone(),
+                collection_container,
+            );
         }
         Ok(())
     }
 
-    async fn handle_index(database: &Database<ReqwestClient>, json_collection: Value, collection: &DatabaseCollection) -> Result<(), String> {
+    async fn handle_index(
+        database: &Database<ReqwestClient>,
+        json_collection: Value,
+        collection: &DatabaseCollection,
+    ) -> Result<(), String> {
         let indexes = json_collection["indexes"].as_array().unwrap();
 
         for index in indexes {
@@ -210,7 +261,10 @@ impl DatabaseConnectionPool {
                 continue;
             }
             log::info!("Index {} not found, creating...", index.name);
-            database.create_index(&collection.collection_name, &index).await.unwrap();
+            database
+                .create_index(&collection.collection_name, &index)
+                .await
+                .unwrap();
         }
         Ok(())
     }

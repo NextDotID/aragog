@@ -2,15 +2,15 @@ use std::fmt::{self, Display};
 
 #[cfg(feature = "open-api")]
 use paperclip::actix::Apiv2Schema;
-use serde::{Deserialize, Serialize};
 use serde::export::Formatter;
+use serde::{Deserialize, Serialize};
 
-use crate::{DatabaseConnectionPool, ServiceError};
-use crate::query::{Filter, string_from_array, OptionalQueryString};
 use crate::query::graph_query::{GraphQueryData, GraphQueryDirection};
 use crate::query::operations::{AqlOperation, OperationContainer};
 use crate::query::query_id_helper::get_str_identifier;
 use crate::query::query_result::JsonQueryResult;
+use crate::query::{string_from_array, Filter, OptionalQueryString};
+use crate::{DatabaseConnectionPool, ServiceError};
 
 /// Macro to simplify the [`Query`] construction:
 ///
@@ -33,7 +33,7 @@ use crate::query::query_result::JsonQueryResult;
 macro_rules! query {
     ($collection:expr) => {
         $crate::query::Query::new($collection)
-    }
+    };
 }
 
 /// The direction for [`Query`] [`sort`] method
@@ -51,10 +51,14 @@ pub enum SortDirection {
 
 impl Display for SortDirection {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", match self {
-            SortDirection::Asc => "ASC",
-            SortDirection::Desc => "DESC"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                SortDirection::Asc => "ASC",
+                SortDirection::Desc => "DESC",
+            }
+        )
     }
 }
 
@@ -294,7 +298,14 @@ impl Query {
         }
     }
 
-    fn join(mut self, min: u16, max: u16, mut query: Query, direction: GraphQueryDirection, named_graph: bool) -> Self {
+    fn join(
+        mut self,
+        min: u16,
+        max: u16,
+        mut query: Query,
+        direction: GraphQueryDirection,
+        named_graph: bool,
+    ) -> Self {
         self.item_identifier = query.item_identifier + 1;
         query.graph_data = Some(GraphQueryData {
             direction,
@@ -415,7 +426,8 @@ impl Query {
     /// "));
     /// ```
     pub fn with_collections(mut self, collections: &[&str]) -> Self {
-        self.with_collections = OptionalQueryString(Some(format!("WITH {} ", string_from_array(collections))));
+        self.with_collections =
+            OptionalQueryString(Some(format!("WITH {} ", string_from_array(collections))));
         self
     }
 
@@ -562,11 +574,12 @@ impl Query {
         if self.sub_query.is_some() {
             res = format!("{} {}", res, self.sub_query.as_ref().unwrap())
         } else {
-            res = format!("{} return {}{}", res, if self.distinct {
-                "DISTINCT "
-            } else {
-                ""
-            }, &collection_id);
+            res = format!(
+                "{} return {}{}",
+                res,
+                if self.distinct { "DISTINCT " } else { "" },
+                &collection_id
+            );
         }
         res
     }
@@ -577,8 +590,10 @@ impl Query {
     ///
     /// [`DatabaseRecord`]: ../struct.DatabaseRecord.html
     /// [`get`]: ../struct.DatabaseRecord.html#method.get
-    pub async fn call(self, db_pool: &DatabaseConnectionPool) -> Result<JsonQueryResult, ServiceError>
-    {
+    pub async fn call(
+        self,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<JsonQueryResult, ServiceError> {
         db_pool.aql_get(&self.to_aql()).await
     }
 }

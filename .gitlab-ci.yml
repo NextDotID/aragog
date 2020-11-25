@@ -1,5 +1,5 @@
 variables:
-  CARGO_HOME: $CI_PROJECT_DIR/cargo
+  CARGO_HOME: $CI_PROJECT_DIR/.cargo
   CONTAINER_CUSTOM_REGISTRY: registry.gitlab.com/qonfucius/infrastructure/docker-images
   RUSTFLAGS: -Ctarget-feature=-crt-static
 
@@ -11,8 +11,8 @@ stages:
 cache: &cache_template
   key: ${CI_COMMIT_REF_SLUG}
   paths:
-    - target/
-    - cargo/
+    - target
+    - .cargo
   policy: pull-push
 
 .cache_pulll_template: &cache_pull_template
@@ -83,3 +83,11 @@ rustdoc:
   artifacts:
     paths:
       - public
+
+fmt:
+  <<: *cache_pull_template
+  image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
+  stage: documentation
+  script:
+    - rustup component add rustfmt --toolchain 1.47.0-x86_64-unknown-linux-musl
+    - cargo fmt --all -- --check

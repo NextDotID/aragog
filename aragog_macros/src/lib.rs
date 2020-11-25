@@ -5,8 +5,8 @@ extern crate proc_macro_error;
 use proc_macro::TokenStream;
 use std::borrow::Borrow;
 
+use crate::derives::{impl_edge_record_macro, impl_record_macro, impl_validate_macro};
 use syn::{self, Data, DeriveInput, Fields};
-use crate::derives::{impl_record_macro, impl_validate_macro, impl_edge_record_macro};
 
 mod derives;
 
@@ -22,7 +22,7 @@ pub fn record_macro_derive(attr: TokenStream) -> TokenStream {
 
     match ast.data.borrow() {
         Data::Struct(_elem) => {}
-        _ => emit_error!(span, "Only Structs can derive `Record`")
+        _ => emit_error!(span, "Only Structs can derive `Record`"),
     }
     // Build the trait implementation
     impl_record_macro(&ast)
@@ -50,26 +50,31 @@ pub fn edge_record_macro_derive(attr: TokenStream) -> TokenStream {
     let mut has_from = false;
     let mut has_to = false;
     match ast.data.borrow() {
-        Data::Struct(elem) => {
-            match elem.fields.borrow() {
-                Fields::Named(named_fields) => {
-                    for named_field in named_fields.named.iter() {
-                        match named_field.ident.borrow() {
-                            Some(ident) => {
-                                let field_name = &ident.to_string();
-                                if field_name == "_to" { has_to = true } else if field_name == "_from" { has_from = true }
+        Data::Struct(elem) => match elem.fields.borrow() {
+            Fields::Named(named_fields) => {
+                for named_field in named_fields.named.iter() {
+                    match named_field.ident.borrow() {
+                        Some(ident) => {
+                            let field_name = &ident.to_string();
+                            if field_name == "_to" {
+                                has_to = true
+                            } else if field_name == "_from" {
+                                has_from = true
                             }
-                            None => ()
                         }
+                        None => (),
                     }
                 }
-                _ => {}
             }
-        }
-        _ => emit_error!(span, "Only Structs can derive `EdgeRecord`")
+            _ => {}
+        },
+        _ => emit_error!(span, "Only Structs can derive `EdgeRecord`"),
     }
     if !has_from || !has_to {
-        emit_error!(span, "`EdgeRecord` derived structs require a `_from` and `_to` fields")
+        emit_error!(
+            span,
+            "`EdgeRecord` derived structs require a `_from` and `_to` fields"
+        )
     }
     // Add from/to methods
     impl_edge_record_macro(&ast)

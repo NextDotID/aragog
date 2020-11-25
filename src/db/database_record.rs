@@ -1,12 +1,12 @@
-use arangors::{AqlQuery, Document};
 use arangors::document::response::DocumentResponse;
+use arangors::{AqlQuery, Document};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::{Authenticate, DatabaseConnectionPool, EdgeRecord, Record, ServiceError, Validate};
 use crate::db::database_service;
 use crate::query::{Query, RecordQueryResult};
+use crate::{Authenticate, DatabaseConnectionPool, EdgeRecord, Record, ServiceError, Validate};
 
 /// Struct representing database stored documents
 ///
@@ -47,9 +47,18 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`Conflict`]: enum.ServiceError.html#variant.Conflict
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     /// [`ValidationError`]: enum.ServiceError.html#variant.ValidationError
-    pub async fn save(&mut self, db_pool: &DatabaseConnectionPool) -> Result<(), ServiceError> where T: Validate {
+    pub async fn save(&mut self, db_pool: &DatabaseConnectionPool) -> Result<(), ServiceError>
+    where
+        T: Validate,
+    {
         self.record.validate()?;
-        let new_record = database_service::update_record(self.record.clone(), &self.key, &db_pool, T::collection_name()).await?;
+        let new_record = database_service::update_record(
+            self.record.clone(),
+            &self.key,
+            &db_pool,
+            T::collection_name(),
+        )
+        .await?;
         self.record = new_record.record;
         Ok(())
     }
@@ -128,7 +137,10 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn get(query: Query, db_pool: &DatabaseConnectionPool) -> Result<RecordQueryResult<T>, ServiceError> {
+    pub async fn get(
+        query: Query,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<RecordQueryResult<T>, ServiceError> {
         Self::aql_get(&query.to_aql(), db_pool).await
     }
 
@@ -163,7 +175,10 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn aql_get(query: &str, db_pool: &DatabaseConnectionPool) -> Result<RecordQueryResult<T>, ServiceError> {
+    pub async fn aql_get(
+        query: &str,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<RecordQueryResult<T>, ServiceError> {
         let result = db_pool.aql_get(query).await?;
         Ok(result.into())
     }
@@ -273,12 +288,17 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     ///     Edge { _from, _to, description: "description".to_string() }
     /// }).await.unwrap();
     /// ```
-    pub async fn link<U, V, W>(from_record: &DatabaseRecord<U>, to_record: &DatabaseRecord<V>, db_pool: &DatabaseConnectionPool, document: W)
-                               -> Result<DatabaseRecord<T>, ServiceError>
-        where U: Serialize + DeserializeOwned + Clone + Record,
-              V: Serialize + DeserializeOwned + Clone + Record,
-              T: EdgeRecord,
-              W: FnOnce(String, String) -> T
+    pub async fn link<U, V, W>(
+        from_record: &DatabaseRecord<U>,
+        to_record: &DatabaseRecord<V>,
+        db_pool: &DatabaseConnectionPool,
+        document: W,
+    ) -> Result<DatabaseRecord<T>, ServiceError>
+    where
+        U: Serialize + DeserializeOwned + Clone + Record,
+        V: Serialize + DeserializeOwned + Clone + Record,
+        T: EdgeRecord,
+        W: FnOnce(String, String) -> T,
     {
         let edge = document(from_record.id.clone(), to_record.id.clone());
         database_service::create_record(edge, &db_pool, T::collection_name()).await
@@ -311,13 +331,17 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// ```
     pub async fn exists(query: Query, db_pool: &DatabaseConnectionPool) -> bool {
         let aql_string = query.to_aql();
-        let aql_query = AqlQuery::builder().query(&aql_string).batch_size(1).count(true).build();
+        let aql_query = AqlQuery::builder()
+            .query(&aql_string)
+            .batch_size(1)
+            .count(true)
+            .build();
         match db_pool.database.aql_query_batch::<Value>(aql_query).await {
             Ok(cursor) => match cursor.count {
                 Some(count) => count > 0,
-                None => false
+                None => false,
             },
-            Err(_error) => false
+            Err(_error) => false,
         }
     }
 
@@ -338,7 +362,10 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     ///
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub async fn create(record: T, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> where T: Validate {
+    pub async fn create(record: T, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError>
+    where
+        T: Validate,
+    {
         record.validate()?;
         database_service::create_record(record, &db_pool, T::collection_name()).await
     }
@@ -351,12 +378,16 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     pub fn from_response(doc_response: DocumentResponse<T>) -> Result<Self, ServiceError> {
         let header = match doc_response.header() {
-            Some(value) => { value }
-            None => { return Err(ServiceError::UnprocessableEntity); }
+            Some(value) => value,
+            None => {
+                return Err(ServiceError::UnprocessableEntity);
+            }
         };
         let doc: T = match doc_response.new_doc() {
-            Some(value) => { (*value).clone() }
-            None => { return Err(ServiceError::UnprocessableEntity); }
+            Some(value) => (*value).clone(),
+            None => {
+                return Err(ServiceError::UnprocessableEntity);
+            }
         };
         Ok(DatabaseRecord {
             key: header._key.clone(),
@@ -382,7 +413,10 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`Authenticate`]: trait.Authenticate.html
     /// [`authenticate method`]: trait.Authenticate.html#tymethod.authenticate
-    pub fn authenticate(&self, password: &str) -> Result<(), ServiceError> where T: Authenticate {
+    pub fn authenticate(&self, password: &str) -> Result<(), ServiceError>
+    where
+        T: Authenticate,
+    {
         self.record.authenticate(password)
     }
 

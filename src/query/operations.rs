@@ -4,8 +4,14 @@ use crate::query::{Filter, SortDirection};
 pub enum AqlOperation {
     Filter(Filter),
     Prune(Filter),
-    Limit { skip: Option<u32>, limit: u32 },
-    Sort { field: String, direction: SortDirection },
+    Limit {
+        skip: Option<u32>,
+        limit: u32,
+    },
+    Sort {
+        field: String,
+        direction: SortDirection,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -20,7 +26,7 @@ impl OperationContainer {
                 AqlOperation::Limit { skip, limit } => {
                     let skip_str = match skip {
                         None => String::new(),
-                        Some(val) => format!("{}, ", val)
+                        Some(val) => format!("{}, ", val),
                     };
                     res = format!("{} LIMIT {}{}", res, skip_str, limit);
                     last_was_sort = false;

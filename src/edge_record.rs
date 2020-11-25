@@ -42,7 +42,6 @@ use crate::helpers::string_validators::{validate_min_len, validate_numeric_strin
 ///
 /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
 pub trait EdgeRecord {
-
     /// Retrieves the struct `_from` field
     fn _from(&self) -> String;
 

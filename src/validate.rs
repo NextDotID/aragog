@@ -43,14 +43,14 @@ pub trait Validate {
     /// [`validations`]: trait.Validate.html#tymethod.validations
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`ValidationError`]: enum.ServiceError.html#variant.ValidationError
-    fn validate(&self) -> Result<(), ServiceError>
-    {
+    fn validate(&self) -> Result<(), ServiceError> {
         let mut errors: Vec<String> = Vec::new();
 
         self.validations(&mut errors);
 
-        if errors.is_empty() { Ok(()) }
-        else {
+        if errors.is_empty() {
+            Ok(())
+        } else {
             let error_str = errors.join(", ");
             log::error!("{}", &error_str);
             Err(ServiceError::ValidationError(error_str))
@@ -64,7 +64,7 @@ pub trait Validate {
     fn is_valid(&self) -> bool {
         match self.validate() {
             Ok(()) => true,
-            Err(_err) => false
+            Err(_err) => false,
         }
     }
 
@@ -82,9 +82,13 @@ pub trait Validate {
     /// `true` if `field` is `Some<T>` on failure, `false` is returned and `errors` stored a new message
     ///
     /// [`validations`]: trait.Validate.html#tymethod.validations
-    fn validate_field_presence<T>(field_name: &str, field: &Option<T>, errors: &mut Vec<String>) -> bool {
+    fn validate_field_presence<T>(
+        field_name: &str,
+        field: &Option<T>,
+        errors: &mut Vec<String>,
+    ) -> bool {
         match field {
-            Some(_value) => { true }
+            Some(_value) => true,
             None => {
                 errors.push(format!("{} is missing", field_name));
                 false
@@ -106,13 +110,17 @@ pub trait Validate {
     /// `true` if `field` is `None` on failure, `false` is returned and `errors` stored a new message
     ///
     /// [`validations`]: trait.Validate.html#tymethod.validations
-    fn validate_field_absence<T>(field_name: &str, field: &Option<T>, errors: &mut Vec<String>) -> bool {
+    fn validate_field_absence<T>(
+        field_name: &str,
+        field: &Option<T>,
+        errors: &mut Vec<String>,
+    ) -> bool {
         match field {
             Some(_value) => {
                 errors.push(format!("{} should not be set", field_name));
                 false
             }
-            None => { true }
+            None => true,
         }
     }
 }

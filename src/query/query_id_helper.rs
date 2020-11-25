@@ -3,14 +3,13 @@ const QUERY_IDENTFIERS: &[&str] = &["a", "b", "c", "d", "e", "f", "g", "h", "i",
 pub fn get_str_identifier(mut current_index: usize) -> String {
     let mut res = String::new();
     let len = QUERY_IDENTFIERS.len();
-    while current_index > len - 1{
+    while current_index > len - 1 {
         let last_letter = current_index % len;
         current_index = current_index / len - 1;
         res = format!("{}{}", QUERY_IDENTFIERS[last_letter], res);
     }
     format!("{}{}", QUERY_IDENTFIERS[current_index], res)
 }
-
 
 #[cfg(test)]
 mod tests {

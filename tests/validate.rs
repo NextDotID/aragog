@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use aragog::{ServiceError, Validate};
 use aragog::helpers::string_validators;
+use aragog::{ServiceError, Validate};
 
 pub mod common;
 
@@ -19,7 +19,12 @@ impl Validate for Dish {
 
         Self::validate_field_presence("description", &self.description, errors);
         if self.description.is_some() {
-            string_validators::validate_min_len("description", self.description.as_ref().unwrap(), 15, errors);
+            string_validators::validate_min_len(
+                "description",
+                self.description.as_ref().unwrap(),
+                15,
+                errors,
+            );
         }
         string_validators::validate_numeric_string("reference", &self.reference, errors);
         string_validators::validate_len("reference", &self.reference, 10, errors);
@@ -65,13 +70,17 @@ fn can_fail_and_provide_message() -> Result<(), String> {
         Err(error) => match error {
             ServiceError::ValidationError(str) => {
                 common::expect_assert(str.contains(r#"name 'Piza' is too short, min length: 5"#))?;
-                common::expect_assert(str.contains(r#"description 'wrong' is too short, min length: 15"#))?;
+                common::expect_assert(
+                    str.contains(r#"description 'wrong' is too short, min length: 15"#),
+                )?;
                 common::expect_assert(str.contains(r#"reference 'ABC' is not numeric"#))?;
-                common::expect_assert(str.contains(r#"reference 'ABC' has wrong length, please specify 10 characters"#))?;
+                common::expect_assert(str.contains(
+                    r#"reference 'ABC' has wrong length, please specify 10 characters"#,
+                ))?;
                 common::expect_assert(str.contains(r#"Price can't be zero"#))?;
                 Ok(())
             }
-            _ => Err(String::from("Validations failed but wrong error returned"))
-        }
+            _ => Err(String::from("Validations failed but wrong error returned")),
+        },
     }
 }
