@@ -67,6 +67,14 @@ test:examples:
     - cd ../graph_example
     - cargo run
 
+test::rustfmt:
+  <<: *cache_pull_template
+  image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
+  stage: test
+  script:
+    - rustup component add rustfmt --toolchain 1.47.0-x86_64-unknown-linux-musl
+    - cargo fmt --all -- --check
+
 rustdoc:
   <<: *cache_pull_template
   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
@@ -83,11 +91,3 @@ rustdoc:
   artifacts:
     paths:
       - public
-
-fmt:
-  <<: *cache_pull_template
-  image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
-  stage: documentation
-  script:
-    - rustup component add rustfmt --toolchain 1.47.0-x86_64-unknown-linux-musl
-    - cargo fmt --all -- --check

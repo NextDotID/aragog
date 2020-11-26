@@ -89,7 +89,7 @@ impl DatabaseConnectionPool {
     /// * `DB_HOST` - The ArangoDB host to connect to (`http://localhost:8529` by default or `http://arangodb:8529` on docker containers)
     /// * `DB_NAME` - The name of the ArangoDB database to connect to
     /// * `DB_USER` - The username of a ArangoDb user with access to the database
-    /// * `DB_PASSWORD` - The password associated with `db_user`
+    /// * `DB_PASSWORD` - The password associated with `DB_USER`
     ///
     /// To load the schema this function will try to access `SCHEMA_PATH` env var or use the default value: `./src/config/db/schema.json`
     ///
