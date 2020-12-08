@@ -76,7 +76,7 @@
 //!
 //! ### Schema and collections
 //!
-//! In order for everything to work you need a `schema.yaml` file. Use the `aragog` CLI to create migrations and generate the file.
+//! In order for everything to work you need a `schema.yaml` file. Use [aragog_cli][CLI] to create migrations and generate the file.
 //!
 //! #### Creating a pool
 //!
@@ -507,6 +507,7 @@
 //! [actix]: https://actix.rs/ "Actix Homepage"
 //! [paperclip]: https://github.com/wafflespeanut/paperclip "Paperclip Github"
 //! [ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html
+//! [CLI]: https://crates.io/crates/aragog_cli
 #![forbid(missing_docs)]
 
 #[cfg(all(feature = "async", feature = "blocking"))]
