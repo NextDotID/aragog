@@ -32,7 +32,7 @@
 //!
 //! By default all `aragog` items are asynchronous, you can compile `aragog` in a synchronous build using the `blocking` feature:
 //! ```toml
-//! aragog = { version = "0.6", features = ["blocking"], default-features = false }
+//! aragog = { version = "0.7", features = ["blocking"], default-features = false }
 //! ```
 //! You need to disable the default features. Don't forget to add the `derive` feature to use the derive macros.
 //!
@@ -42,14 +42,14 @@
 //! To do so you can add to your `cargo.toml` the following `feature`: `actix`. This will add Actix 3 dependency and compatibility
 //!
 //! ```toml
-//! aragog = { version = "0.6", features = ["actix"] }
+//! aragog = { version = "0.7", features = ["actix"] }
 //! ```
 //!
 //! If you also want to be able to use [paperclip][paperclip], you may want `aragog` elements to be compatible.
 //! To do so you can add to your `cargo.toml` the following `feature`: `open-api`.
 //!
 //! ```toml
-//! aragog = { version = "0.6", features = ["actix", "open-api"] }
+//! aragog = { version = "0.7", features = ["actix", "open-api"] }
 //! ```
 //!
 //! ##### Password hashing
@@ -58,7 +58,7 @@
 //! To do so you can add to your `cargo.toml` the following `feature`: `password_hashing`.
 //!
 //! ```toml
-//! aragog = { version = "0.6", features = ["password_hashing"] }
+//! aragog = { version = "0.7", features = ["password_hashing"] }
 //! ```
 //!
 //! It will add two functions in the `Authenticate` trait:

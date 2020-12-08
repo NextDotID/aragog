@@ -1,6 +1,6 @@
 [package]
 name = "aragog"
-version = "0.6.1"
+version = "0.7.0"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"

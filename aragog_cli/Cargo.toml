@@ -18,7 +18,7 @@ doc = false
 
 [dependencies]
 # Aragog
-aragog = { path = "..", version = "^0.6", features = ["blocking"], default-features = false }
+aragog = { path = "..", version = "^0.7", features = ["blocking"], default-features = false }
 arangors = { version = "0.4.5", features = ["blocking"], default-features = false }
 
 # Serialization

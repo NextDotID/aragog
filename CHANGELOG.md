@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+
+* Added a hole new `schema` module with structs for better schema serializations and apply
+* `DatabaseConnectionPool` has a builder
+* New CLI (`aragog_cli`)
+* The schema file must be in YAML
+* Moved string validations methods in `Validate`
+* New features: `derive`, `async` and `blocking`
+
 ## 0.6.1
 
 * Paperclip 0.5.0
