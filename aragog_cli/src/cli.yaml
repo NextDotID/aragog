@@ -1,0 +1,64 @@
+name: aragog
+version: "1.0"
+author: Felix de Maneville <felix.maneville@qonfucius.team>
+about: CLI too for aragog crate, handles ArangoDB migrations and schema generation
+args:
+  - schema_path:
+      short: f
+      long: folder
+      value_name: PATH
+      about: Sets the path for the migrations and schema (by default env var SCHEMA_PATH is used)
+      takes_value: true
+      required: false
+  - db_host:
+      short: h
+      long: db-host
+      value_name: DB_HOST
+      about: Sets the ArangoDB host (by default env var DB_HOST is used)
+      takes_value: true
+      required: false
+  - db_name:
+      short: n
+      long: db-name
+      value_name: DB_NAME
+      about: Sets the ArangoDB database name (by default env var DB_NAME is used)
+      takes_value: true
+      required: false
+  - db_user:
+      short: u
+      long: db-user
+      value_name: DB_USER
+      about: Sets the ArangoDB database user (by default env var DB_USER is used)
+      takes_value: true
+      required: false
+  - db_password:
+      short: p
+      long: db-password
+      value_name: DB_PASSWORD
+      about: Sets the ArangoDB database user password (by default env var DB_PASSWORD is used)
+      takes_value: true
+      required: false
+subcommands:
+  - migrate:
+      about: Launches migrations
+      takes_value: false
+  - rollback:
+      about: Rollbacks migrations (One by default)
+      takes_value: true
+      args:
+        - COUNT:
+            about: Number of migrations to rollback
+            help: Defines how many migrations to rollback
+            required: false
+  - create_migration:
+      takes_value: true
+      value_name: MIGRATION_NAME
+      about: Sets the input file to use
+      args:
+        - MIGRATION_NAME:
+            about: Migration name
+            help: Sets the migration name
+            required: true
+  - truncate_database:
+        takes_value: false
+        about: Truncate the database, removes all collections, graphs and documents

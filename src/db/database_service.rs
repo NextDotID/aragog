@@ -6,6 +6,7 @@ use serde::Serialize;
 use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 use arangors::client::reqwest::ReqwestClient;
 
+#[maybe_async::maybe_async]
 pub async fn update_record<T: DeserializeOwned + Serialize + Clone + Record>(
     obj: T,
     key: &str,
@@ -34,6 +35,7 @@ pub async fn update_record<T: DeserializeOwned + Serialize + Clone + Record>(
     DatabaseRecord::from_response(response)
 }
 
+#[maybe_async::maybe_async]
 pub async fn create_document<T: DeserializeOwned + Serialize + Clone + Record>(
     obj: T,
     collection: &Collection<ReqwestClient>,
@@ -58,6 +60,7 @@ pub async fn create_document<T: DeserializeOwned + Serialize + Clone + Record>(
     DatabaseRecord::from_response(response)
 }
 
+#[maybe_async::maybe_async]
 pub async fn create_record<T: DeserializeOwned + Serialize + Clone + Record>(
     obj: T,
     db_pool: &DatabaseConnectionPool,
@@ -67,6 +70,7 @@ pub async fn create_record<T: DeserializeOwned + Serialize + Clone + Record>(
     create_document(obj, collection).await
 }
 
+#[maybe_async::maybe_async]
 pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(
     key: &str,
     db_pool: &DatabaseConnectionPool,
@@ -90,6 +94,7 @@ pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(
     Ok(DatabaseRecord::from(record))
 }
 
+#[maybe_async::maybe_async]
 pub async fn remove_record<T: Serialize + DeserializeOwned + Clone + Record>(
     key: &str,
     db_pool: &DatabaseConnectionPool,

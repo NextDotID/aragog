@@ -590,6 +590,7 @@ impl Query {
     ///
     /// [`DatabaseRecord`]: ../struct.DatabaseRecord.html
     /// [`get`]: ../struct.DatabaseRecord.html#method.get
+    #[maybe_async::maybe_async]
     pub async fn call(
         self,
         db_pool: &DatabaseConnectionPool,

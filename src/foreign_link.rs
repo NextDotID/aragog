@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
@@ -30,13 +29,17 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 ///
 /// # #[tokio::main]
 /// # async fn main() {
-/// # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
-/// # let database_pool = DatabaseConnectionPool::new(
+/// # let database_pool = DatabaseConnectionPool::builder()
+/// #     .with_credentials(
 /// #       &std::env::var("DB_HOST").unwrap_or("http://localhost:8529".to_string()),
 /// #       &std::env::var("DB_NAME").unwrap_or("aragog_test".to_string()),
 /// #       &std::env::var("DB_USER").unwrap_or("test".to_string()),
-/// #       &std::env::var("DB_PWD").unwrap_or("test".to_string()),
-/// #       AuthMode::Basic).await;
+/// #       &std::env::var("DB_PWD").unwrap_or("test".to_string())
+/// #     )
+/// #    .with_schema_path("tests/schema.yaml")
+/// #    .build()
+/// #    .await
+/// #    .unwrap();
 /// # database_pool.truncate().await;
 /// let user = DatabaseRecord::create(User {}, &database_pool).await.unwrap();
 /// let order = Order {
@@ -47,7 +50,7 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 /// assert_eq!(&user.id, &linked_user.id);
 /// # }
 /// ```
-#[async_trait]
+#[maybe_async::maybe_async]
 pub trait ForeignLink<T: Record + Serialize + DeserializeOwned + Clone> {
     /// Defines the foreign key field to the linked `T` model.
     ///
@@ -75,6 +78,7 @@ pub trait ForeignLink<T: Record + Serialize + DeserializeOwned + Clone> {
     fn foreign_key(&self) -> &str;
 
     /// Retrieves the record matching the defined `foreign_key`. Type inference may be required.
+    #[cfg(not(feature = "blocking"))]
     async fn linked_model(
         &self,
         db_pool: &DatabaseConnectionPool,
@@ -84,5 +88,17 @@ pub trait ForeignLink<T: Record + Serialize + DeserializeOwned + Clone> {
         T: 'async_trait,
     {
         DatabaseRecord::find(self.foreign_key(), db_pool).await
+    }
+
+    /// Retrieves the record matching the defined `foreign_key`. Type inference may be required.
+    #[cfg(feature = "blocking")]
+    fn linked_model(
+        &self,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<DatabaseRecord<T>, ServiceError>
+    where
+        Self: Sized,
+    {
+        DatabaseRecord::find(self.foreign_key(), db_pool)
     }
 }

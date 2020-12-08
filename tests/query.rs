@@ -541,87 +541,117 @@ mod call {
         PartOf { _from, _to }
     }
 
-    fn factory(db_pool: &DatabaseConnectionPool) {
-        let p1 = tokio_test::block_on(DatabaseRecord::create(
+    #[maybe_async::maybe_async]
+    async fn factory(db_pool: &DatabaseConnectionPool) {
+        let p1 = DatabaseRecord::create(
             Dish {
                 name: "Pizza Mozarella".to_string(),
             },
             db_pool,
-        ))
+        )
+        .await
         .unwrap();
-        let p2 = tokio_test::block_on(DatabaseRecord::create(
+        let p2 = DatabaseRecord::create(
             Dish {
                 name: "Pizza Regina".to_string(),
             },
             db_pool,
-        ))
+        )
+        .await
         .unwrap();
-        let ic = tokio_test::block_on(DatabaseRecord::create(
+        let ic = DatabaseRecord::create(
             Dish {
                 name: "Ice Cream".to_string(),
             },
             db_pool,
-        ))
+        )
+        .await
         .unwrap();
-        let wi = tokio_test::block_on(DatabaseRecord::create(
+        let wi = DatabaseRecord::create(
             Dish {
                 name: "Wine".to_string(),
             },
             db_pool,
-        ))
+        )
+        .await
         .unwrap();
-        let pa = tokio_test::block_on(DatabaseRecord::create(
+        let pa = DatabaseRecord::create(
             Dish {
                 name: "Spaghetti".to_string(),
             },
             db_pool,
-        ))
+        )
+        .await
         .unwrap();
 
-        let m1 = tokio_test::block_on(DatabaseRecord::create(
+        let m1 = DatabaseRecord::create(
             Order {
                 name: "Menu Pizza".to_string(),
             },
             db_pool,
-        ))
+        )
+        .await
         .unwrap();
-        let m2 = tokio_test::block_on(DatabaseRecord::create(
+        let m2 = DatabaseRecord::create(
             Order {
                 name: "Menu Pizza 2".to_string(),
             },
             db_pool,
-        ))
+        )
+        .await
         .unwrap();
-        let m3 = tokio_test::block_on(DatabaseRecord::create(
+        let m3 = DatabaseRecord::create(
             Order {
                 name: "Menu Pasta".to_string(),
             },
             db_pool,
-        ))
+        )
+        .await
         .unwrap();
 
         // Menu 1
-        tokio_test::block_on(DatabaseRecord::link(&p1, &m1, &db_pool, linker)).unwrap();
-        tokio_test::block_on(DatabaseRecord::link(&wi, &m1, &db_pool, linker)).unwrap();
-        tokio_test::block_on(DatabaseRecord::link(&ic, &m1, &db_pool, linker)).unwrap();
+        DatabaseRecord::link(&p1, &m1, &db_pool, linker)
+            .await
+            .unwrap();
+        DatabaseRecord::link(&wi, &m1, &db_pool, linker)
+            .await
+            .unwrap();
+        DatabaseRecord::link(&ic, &m1, &db_pool, linker)
+            .await
+            .unwrap();
         // Menu 2
-        tokio_test::block_on(DatabaseRecord::link(&p2, &m2, &db_pool, linker)).unwrap();
-        tokio_test::block_on(DatabaseRecord::link(&wi, &m2, &db_pool, linker)).unwrap();
-        tokio_test::block_on(DatabaseRecord::link(&ic, &m2, &db_pool, linker)).unwrap();
+        DatabaseRecord::link(&p2, &m2, &db_pool, linker)
+            .await
+            .unwrap();
+        DatabaseRecord::link(&wi, &m2, &db_pool, linker)
+            .await
+            .unwrap();
+        DatabaseRecord::link(&ic, &m2, &db_pool, linker)
+            .await
+            .unwrap();
         // Menu 3
-        tokio_test::block_on(DatabaseRecord::link(&pa, &m3, &db_pool, linker)).unwrap();
-        tokio_test::block_on(DatabaseRecord::link(&wi, &m3, &db_pool, linker)).unwrap();
-        tokio_test::block_on(DatabaseRecord::link(&ic, &m3, &db_pool, linker)).unwrap();
+        DatabaseRecord::link(&pa, &m3, &db_pool, linker)
+            .await
+            .unwrap();
+        DatabaseRecord::link(&wi, &m3, &db_pool, linker)
+            .await
+            .unwrap();
+        DatabaseRecord::link(&ic, &m3, &db_pool, linker)
+            .await
+            .unwrap();
     }
 
-    #[test]
-    fn simple_outbound_request() -> Result<(), String> {
-        common::with_db(|pool| {
-            factory(&pool);
+    #[maybe_async::test(
+        any(feature = "blocking"),
+        async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn simple_outbound_request() -> Result<(), String> {
+        common::with_db(|pool| async move {
+            factory(&pool).await;
             let query = Query::new("Dish")
                 .filter(compare!(field "name").like("Pizza%").into())
                 .join_outbound(1, 1, false, PartOf::query());
-            let res = tokio_test::block_on(query.call(&pool)).unwrap();
+            let res = query.call(&pool).await.unwrap();
             common::expect_assert_eq(res.len(), 2)?;
             let res = res.get_records::<Order>();
             common::expect_assert_eq(res.len(), 2)?;
@@ -631,16 +661,20 @@ mod call {
             )?;
             Ok(())
         })
+        .await
     }
 
-    #[test]
-    fn simple_inbound_request() -> Result<(), String> {
-        common::with_db(|pool| {
-            factory(&pool);
+    #[maybe_async::test(
+        any(feature = "blocking"),
+        async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn simple_inbound_request() -> Result<(), String> {
+        common::with_db(|pool| async move {
+            factory(&pool).await;
             let query = Query::new("Order")
                 .filter(compare!(field "name").equals_str("Menu Pizza").into())
                 .join_inbound(1, 1, false, PartOf::query());
-            let res = tokio_test::block_on(query.call(&pool)).unwrap();
+            let res = query.call(&pool).await.unwrap();
             common::expect_assert_eq(res.len(), 3)?;
             let res = res.get_records::<Dish>();
             common::expect_assert_eq(res.len(), 3)?;
@@ -650,19 +684,23 @@ mod call {
             )?;
             Ok(())
         })
+        .await
     }
 
-    #[test]
-    fn outbound_then_inbound_request() -> Result<(), String> {
-        common::with_db(|pool| {
-            factory(&pool);
+    #[maybe_async::test(
+        any(feature = "blocking"),
+        async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn outbound_then_inbound_request() -> Result<(), String> {
+        common::with_db(|pool| async move {
+            factory(&pool).await;
             let query = Query::new("Dish").join_outbound(
                 1,
                 1,
                 false,
                 PartOf::query().join_inbound(1, 1, false, PartOf::query().distinct()),
             );
-            let res = tokio_test::block_on(query.call(&pool)).unwrap();
+            let res = query.call(&pool).await.unwrap();
             common::expect_assert_eq(res.len(), 5)?;
             let res = res.get_records::<Dish>();
             common::expect_assert_eq(res.len(), 5)?;
@@ -678,5 +716,6 @@ mod call {
             )?;
             Ok(())
         })
+        .await
     }
 }

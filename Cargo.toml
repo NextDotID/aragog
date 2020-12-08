@@ -8,7 +8,7 @@ authors = [
 edition = "2018"
 description = "A simple lightweight object-document mapper for ArangoDB"
 keywords = ["ArangoDB", "Arango", "ORM", "ODM", "OGM"]
-exclude =  ["tests", ".gitlab-ci.yml", ".gitignore"]
+exclude =  ["tests", ".gitlab-ci.yml", ".gitignore", "examples"]
 categories = ["web-programming", "database"]
 license = "MIT"
 readme = "README.md"
@@ -16,42 +16,52 @@ repository = "https://gitlab.com/qonfucius/aragog"
 documentation = "https://docs.rs/aragog"
 
 [features]
-default = [ ]
+default = ["derive", "async"]
+async = ["arangors/reqwest_async"]
+blocking = ["arangors/blocking", "arangors/reqwest_blocking", "maybe-async/is_sync"]
+entreprise = ["arangors/enterprise"]
+derive = ["aragog-macros"]
 actix = ["actix-web"]
 open-api = ["paperclip"]
 password_hashing = ["argonautica"]
 
 [dependencies]
 # ArangoDB driver
-arangors = "0.4.5"
+arangors = { version = "0.4.5", default-features = false, features = ["rocksdb"] }
 # Used for string validation toolbox, not used otherwise
-regex = "1.4.2"
+regex = "1.4"
 # Record trait has async methods
-async-trait = "0.1.42"
+async-trait = "0.1"
 # Serialization and deserialization
-serde = { version = "1.0.117", features = ["derive"] }
-serde_json = "1.0.59"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.8"
 # Log handling
-log = "0.4.11"
+log = "0.4"
 # Error definitions
-thiserror = "1.0.22"
+thiserror = "1.0"
 # Numeric types
-num = "0.3.1"
+num = "0.3"
 # Self depedencies
-aragog-macros = { path = "aragog_macros", version = "0.1.0" }
+maybe-async = "0.2"
 
-actix-web = { version = "3.3.1", optional = true, default-features = false }
-argonautica = { version = "0.2.0", optional = true }
+aragog-macros = { path = "aragog_macros", version = "0.1.0", optional = true }
+actix-web = { version = "3.3", optional = true, default-features = false }
+argonautica = { version = "0.2", optional = true }
 paperclip = { version = "0.5", optional = true, features = ["actix"] }
+
+[dev-dependencies]
+# We add the "feature" option to avoid serde version conflict somehow
+chrono = { version = "0.4", features = ["serde"] }
+
+# Used by examples:
+env_logger = "0.8"
+
+[dev-dependencies.tokio]
+version = "0.2"
+features = [ "macros", "rt-core" ]
 
 [workspace]
 members = [
-    ".",
-    "aragog_macros",
+    "aragog_cli"
 ]
-
-[dev-dependencies]
-tokio-test = "0.2.1"
-tokio = {version = "0.2.23", features = ["macros"]}
-# We add the "feature" option to avoid serde version conflict somehow
-chrono = { version = "0.4.19", features = ["serde"] }

@@ -1,5 +1,3 @@
-use crate::helpers::string_validators::{validate_min_len, validate_numeric_string};
-
 /// Trait for structures that can be stored in Database as a ArangoDB EdgeCollection.
 /// The trait must be implemented to be used as a edge record in [`DatabaseRecord`].
 ///
@@ -35,7 +33,7 @@ use crate::helpers::string_validators::{validate_min_len, validate_numeric_strin
 /// let record_a = Character::find("123", &database_connection_pool).await.unwrap();
 /// let record_b = Character::find("234", &database_connection_pool).await.unwrap();
 ///
-/// let edge_record = DatabaseRecord::link(record_a, record_b, &database_connection_pool, |_from, _to| {
+/// let edge_record = DatabaseRecord::link(&record_a, &record_b, &database_connection_pool, |_from, _to| {
 ///     Edge { _from, _to, description: "description".to_string() }
 /// }).await.unwrap();
 /// ```
@@ -154,22 +152,5 @@ pub trait EdgeRecord {
     /// ```
     fn _from_collection_name(&self) -> String {
         self._from().split('/').next().unwrap().to_string()
-    }
-
-    /// Validation method for `EdgeRecord` to use on [`Validate`] implementation.
-    /// Verifies that both `_from` and `_to` fields have correct format.
-    fn validate_edge_fields(&self, errors: &mut Vec<String>) {
-        let array = [("_from", self._from()), ("_to", self._to())];
-        for (name, field) in array.iter() {
-            let split = field.split('/').collect::<Vec<&str>>();
-            if split.len() != 2 {
-                errors.push(format!(r#"{} "{}" has wrong format"#, name, field));
-            }
-            let left_part = &split.first().unwrap();
-            validate_min_len("_from", left_part, 2, errors);
-            let right_part = &split.last().unwrap();
-            validate_min_len("_to", right_part, 2, errors);
-            validate_numeric_string("_to", right_part, errors);
-        }
     }
 }

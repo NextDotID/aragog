@@ -1,3 +1,11 @@
+//! # Aragog
+//!
+//! [![pipeline status](https://gitlab.com/qonfucius/aragog/badges/master/pipeline.svg)](https://gitlab.com/qonfucius/aragog/commits/master)
+//! [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+//! [![Crates.io](https://img.shields.io/crates/v/aragog.svg)](https://crates.io/crates/aragog)
+//! [![aragog](https://docs.rs/aragog/badge.svg)](https://docs.rs/aragog)
+//! [![Discord](https://img.shields.io/discord/763034131335741440.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Xyx3hUP)
+//!
 //! `aragog` is a simple lightweight ODM and OGM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
 //! The main concept is to provide behaviors allowing to synchronize documents and structs as simply an lightly as possible.
 //!
@@ -6,7 +14,7 @@
 //! ### Features
 //!
 //! By now the available features are:
-//! * Creating a database connection pool from a defined `schema.json`
+//! * Creating a database connection pool from a defined `schema.yaml`
 //! * Structures can implement different behaviors:
 //!     * `Record`: The structure can be written into a ArangoDB collection as well as retrieved, from its `_key` or other query arguments.
 //!     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
@@ -20,20 +28,28 @@
 //!
 //! #### Cargo features
 //!
+//! ##### Async and Blocking
+//!
+//! By default all `aragog` items are asynchronous, you can compile `aragog` in a synchronous build using the `blocking` feature:
+//! ```toml
+//! aragog = { version = "0.6", features = ["blocking"], default-features = false }
+//! ```
+//! You need to disable the default features. Don't forget to add the `derive` feature to use the derive macros.
+//!
 //! ##### Actix and Open API
 //!
 //! If you use this crate with the [actix-web][actix] framework, you may want the `aragog` errors to be usable as http errors.
 //! To do so you can add to your `cargo.toml` the following `feature`: `actix`. This will add Actix 3 dependency and compatibility
 //!
 //! ```toml
-//! aragog = { version = "^0.5", features = ["actix"] }
+//! aragog = { version = "0.6", features = ["actix"] }
 //! ```
 //!
 //! If you also want to be able to use [paperclip][paperclip], you may want `aragog` elements to be compatible.
 //! To do so you can add to your `cargo.toml` the following `feature`: `open-api`.
 //!
 //! ```toml
-//! aragog = { version = "^0.5", features = ["actix", "open-api"] }
+//! aragog = { version = "0.6", features = ["actix", "open-api"] }
 //! ```
 //!
 //! ##### Password hashing
@@ -42,14 +58,16 @@
 //! To do so you can add to your `cargo.toml` the following `feature`: `password_hashing`.
 //!
 //! ```toml
-//! aragog = { version = "^0.5", features = ["password_hashing"] }
+//! aragog = { version = "0.6", features = ["password_hashing"] }
 //! ```
 //!
 //! It will add two functions in the `Authenticate` trait:
+//!
 //! ```rust ignore
 //! fn hash_password(password: &str, secret_key: &str) -> Result<String, ServiceError>;
 //! fn verify_password(password: &str, password_hash: &str, secret_key: &str) -> Result<(), ServiceError>;
 //! ```
+//!
 //! * `hash_password` will return a Argon2 encrypted password hash you can safely store to your database
 //! * `verify_password` will check if the provided `password` matches the Argon2 encrypted hash you stored.
 //!
@@ -58,60 +76,52 @@
 //!
 //! ### Schema and collections
 //!
-//! In order for everything yo work you need to specify a `schema.json` file. The path of the schema must be set in `SCHEMA_PATH` environment variable or by default the pool will look for it in `src/config/db/schema.json`.
-//! > There are example `schema.json` files in [/examples/][example_path]
+//! In order for everything to work you need a `schema.yaml` file. Use the `aragog` CLI to create migrations and generate the file.
 //!
-//! The json must look like this:
+//! #### Creating a pool
 //!
-//! ```json
-//! {
-//!   "collections": [
-//!     {
-//!       "name": "Collection1",
-//!       "indexes": []
-//!     },
-//!     {
-//!       "name": "Collection2",
-//!       "indexes": [
-//!         {
-//!           "name": "byUsernameAndEmail",
-//!           "fields": ["username", "email"],
-//!           "settings": {
-//!             "type": "persistent",
-//!             "unique": true,
-//!             "sparse": false,
-//!             "deduplicate": false
-//!           }
-//!         }
-//!       ]
-//!     }
-//!   ],
-//!   "edge_collections": [
-//!     {
-//!       "name": "EdgeCollection1"
-//!     }
-//!   ]
-//! }
+//! To connect to the database and initialize a connection pool you may use the following builder pattern options:
+//!
+//! ```rust
+//! # use aragog::{AuthMode, DatabaseConnectionPool};
+//! # use aragog::schema::DatabaseSchema;
+//! # #[tokio::main]
+//! # async fn main() {
+//! let db_pool = DatabaseConnectionPool::builder()
+//!     // You can specify a host and credentials with this method.
+//!     // Otherwise, the builder will look for the env vars: `DB_HOST`, `DB_NAME`, `DB_USER` and `DB_PASSWORD`.
+//!     .with_credentials("http://localhost:8529", "db", "user", "password")
+//!     // You can specify a authentication mode between `Basic` and `Jwt`
+//!     // Otherwise the default value will be used (`Basic`).
+//!     .with_auth_mode(AuthMode::Basic)
+//!     // You can specify a schema path to initialize the database pool
+//!     // Otherwise the env var `SCHEMA_PATH` or the default value `config/db/schema.yaml` will be used.
+//!     .with_schema_path("config/db/schema.yaml")
+//!     // If you prefer you can use your own custom schema
+//!     .with_schema(DatabaseSchema::default())
+//! #   .with_schema_path("tests/schema.yaml")
+//! #   .with_credentials(
+//! #       &std::env::var("DB_HOST").unwrap(),
+//! #       &std::env::var("DB_NAME").unwrap(),
+//! #       &std::env::var("DB_USER").unwrap(),
+//! #       &std::env::var("DB_PASSWORD").unwrap()
+//! #   )
+//!     // The schema wil silently apply to the database, useful only if you don't use the CLI and migrations
+//!     .apply_schema()
+//!     // You then need to build the pool
+//!     .build()
+//!     .await
+//!     .unwrap();
+//! # }
 //! ```
-//!
-//! When initializing the `DatabaseConnectionPool` every collection `name` will be searched in the database and if not found the collection will be automatically created.
-//! > You don't need to create the collections yourself
-//!
-//! ##### Indexes
-//!
-//! The array of Index in `indexes` must have that exact format:
-//! * `name`: the index name,
-//! * `fields`: an array of the fields concerned on that compound index,
-//! * `settings`: this json bloc must be the serialized version of an [IndexSettings][IndexSettings] variant from [arangors][arangors] driver.
-//! > There is no indexing for `edge_collections`
+//! None of these options are mandatory.
 //!
 //! #### Record
 //!
 //! The global architecture is simple, every *model* you define that can be synced with the database must implement `serde::Serialize`, `serde::Deserialize` and `Clone`.
-//! To declare a `struct` as a Model it must derive from `aragog::Record` (the collection name must be the same as the struct)
+//! To declare a `struct` as a Model it must derive from `aragog::Record` (the collection name must be the same as the struct) or implement it.
 //!
 //! If you want any of the other behaviors you can implement the associated *trait*:
-//! * Implement
 //!
 //! The final *model* structure will be an **Exact** representation of the content of a ArangoDB *document*, so without its `_key`, `_id` and `_rev`.
 //! Your project should contain some `models` folder with every `struct` representation of your database documents.
@@ -136,14 +146,11 @@
 //! #[tokio::main]
 //! async fn main() {
 //! // Database connection Setup
-//! # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
-//!
-//!     let database_pool = DatabaseConnectionPool::new(
-//!         &std::env::var("DB_HOST").unwrap(),
-//!         &std::env::var("DB_NAME").unwrap(),
-//!         &std::env::var("DB_USER").unwrap(),
-//!         &std::env::var("DB_PWD").unwrap(),
-//!         AuthMode::default()).await;
+//!     let database_pool = DatabaseConnectionPool::builder()
+//! # .with_schema_path("tests/schema.yaml").apply_schema()
+//!         .build()
+//!         .await
+//!         .unwrap();
 //! #     database_pool.truncate().await;
 //!     // Define a document
 //!     let mut user = User {
@@ -191,14 +198,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() {
-//! # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
-//! #
-//! #  let database_pool = DatabaseConnectionPool::new(
-//! #        &std::env::var("DB_HOST").unwrap(),
-//! #        &std::env::var("DB_NAME").unwrap(),
-//! #        &std::env::var("DB_USER").unwrap(),
-//! #        &std::env::var("DB_PWD").unwrap(),
-//! #        AuthMode::default()).await;
+//! # let database_pool = DatabaseConnectionPool::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
 //! #  database_pool.truncate().await;
 //!     // Define a document
 //!     let mut dish = DatabaseRecord::create(Dish {
@@ -241,13 +241,7 @@
 //! #
 //! # #[tokio::main]
 //! # async fn main() {
-//! # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
-//! # let database_pool = DatabaseConnectionPool::new(
-//! #       &std::env::var("DB_HOST").unwrap(),
-//! #       &std::env::var("DB_NAME").unwrap(),
-//! #       &std::env::var("DB_USER").unwrap(),
-//! #       &std::env::var("DB_PWD").unwrap(),
-//! #       AuthMode::default()).await;
+//! # let database_pool = DatabaseConnectionPool::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
 //! # database_pool.truncate().await;
 //! # let mut user = User {
 //! #     username: String::from("LeRevenant1234"),
@@ -298,13 +292,7 @@
 //! #
 //! # #[tokio::main]
 //! # async fn main() {
-//! # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
-//! # let database_pool = DatabaseConnectionPool::new(
-//! #       &std::env::var("DB_HOST").unwrap(),
-//! #       &std::env::var("DB_NAME").unwrap(),
-//! #       &std::env::var("DB_USER").unwrap(),
-//! #       &std::env::var("DB_PWD").unwrap(),
-//! #       AuthMode::default()).await;
+//! # let database_pool = DatabaseConnectionPool::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
 //! # database_pool.truncate().await;
 //! # let mut user = User {
 //! #     username: String::from("LeRevenant1234"),
@@ -385,11 +373,14 @@
 //! All the currently implemented comparison methods are listed under [ComparisonBuilder][ComparisonBuilder] documentation page.
 //!
 //! Filters can be defined explicitely like this:
+//!
 //! ```rust
 //! # use aragog::query::{Comparison, Filter};
 //! let filter = Filter::new(Comparison::field("name").equals_str("felix"));
 //! ```
+//!
 //! or
+//!
 //! ```rust
 //! # use aragog::query::{Comparison, Filter};
 //! let filter :Filter = Comparison::field("name").equals_str("felix").into();
@@ -412,7 +403,9 @@
 //! let query = Query::inbound_graph(1, 2, "NamedGraph", "User/123");
 //! let query = Query::any_graph(1, 2, "NamedGraph", "User/123");
 //! ```
-//! * Implicit way from a `DatabaseRecor<T>`
+//!
+//! * Implicit way from a `DatabaseRecord<T>`
+//!
 //! ```rust ignore
 //! # use aragog::query::Query;
 //! let query = user_record.outbound_query(1, 2, "edgeCollection");
@@ -421,22 +414,28 @@
 //! let query = user_record.outbound_graph(1, 2, "NamedGraph");
 //! let query = user_record.inbound_graph(1, 2, "NamedGraph");
 //! ```
+//!
 //! ###### Sub queries
 //!
 //! Queries can be joined together through
 //! * Edge traversal:
+//!
 //! ```rust
 //! # use aragog::query::Query;
 //! let query = Query::new("User")
 //!     .join_inbound(1, 2, false, Query::new("edgeCollection"));
 //! ```
+//!
 //! * Named Graph traversal:
+//!
 //! ```rust
 //! # use aragog::query::Query;
 //! let query = Query::new("User")
 //!     .join_inbound(1, 2, true, Query::new("SomeGraph"));
 //! ```
+//!
 //! It works with complex queries:
+//!
 //! ```rust
 //! # use aragog::query::{Query, Comparison};
 //! let query = Query::new("User")
@@ -451,6 +450,55 @@
 //!                 )
 //!     );
 //! ```
+//!
+//! ### TODO
+//!
+//! * Query system:
+//!     - [ ] Advanced query system supporting:
+//!         - [X] Array variant querying (`ANY`, `NONE`, `ALL`)
+//!         - [X] Sort, limit and distinct methods
+//!         - [ ] Custom return system
+//!         - [X] `PRUNE` operation
+//!         - [ ] Procedural Macros for syntax simplification and field presence validation at compile time
+//!         - [ ] ArangoDB functions (`LENGTH`, `ABS`, etc.)
+//! * ORM and OGM
+//!     - [X] Pundit like authorizations (authorize actions on model)
+//!     - [X] Relations
+//!     - [X] Named Graph handling
+//!     - [ ] Handle key-value pair system (redis like)
+//! * Middle and long term:
+//!     - [ ] Handle revisions/concurrency correctly
+//!     - [ ] Implement Transactions
+//!     - [ ] Define possible `async` validations for database advance state check
+//!
+//!
+//! ### Arango db setup
+//!
+//! **Installation** (See official documentation [Here][arango_doc])
+//!
+//! * [Download Link][arango_download]
+//! * Run it with `/usr/local/sbin/arangod` The default installation contains one database `_system` and a user named `root`
+//! * Create a user and database for the project with the `arangosh` shell
+//!
+//! ```bash
+//! arangosh> db._createDatabase("DB_NAME");
+//! arangosh> var users = require("@arangodb/users");
+//! arangosh> users.save("DB_USER", "DB_PASSWORD");
+//! arangosh> users.grantDatabase("DB_USER", "DB_NAME");
+//! ```
+//! > It is a good practice to create a test db and a development db.
+//! * you can connect to the new created db with
+//! ```bash
+//! $> arangosh --server.username $DB_USER --server.database $DB_NAME
+//! ```
+//!
+//! ### License
+//!
+//! `aragog` is provided under the MIT license. See [LICENSE](./LICENSE).
+//! An simple lightweight ODM for [ArangoDB][ArangoDB] based on [arangors][arangors].
+//!
+//! Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][inzanez]
+//!
 //! [arangors]: https://docs.rs/arangors
 //! [argonautica]: https://github.com/bcmyers/argonautica
 //! [example_path]: examples/simple_app
@@ -461,6 +509,13 @@
 //! [ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html
 #![forbid(missing_docs)]
 
+#[cfg(all(feature = "async", feature = "blocking"))]
+compile_error!(
+    r#"feature "blocking" and "async" cannot be set at the same time.
+    If what you want is "blocking", please turn off default features by adding "default-features=false" in your Cargo.toml"#
+);
+
+#[cfg(feature = "derive")]
 #[doc(hidden)]
 pub use aragog_macros::*;
 
@@ -478,12 +533,14 @@ mod db;
 mod edge_record;
 mod error;
 mod foreign_link;
-/// Contains useful tools to parse json value and to validate string formats.
-pub mod helpers;
 mod link;
 mod new;
-/// contains querying struct and functions.
-pub mod query;
 mod record;
 mod update;
 mod validate;
+
+/// contains querying struct and functions.
+pub mod query;
+/// Database schema construction utility, available for advanced development.
+/// For classic usage use the `aragog_cli` and its migration engine to generate your schema
+pub mod schema;

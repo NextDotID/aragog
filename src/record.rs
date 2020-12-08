@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
@@ -10,7 +9,7 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, ServiceError};
 /// The trait must be implemented to be used as a record in [`DatabaseRecord`]
 ///
 /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
-#[async_trait]
+#[maybe_async::maybe_async]
 pub trait Record {
     /// Finds a document in database from its unique key.
     /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`find`]

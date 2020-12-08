@@ -5,8 +5,9 @@ extern crate proc_macro_error;
 use proc_macro::TokenStream;
 use std::borrow::Borrow;
 
-use crate::derives::{impl_edge_record_macro, impl_record_macro, impl_validate_macro};
 use syn::{self, Data, DeriveInput, Fields};
+
+use crate::derives::{impl_edge_record_macro, impl_record_macro, impl_validate_macro};
 
 mod derives;
 

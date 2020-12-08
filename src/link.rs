@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::query::{Query, RecordQueryResult};
@@ -32,13 +31,17 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 ///
 /// # #[tokio::main]
 /// # async fn main() {
-/// # std::env::set_var("SCHEMA_PATH", "tests/schema.json");
-/// # let database_pool = DatabaseConnectionPool::new(
+/// # let database_pool = DatabaseConnectionPool::builder()
+/// #     .with_credentials(
 /// #       &std::env::var("DB_HOST").unwrap_or("http://localhost:8529".to_string()),
 /// #       &std::env::var("DB_NAME").unwrap_or("aragog_test".to_string()),
 /// #       &std::env::var("DB_USER").unwrap_or("test".to_string()),
-/// #       &std::env::var("DB_PWD").unwrap_or("test".to_string()),
-/// #       AuthMode::Basic).await;
+/// #       &std::env::var("DB_PWD").unwrap_or("test".to_string())
+/// #     )
+/// #    .with_schema_path("tests/schema.yaml")
+/// #    .build()
+/// #    .await
+/// #    .unwrap();
 /// # database_pool.truncate().await;
 /// let user = DatabaseRecord::create(User {}, &database_pool).await.unwrap();
 /// let order = DatabaseRecord::create(
@@ -51,7 +54,7 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 /// assert_eq!(&user.key, &orders.first().unwrap().record.user_id);
 /// # }
 /// ```
-#[async_trait]
+#[maybe_async::must_be_async]
 pub trait Link<T: Record + Serialize + DeserializeOwned + Clone> {
     /// Defines the query to execute to find the `T` models linked to `Self`
     ///
@@ -81,6 +84,7 @@ pub trait Link<T: Record + Serialize + DeserializeOwned + Clone> {
     fn link_query(&self) -> Query;
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
+    #[cfg(not(feature = "blocking"))]
     async fn linked_models(
         &self,
         db_pool: &DatabaseConnectionPool,
@@ -90,5 +94,17 @@ pub trait Link<T: Record + Serialize + DeserializeOwned + Clone> {
         T: 'async_trait,
     {
         DatabaseRecord::get(self.link_query(), db_pool).await
+    }
+
+    /// Retrieves the records matching the defined `link_query`. Type inference may be required.
+    #[cfg(feature = "blocking")]
+    fn linked_models(
+        &self,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<RecordQueryResult<T>, ServiceError>
+    where
+        Self: Sized,
+    {
+        DatabaseRecord::get(self.link_query(), db_pool)
     }
 }
