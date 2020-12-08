@@ -1,7 +1,5 @@
-use serde::{Deserialize, Serialize};
-
-use aragog::helpers::string_validators;
 use aragog::{ServiceError, Validate};
+use serde::{Deserialize, Serialize};
 
 pub mod common;
 
@@ -15,19 +13,19 @@ pub struct Dish {
 
 impl Validate for Dish {
     fn validations(&self, errors: &mut Vec<String>) {
-        string_validators::validate_min_len("name", &self.name, 5, errors);
+        Self::validate_min_len("name", &self.name, 5, errors);
 
         Self::validate_field_presence("description", &self.description, errors);
         if self.description.is_some() {
-            string_validators::validate_min_len(
+            Self::validate_min_len(
                 "description",
                 self.description.as_ref().unwrap(),
                 15,
                 errors,
             );
         }
-        string_validators::validate_numeric_string("reference", &self.reference, errors);
-        string_validators::validate_len("reference", &self.reference, 10, errors);
+        Self::validate_numeric_string("reference", &self.reference, errors);
+        Self::validate_len("reference", &self.reference, 10, errors);
         if self.price == 0 {
             errors.push("Price can't be zero".to_string())
         }

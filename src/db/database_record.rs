@@ -47,6 +47,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`Conflict`]: enum.ServiceError.html#variant.Conflict
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     /// [`ValidationError`]: enum.ServiceError.html#variant.ValidationError
+    #[maybe_async::maybe_async]
     pub async fn save(&mut self, db_pool: &DatabaseConnectionPool) -> Result<(), ServiceError>
     where
         T: Validate,
@@ -80,6 +81,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    #[maybe_async::maybe_async]
     pub async fn delete(&self, db_pool: &DatabaseConnectionPool) -> Result<(), ServiceError> {
         database_service::remove_record::<T>(&self.key, &db_pool, T::collection_name()).await
     }
@@ -101,6 +103,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    #[maybe_async::maybe_async]
     pub async fn find(key: &str, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
         database_service::retrieve_record(key, &db_pool, T::collection_name()).await
     }
@@ -137,6 +140,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    #[maybe_async::maybe_async]
     pub async fn get(
         query: Query,
         db_pool: &DatabaseConnectionPool,
@@ -175,6 +179,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    #[maybe_async::maybe_async]
     pub async fn aql_get(
         query: &str,
         db_pool: &DatabaseConnectionPool,
@@ -284,10 +289,11 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// let record_a = Character::find("123", &database_connection_pool).await.unwrap();
     /// let record_b = Character::find("234", &database_connection_pool).await.unwrap();
     ///
-    /// let edge = DatabaseRecord::link(record_a, record_b, &database_connection_pool, |_from, _to| {
+    /// let edge = DatabaseRecord::link(&record_a, &record_b, &database_connection_pool, |_from, _to| {
     ///     Edge { _from, _to, description: "description".to_string() }
     /// }).await.unwrap();
     /// ```
+    #[maybe_async::maybe_async]
     pub async fn link<U, V, W>(
         from_record: &DatabaseRecord<U>,
         to_record: &DatabaseRecord<V>,
@@ -329,6 +335,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     ///
     /// User::exists(query, &db_pool).await;
     /// ```
+    #[maybe_async::maybe_async]
     pub async fn exists(query: Query, db_pool: &DatabaseConnectionPool) -> bool {
         let aql_string = query.to_aql();
         let aql_query = AqlQuery::builder()
@@ -362,6 +369,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     ///
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    #[maybe_async::maybe_async]
     pub async fn create(record: T, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError>
     where
         T: Validate,

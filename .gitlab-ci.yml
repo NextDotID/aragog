@@ -24,7 +24,7 @@ build:
   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
   stage: build
   script:
-    - cargo build --all-features
+    - cargo build
   cache:
     <<: *cache_template
 
@@ -35,7 +35,8 @@ build:
     DB_HOST: "http://arangodb:8529"
     DB_NAME: "_system"
     DB_USER: "root"
-    DB_PWD: "test"
+    DB_PASSWORD: "test"
+    SCHEMA_PATH: "tests/schema.yaml"
   services:
     - "arangodb:latest"
   stage: test
@@ -44,28 +45,38 @@ test:default:
   image: rust:latest
   <<: *test_template
   script:
-    - cargo test -- --test-threads=1 # Will run doctests
+    - cargo test --tests -- --test-threads=1
+
+test:doc:
+  image: rust:latest
+  <<: *test_template
+  script:
+    - cargo test --doc -- --test-threads=1
 
 test:actix:
   image: rust:latest
   <<: *test_template
   script:
-    - cargo test --features "actix" --all-targets -- --test-threads=1
+    - cargo test --features "actix" --tests -- --test-threads=1
 
 test:password_hashing:
   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
   <<: *test_template
   script:
-    - cargo test --features "password_hashing" --all-targets -- --test-threads=1
+    - cargo test --features "password_hashing" --tests -- --test-threads=1
+
+# test:blocking:
+#   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
+#   <<: *test_template
+#   script:
+#     - cargo test --features "blocking" --no-default-features --tests --
 
 test:examples:
   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
   <<: *test_template
   script:
-    - cd examples/simple_app
-    - cargo run
-    - cd ../graph_example
-    - cargo run
+    - cargo run --example simple_example
+    - cargo run --example graph_example
 
 test::rustfmt:
   <<: *cache_pull_template
@@ -84,7 +95,7 @@ rustdoc:
     PKG_NAME_DIR: aragog
   script:
     - cargo --version
-    - cargo rustdoc -p $PKG_NAME --all-features
+    - cargo rustdoc -p $PKG_NAME --features "actix password_hashing"
     - rm -rf public
     - mv target/doc public
     - echo "<meta http-equiv=\"refresh\" content=\"0; url=$PKG_NAME_DIR\">" > public/index.html

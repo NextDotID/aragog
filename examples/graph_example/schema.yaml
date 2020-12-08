@@ -1,0 +1,16 @@
+collections:
+  - name: Character
+    is_edge_collection: false
+  - name: ChildOf
+    is_edge_collection: true
+
+graphs:
+  - name: Family
+    orphanCollections:
+      -
+    edgeDefinitions:
+      - collection: ChildOf
+        from:
+          - Character
+        to:
+          - Character

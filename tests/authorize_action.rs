@@ -54,15 +54,18 @@ impl AuthorizeAction<Dish> for User {
     }
 }
 
-#[test]
-fn can_authorize() -> Result<(), String> {
-    common::with_db(|pool| {
+#[maybe_async::test(
+    any(feature = "blocking"),
+    async(all(not(feature = "blocking")), tokio::test)
+)]
+async fn can_authorize() -> Result<(), String> {
+    common::with_db(|pool| async move {
         let dish = Dish {
             name: "Pizza".to_string(),
             price: 10,
             is_alcohol: false,
         };
-        let dish_record = tokio_test::block_on(DatabaseRecord::create(dish, pool)).unwrap();
+        let dish_record = DatabaseRecord::create(dish, &pool).await.unwrap();
         let user = User {
             name: "Kid".to_string(),
             age: 15,
@@ -76,89 +79,96 @@ fn can_authorize() -> Result<(), String> {
         )?;
         Ok(())
     })
+    .await
 }
 
-#[test]
-fn can_fail() -> Result<(), String> {
+#[maybe_async::test(
+    any(feature = "blocking"),
+    async(all(not(feature = "blocking")), tokio::test)
+)]
+async fn can_fail() -> Result<(), String> {
     common::with_db(|pool| {
-        let dish = Dish {
-            name: "Forêt noire".to_string(),
-            price: 10,
-            is_alcohol: true,
-        };
-        let dish_record = tokio_test::block_on(DatabaseRecord::create(dish, pool)).unwrap();
+        async move {
+            let dish = Dish {
+                name: "Forêt noire".to_string(),
+                price: 10,
+                is_alcohol: true,
+            };
+            let dish_record = DatabaseRecord::create(dish, &pool).await.unwrap();
 
-        // Not enough money and not cook
-        let poor_user = User {
-            name: "PoorAdult".to_string(),
-            age: 18,
-            money: 5,
-            is_cook: false,
-        };
-        common::expect_assert(
-            !poor_user.is_action_authorized(DishAction::Order, Some(&dish_record)),
-        )?;
-        common::expect_assert(
-            poor_user
-                .authorize_action(DishAction::Order, Some(&dish_record))
-                .is_err(),
-        )?;
-        common::expect_assert(
-            !poor_user.is_action_authorized(DishAction::Cook, Some(&dish_record)),
-        )?;
-        common::expect_assert(
-            poor_user
-                .authorize_action(DishAction::Cook, Some(&dish_record))
-                .is_err(),
-        )?;
+            // Not enough money and not cook
+            let poor_user = User {
+                name: "PoorAdult".to_string(),
+                age: 18,
+                money: 5,
+                is_cook: false,
+            };
+            common::expect_assert(
+                !poor_user.is_action_authorized(DishAction::Order, Some(&dish_record)),
+            )?;
+            common::expect_assert(
+                poor_user
+                    .authorize_action(DishAction::Order, Some(&dish_record))
+                    .is_err(),
+            )?;
+            common::expect_assert(
+                !poor_user.is_action_authorized(DishAction::Cook, Some(&dish_record)),
+            )?;
+            common::expect_assert(
+                poor_user
+                    .authorize_action(DishAction::Cook, Some(&dish_record))
+                    .is_err(),
+            )?;
 
-        // Not old enough and not cook
-        let poor_user = User {
-            name: "Kid".to_string(),
-            age: 15,
-            money: 15,
-            is_cook: false,
-        };
-        common::expect_assert(
-            !poor_user.is_action_authorized(DishAction::Order, Some(&dish_record)),
-        )?;
-        common::expect_assert(
-            poor_user
-                .authorize_action(DishAction::Order, Some(&dish_record))
-                .is_err(),
-        )?;
-        common::expect_assert(
-            !poor_user.is_action_authorized(DishAction::Cook, Some(&dish_record)),
-        )?;
-        common::expect_assert(
-            poor_user
-                .authorize_action(DishAction::Cook, Some(&dish_record))
-                .is_err(),
-        )?;
+            // Not old enough and not cook
+            let poor_user = User {
+                name: "Kid".to_string(),
+                age: 15,
+                money: 15,
+                is_cook: false,
+            };
+            common::expect_assert(
+                !poor_user.is_action_authorized(DishAction::Order, Some(&dish_record)),
+            )?;
+            common::expect_assert(
+                poor_user
+                    .authorize_action(DishAction::Order, Some(&dish_record))
+                    .is_err(),
+            )?;
+            common::expect_assert(
+                !poor_user.is_action_authorized(DishAction::Cook, Some(&dish_record)),
+            )?;
+            common::expect_assert(
+                poor_user
+                    .authorize_action(DishAction::Cook, Some(&dish_record))
+                    .is_err(),
+            )?;
 
-        // Not old enough but is cook
-        let poor_user = User {
-            name: "Kid".to_string(),
-            age: 15,
-            money: 15,
-            is_cook: true,
-        };
-        common::expect_assert(
-            !poor_user.is_action_authorized(DishAction::Order, Some(&dish_record)),
-        )?;
-        common::expect_assert(
-            poor_user
-                .authorize_action(DishAction::Order, Some(&dish_record))
-                .is_err(),
-        )?;
-        common::expect_assert(
-            poor_user.is_action_authorized(DishAction::Cook, Some(&dish_record)),
-        )?;
-        common::expect_assert(
-            poor_user
-                .authorize_action(DishAction::Cook, Some(&dish_record))
-                .is_ok(),
-        )?;
-        Ok(())
+            // Not old enough but is cook
+            let poor_user = User {
+                name: "Kid".to_string(),
+                age: 15,
+                money: 15,
+                is_cook: true,
+            };
+            common::expect_assert(
+                !poor_user.is_action_authorized(DishAction::Order, Some(&dish_record)),
+            )?;
+            common::expect_assert(
+                poor_user
+                    .authorize_action(DishAction::Order, Some(&dish_record))
+                    .is_err(),
+            )?;
+            common::expect_assert(
+                poor_user.is_action_authorized(DishAction::Cook, Some(&dish_record)),
+            )?;
+            common::expect_assert(
+                poor_user
+                    .authorize_action(DishAction::Cook, Some(&dish_record))
+                    .is_ok(),
+            )?;
+            Ok(())
+        }
     })
+    .await
 }

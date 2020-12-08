@@ -1,34 +1,40 @@
 use std::fmt::Debug;
 
-use aragog::{AuthMode, DatabaseConnectionPool};
+use tokio::macros::support::Future;
+
+use aragog::DatabaseConnectionPool;
 
 const DEFAULT_DB_HOST: &str = "http://localhost:8529";
 const DEFAULT_DB_NAME: &str = "aragog_test";
 const DEFAULT_DB_USER: &str = "test";
 const DEFAULT_DB_PWD: &str = "test";
 
-pub fn setup_db() -> DatabaseConnectionPool {
-    std::env::set_var("SCHEMA_PATH", "./tests/schema.json");
-
-    let pool = tokio_test::block_on(DatabaseConnectionPool::new(
-        &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
-        &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
-        &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
-        &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
-        AuthMode::Basic,
-    ));
-    tokio_test::block_on(pool.truncate());
+#[maybe_async::maybe_async]
+pub async fn setup_db() -> DatabaseConnectionPool {
+    let pool = DatabaseConnectionPool::builder()
+        .with_credentials(
+            &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
+            &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
+            &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
+            &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
+        )
+        .with_schema_path("./tests/schema.yaml")
+        .apply_schema()
+        .build()
+        .await
+        .unwrap();
+    pool.truncate().await;
     pool
 }
 
-pub fn with_db<T>(test: T) -> Result<(), String>
+#[maybe_async::maybe_async]
+pub async fn with_db<T, F>(test: T) -> Result<(), String>
 where
-    T: FnOnce(&DatabaseConnectionPool) -> Result<(), String>,
+    T: FnOnce(DatabaseConnectionPool) -> F,
+    F: Future<Output = Result<(), String>>,
 {
-    let db_pool = setup_db();
-    let res = test(&db_pool);
-    tokio_test::block_on(db_pool.truncate());
-    res
+    let db_pool = setup_db().await;
+    test(db_pool).await
 }
 
 pub fn expect_assert(expr: bool) -> Result<(), String> {

@@ -8,7 +8,7 @@ pub struct ChildOf {
 }
 
 impl Validate for ChildOf {
-    fn validations(&self, errors :&mut Vec<String>) {
+    fn validations(&self, errors: &mut Vec<String>) {
         self.validate_edge_fields(errors);
     }
 }

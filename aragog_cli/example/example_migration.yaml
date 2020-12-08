@@ -1,0 +1,58 @@
+# The migration files contain two sections:
+# - up: The commands to execute on migration
+# - down: The commands to execute on rollback (optional)
+---
+up:
+  # This command will execute a AQL query
+  - aql: This is a query
+  # This command will create a collection with the given `name`
+  - create_collection:
+      name: Collection1
+  # This command will create a edge collection with the given `name`
+  - create_edge_collection:
+      name: EdgeCollection1
+  # This command will create a edge collection with the given parameters
+  - create_index:
+      # The name of the index
+      name: OnNameAndEmail
+      # The name of the associated collection
+      collection: Collection1
+      # The list of indexed fields
+      fields:
+        - name
+        - email
+      # The settings of the index will vary according to the type of index
+      # This example show the settings for the most common: "Persistent Index"
+      settings:
+        type: persistent
+        unique: true
+        sparse: false
+        deduplicate: false
+  # This command will create a Named Graph with the given parameters
+  - create_graph:
+      # The name of the graph
+      name: Named Graph
+      # The edges definition list
+      edge_definitions:
+        # The name of the edge collection
+        - collection: Edge
+          # The list of collection names for the `_from` attribute
+          from:
+            - Collection1
+          # The list of collection names for the `_to` attribute
+          to:
+            - Collection2
+
+down:
+  # This command will delete the graph with the given `name`
+  - delete_graph:
+      name: Named Graph
+  # This command will delete the Edge Collection with the given `name`
+  - delete_edge_collection:
+      name: Edge
+  # This command will delete the Index with the given `name`
+  - delete_index:
+      name: OnNameAndEmail
+  # This command will delete the Collection with the given `name`
+  - delete_collection:
+      name: Collection2

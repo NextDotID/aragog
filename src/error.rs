@@ -38,6 +38,15 @@ pub enum ServiceError {
     /// Can be interpreted as a HTTP code `422` unprocessable entity.
     #[error("Unprocessable entity")]
     UnprocessableEntity,
+    /// Failed to load config or initialize the app.
+    /// Can be interpreted as a HTTP code `500` Internal Error.
+    #[error("Failed to initialize `{item}`: `{message}`")]
+    InitError {
+        /// Item that failed to init
+        item: String,
+        /// Error message
+        message: String,
+    },
     /// The operation is refused due to lack of authentication.
     /// Can be interpreted as a HTTP code `401` unauthorized.
     #[error("Unauthorized")]
@@ -89,6 +98,7 @@ impl ServiceError {
 
 impl From<ClientError> for ServiceError {
     fn from(error: ClientError) -> Self {
+        log::debug!("Client Error: {}", error);
         match error {
             ClientError::Arango(arango_error) => match arango_error.code() {
                 404 => Self::NotFound(arango_error.message().to_string()),
@@ -103,7 +113,10 @@ impl From<ClientError> for ServiceError {
                 permission: _permission,
                 operation: _operation,
             } => Self::Unauthorized,
-            ClientError::InvalidServer(_server) => Self::Unauthorized,
+            ClientError::InvalidServer(server) => Self::InitError {
+                item: server,
+                message: String::from("Is not ArangoDB"),
+            },
             ClientError::HttpClient(_client) => Self::UnprocessableEntity,
         }
     }

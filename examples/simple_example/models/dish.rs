@@ -1,8 +1,7 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use aragog::{ServiceError, New, Record, Validate, Update};
-use aragog::helpers::string_validators;
+use aragog::{New, Record, ServiceError, Update, Validate};
 
 #[derive(Serialize, Deserialize, Clone, Record)]
 pub struct Dish {
@@ -23,8 +22,8 @@ pub struct DishDTO {
 
 impl Validate for Dish {
     fn validations(&self, errors: &mut Vec<String>) {
-        string_validators::validate_min_len("name", &self.name, 5, errors);
-        string_validators::validate_min_len("name", &self.description, 15, errors);
+        Self::validate_min_len("name", &self.name, 5, errors);
+        Self::validate_min_len("name", &self.description, 15, errors);
         if self.price == 0 {
             errors.push("price should be above zero".to_string())
         }

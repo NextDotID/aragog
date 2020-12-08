@@ -1,14 +1,14 @@
-use serde::{Deserialize, Serialize};
 use crate::models::dish::Dish;
 use aragog::{Record, Validate};
 use chrono::Utc;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Record)]
 pub struct Order {
     pub dishes: Vec<Dish>,
     pub total_price: u16,
     created_at: u64,
-    updated_at: u64
+    updated_at: u64,
 }
 
 impl Order {
@@ -17,7 +17,7 @@ impl Order {
             dishes: vec![],
             total_price: 0,
             created_at: Utc::now().timestamp() as u64,
-            updated_at: Utc::now().timestamp() as u64
+            updated_at: Utc::now().timestamp() as u64,
         }
     }
 

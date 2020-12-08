@@ -1,0 +1,39 @@
+[package]
+name = "aragog_cli"
+version = "0.1.0"
+authors = [
+    "Felix de Maneville: <felix.maneville@gmail.com>",
+    "Qonfucius team <felix.maneville@qonfucius.team>"
+]
+edition = "2018"
+license = "MIT"
+description = "CLI for Aragog Crate"
+exclude= ["./example"]
+categories = ["web-programming", "database"]
+
+[[bin]]
+name = "aragog"
+path = "src/main.rs"
+doc = false
+
+[dependencies]
+# Aragog
+aragog = { path = "..", version = "^0.6", features = ["blocking"], default-features = false }
+arangors = { version = "0.4.5", features = ["blocking"], default-features = false }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.8"
+
+# Log
+log = "0.4"
+
+# Time
+chrono = "0.4"
+
+# Command-line args
+clap = { version = "3.0.0-beta", features = ["yaml"] }
+
+# error
+thiserror = "1.0"
