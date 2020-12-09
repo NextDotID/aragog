@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4
+
+* Error handling improvement
+* Few clippy fixes
+* cleanup unused const
+
 ## 0.1.3
 
 * Fixed error handling on schema path

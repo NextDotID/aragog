@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.3
+
+* Fixed `IndexSchema` application
+* More verbose information on db connection on `DatabaseConnectionPool`
+* Few clippy fixes
+* small cleanup
+
 ## 0.7.2
 
 * default schema path is a directory
