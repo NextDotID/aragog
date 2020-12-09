@@ -30,6 +30,8 @@ pub enum MigrationError {
     NoMigrations,
     #[error("Invalid parameter: {name} ({message})")]
     InvalidParameter { name: String, message: String },
+    #[error("Failed to initialize {item} ({message})")]
+    InitError { item: String, message: String },
     #[error("Arango Error: {0}")]
     ClientError(ClientError),
 }

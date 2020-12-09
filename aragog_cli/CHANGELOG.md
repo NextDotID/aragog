@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+* rustfmt fix
+* Using `aragog::schema::DEFAULT_SCHEMA_PATH` as a default value if env var `SCHEMA_PATH` is missing
+* Updated `--help` indications
+
 ## 0.1.1
 
 * Migration path is `$SCHEMA_PATH/migrations` instead of `$SCHEMA_PATH/db`

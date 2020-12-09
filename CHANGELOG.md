@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1
+
+* default schema path is made public in `aragog::schema` module
+
 ## 0.7.0
 
 * Added a hole new `schema` module with structs for better schema serializations and apply

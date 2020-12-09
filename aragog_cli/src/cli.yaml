@@ -7,7 +7,7 @@ args:
       short: f
       long: folder
       value_name: PATH
-      about: Sets the path for the migrations and schema (by default env var SCHEMA_PATH is used)
+      about: Sets the path for the migrations and schema (by default env var SCHEMA_PATH is used or `config/db/schema.yaml`)
       takes_value: true
       required: false
   - db_host:
@@ -61,4 +61,4 @@ subcommands:
             required: true
   - truncate_database:
         takes_value: false
-        about: Truncate the database, removes all collections and documents
+        about: Truncates the database, removes all collections and documents
