@@ -12,7 +12,9 @@ mod graph_schema;
 mod index_schema;
 
 /// Default schema path, can be overridden manually or set as `SCHEMA_PATH` env var
-pub const SCHEMA_DEFAULT_PATH: &str = "./src/config/db/schema.yaml";
+pub const SCHEMA_DEFAULT_PATH: &str = "./src/config/db";
+/// Default schema file name, can be overridden manually
+pub const SCHEMA_DEFAULT_FILE_NAME: &str = "schema.yaml";
 
 /// Trait used for all schema elements allowing to synchronise schema changes.
 /// Used by `aragog_cli` for migrations and `DatabaseConnectionPool`

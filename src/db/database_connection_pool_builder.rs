@@ -1,4 +1,4 @@
-use crate::schema::{DatabaseSchema, SCHEMA_DEFAULT_PATH};
+use crate::schema::{DatabaseSchema, SCHEMA_DEFAULT_FILE_NAME, SCHEMA_DEFAULT_PATH};
 use crate::{AuthMode, DatabaseConnectionPool, ServiceError};
 use std::convert::TryInto;
 
@@ -56,7 +56,7 @@ impl TryInto<DatabaseSchema> for DatabaseSchemaOption {
                         SCHEMA_DEFAULT_PATH.to_string()
                     }
                 };
-                DatabaseSchema::load(&schema_path)
+                DatabaseSchema::load(&format!("{}/{}", schema_path, SCHEMA_DEFAULT_FILE_NAME))
             }
         }
     }

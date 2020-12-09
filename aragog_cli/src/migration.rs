@@ -1,14 +1,17 @@
-use crate::error::MigrationError;
-use crate::migration_data::MigrationData;
-use crate::LOG_STR;
-use aragog::schema::DatabaseSchema;
-use arangors::client::reqwest::ReqwestClient;
-use arangors::Database;
-use chrono::Utc;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+
+use arangors::client::reqwest::ReqwestClient;
+use arangors::Database;
+use chrono::Utc;
+
+use aragog::schema::DatabaseSchema;
+
+use crate::error::MigrationError;
+use crate::migration_data::MigrationData;
+use crate::LOG_STR;
 
 pub type MigrationVersion = u64;
 
@@ -27,11 +30,17 @@ pub struct Migration {
 
 impl Migration {
     pub fn migration_path(schema_path: &str) -> Result<String, MigrationError> {
+        if !Path::new(&schema_path).is_dir() {
+            return Err(MigrationError::InitError {
+                item: schema_path.to_string(),
+                message: String::from("Is not a valid directory"),
+            });
+        }
         let db_path = format!("{}/{}", schema_path, MIGRATION_PATH);
         if !Path::new(&db_path).is_dir() {
             println!(
-                "{} Missing {}/ path. creating it..",
-                MIGRATION_PATH, LOG_STR
+                "{} Missing {}/ path in {}. creating it..",
+                LOG_STR, MIGRATION_PATH, schema_path
             );
             fs::create_dir(&db_path)?;
         }

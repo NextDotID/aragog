@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.2
+
+* default schema path is a directory
+* Added a default schema file name
+
 ## 0.7.1
 
 * default schema path is made public in `aragog::schema` module

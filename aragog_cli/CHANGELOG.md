@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+* Fixed error handling on schema path
+
 ## 0.1.2
 
 * rustfmt fix
