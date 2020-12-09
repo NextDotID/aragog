@@ -16,7 +16,6 @@ mod migration_manager;
 mod migration_operation;
 
 pub const LOG_STR: &str = "[Aragog]";
-pub const ERROR_STR: &str = "[Aragog] [ERROR]";
 
 #[derive(Debug)]
 pub enum MigrationDirection {
@@ -82,12 +81,12 @@ fn main() -> Result<(), MigrationError> {
             Migration::new(args.value_of("MIGRATION_NAME").unwrap(), &schema_path)?;
         }
         Some(("truncate_database", _args)) => {
-            for info in db.accessible_collections().unwrap().iter() {
+            for info in db.accessible_collections()?.iter() {
                 if info.is_system {
                     continue;
                 }
                 println!("{} Dropping Collection {}", LOG_STR, &info.name);
-                db.drop_collection(&info.name).unwrap();
+                db.drop_collection(&info.name)?;
             }
             println!("{} Truncated database collections.", LOG_STR);
         }

@@ -134,7 +134,7 @@ impl DatabaseConnectionPoolBuilder {
     /// * `db_name` - The name of the ArangoDB database to connect to
     /// * `db_user` - The username of a ArangoDb user with access to the database
     /// * `db_password` - The password associated with `db_user`
-    pub fn with_credentials<'a>(
+    pub fn with_credentials(
         mut self,
         db_host: &str,
         db_name: &str,
