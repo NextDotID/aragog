@@ -16,6 +16,7 @@ const HELP_MESSAGE: &str = "# The migration files contain two sections: \n\
                             # - up: The commands to execute on migration \n\
                             # - down: The commands to execute on rollback (optional) \n\
                             # check https://docs.rs/aragog_cli for complete documentation and examples \n";
+const MIGRATION_PATH: &str = "migrations";
 
 #[derive(Debug)]
 pub struct Migration {
@@ -25,10 +26,10 @@ pub struct Migration {
 }
 
 impl Migration {
-    pub fn db_path(schema_path: &str) -> Result<String, MigrationError> {
-        let db_path = format!("{}/db", schema_path);
+    pub fn migration_path(schema_path: &str) -> Result<String, MigrationError> {
+        let db_path = format!("{}/{}", schema_path, MIGRATION_PATH);
         if !Path::new(&db_path).is_dir() {
-            println!("{} Missing db/ path. creating it..", LOG_STR);
+            println!("{} Missing {}/ path. creating it..", MIGRATION_PATH, LOG_STR);
             fs::create_dir(&db_path)?;
         }
         Ok(db_path)
@@ -38,8 +39,8 @@ impl Migration {
         let data = MigrationData::default();
         let data_str = serde_yaml::to_string(&data).unwrap();
         let version = Utc::now().timestamp_millis() as u64;
-        let db_path = Self::db_path(schema_path)?;
-        let path = format!("{}/{}_{}.yaml", db_path, version, name.to_ascii_lowercase());
+        let migration_path = Self::migration_path(schema_path)?;
+        let path = format!("{}/{}_{}.yaml", migration_path, version, name.to_ascii_lowercase());
         let mut file = File::create(&path)?;
         let buff = format!("{}{}", HELP_MESSAGE, data_str);
         file.write_all(buff.as_bytes())?;
@@ -52,7 +53,7 @@ impl Migration {
     }
 
     pub fn load(file_name: &str, schema_path: &str) -> Result<Self, MigrationError> {
-        let file_path = format!("{}/db/{}", schema_path, file_name);
+        let file_path = format!("{}/{}/{}", schema_path, MIGRATION_PATH, file_name);
         println!("{} Loading migration file {}", LOG_STR, file_path);
         let mut split = file_name.split("_");
         let version = match split.next() {

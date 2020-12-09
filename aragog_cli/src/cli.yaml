@@ -61,4 +61,4 @@ subcommands:
             required: true
   - truncate_database:
         takes_value: false
-        about: Truncate the database, removes all collections, graphs and documents
+        about: Truncate the database, removes all collections and documents

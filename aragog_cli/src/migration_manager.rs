@@ -22,7 +22,7 @@ pub struct MigrationManager {
 
 impl MigrationManager {
     pub fn new(schema_path: &str) -> Result<Self, MigrationError> {
-        let db_path = Migration::db_path(schema_path)?;
+        let db_path = Migration::migration_path(schema_path)?;
         let dir = match fs::read_dir(&db_path) {
             Ok(val) => val,
             Err(error) => {

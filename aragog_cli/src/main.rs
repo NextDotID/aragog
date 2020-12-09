@@ -89,7 +89,7 @@ fn main() -> Result<(), MigrationError> {
                 println!("{} Dropping Collection {}", LOG_STR, &info.name);
                 db.drop_collection(&info.name).unwrap();
             }
-            println!("{} Truncated db.", LOG_STR);
+            println!("{} Truncated database collections.", LOG_STR);
         }
         _ => (),
     };
