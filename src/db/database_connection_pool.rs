@@ -99,14 +99,14 @@ impl DatabaseConnectionPool {
         mut schema: DatabaseSchema,
         apply_schema: bool,
     ) -> Result<Self, ServiceError> {
-        log::info!("Connecting to database server...");
+        log::info!("Connecting to database server on {} ...", db_host);
         let db_connection = match auth_mode {
             AuthMode::Basic => {
                 Connection::establish_basic_auth(db_host, db_user, db_password).await?
             }
             AuthMode::Jwt => Connection::establish_jwt(db_host, db_user, db_password).await?,
         };
-        log::info!("Connected to database server.");
+        log::info!("Connecting to database {} ...", db_name);
         let database = db_connection.db(&db_name).await.unwrap();
         if apply_schema {
             schema.apply_to_database(&database, true).await?

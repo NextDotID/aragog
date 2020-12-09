@@ -31,7 +31,7 @@ pub trait SchemaDatabaseOperation {
                     log::debug!("Ignored error: {}", error);
                     return Ok(());
                 }
-                return Err(error);
+                Err(error)
             }
             Ok(_val) => Ok(()),
         }

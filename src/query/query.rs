@@ -568,7 +568,7 @@ impl Query {
         } else {
             res = format!("{}FOR {} in {}", res, collection_id, &self.collection);
         }
-        if self.operations.0.len() > 0 {
+        if !self.operations.0.is_empty() {
             res = format!("{} {}", res, self.operations.to_aql(&collection_id));
         }
         if self.sub_query.is_some() {

@@ -26,32 +26,32 @@ pub struct DatabaseSchema {
 impl DatabaseSchema {
     /// Find a Collection index from the schema instance
     pub fn collection_index(&self, name: &str) -> Option<usize> {
-        self.collections.iter().position(|c| &c.name == name)
+        self.collections.iter().position(|c| c.name == name)
     }
 
     /// Find a Collection from the schema instance
     pub fn collection(&self, name: &str) -> Option<&CollectionSchema> {
-        self.collections.iter().find(|c| &c.name == name)
+        self.collections.iter().find(|c| c.name == name)
     }
 
     /// Find an index index from the schema instance
     pub fn index_index(&self, name: &str) -> Option<usize> {
-        self.indexes.iter().position(|c| &c.name == name)
+        self.indexes.iter().position(|c| c.name == name)
     }
 
     /// Find an Index from the schema instance
     pub fn index(&self, name: &str) -> Option<&IndexSchema> {
-        self.indexes.iter().find(|c| &c.name == name)
+        self.indexes.iter().find(|c| c.name == name)
     }
 
     /// Find an index index from the schema instance
     pub fn graph_index(&self, name: &str) -> Option<usize> {
-        self.graphs.iter().position(|c| &c.0.name == name)
+        self.graphs.iter().position(|c| c.0.name == name)
     }
 
     /// Find an Index from the schema instance
     pub fn graph(&self, name: &str) -> Option<&GraphSchema> {
-        self.graphs.iter().find(|c| &c.0.name == name)
+        self.graphs.iter().find(|c| c.0.name == name)
     }
 
     /// Loads the YAML schema from the give `path`

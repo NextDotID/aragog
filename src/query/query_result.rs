@@ -53,7 +53,7 @@ impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
                 T::collection_name()
             )));
         }
-        Ok(self.documents.into_iter().nth(0).unwrap())
+        Ok(self.documents.into_iter().next().unwrap())
     }
 
     /// Returns the first document of the current `QueryResult`.
@@ -62,7 +62,7 @@ impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
         if self.is_empty() {
             return None;
         }
-        Some(self.documents.into_iter().nth(0).unwrap())
+        Some(self.documents.into_iter().next().unwrap())
     }
 
     /// Returns the last document of the current `QueryResult`.

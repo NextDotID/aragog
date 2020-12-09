@@ -40,30 +40,14 @@ impl SchemaDatabaseOperation for IndexSchema {
         database: &Database<ReqwestClient>,
         silent: bool,
     ) -> Result<(), ClientError> {
-        if self.id.is_some() {
-            if silent {
-                return Ok(());
-            }
-            log::warn!(
-                "Trying to create index {} who already has an id ({})",
-                &self.name,
-                self.id.as_ref().unwrap()
-            );
-        } else {
-            log::debug!("Creating index {}", &self.name);
-        }
+        log::debug!("Creating index {}", &self.name);
         let duplicate = serde_json::to_string(self).unwrap();
         let duplicate: Self = serde_json::from_str(&duplicate).unwrap();
         let index = duplicate.into();
         match database.create_index(&self.collection, &index).await {
-            Ok(res) => self.id = Some(res.id),
-            Err(error) => {
-                if silent {
-                    return Ok(());
-                }
-                return Err(error);
-            }
-        }
+            Ok(index) => self.id = Some(index.id),
+            Err(error) => Self::handle_error(Err(error) as Result<Index, ClientError>, silent)?,
+        };
         Ok(())
     }
 

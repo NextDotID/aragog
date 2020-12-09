@@ -1,7 +1,6 @@
 use clap::ArgMatches;
 
 use crate::error::MigrationError;
-use crate::ERROR_STR;
 
 #[derive(Debug)]
 pub struct Config {
@@ -41,8 +40,8 @@ impl Config {
                 Err(_error) => Err(MigrationError::InitError {
                     item: value.to_string(),
                     message: format!(
-                        "{} {} is not specified, please set the env var or use the --{} option",
-                        env_default, ERROR_STR, option
+                        "{} is not specified, please set the env var or use the --{} option",
+                        env_default, option
                     ),
                 }),
             },
