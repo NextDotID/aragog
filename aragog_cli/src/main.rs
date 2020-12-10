@@ -1,21 +1,22 @@
 use clap::{load_yaml, App};
 
+pub use config::log;
+
 use crate::config::Config;
 use crate::error::MigrationError;
+use crate::log_level::LogLevel;
 use crate::migration::Migration;
-
 use crate::migration_manager::MigrationManager;
 use crate::versioned_database::VersionedDatabase;
 
 mod config;
 mod error;
+mod log_level;
 mod migration;
 mod migration_data;
 mod migration_manager;
 mod migration_operation;
 mod versioned_database;
-
-pub const LOG_STR: &str = "[Aragog]";
 
 #[derive(Debug)]
 pub enum MigrationDirection {
@@ -77,12 +78,15 @@ fn main() -> Result<(), MigrationError> {
                 if info.is_system {
                     continue;
                 }
-                println!("{} Dropping Collection {}", LOG_STR, &info.name);
+                log(
+                    format!("Dropping Collection {}", &info.name),
+                    LogLevel::Info,
+                );
                 db.drop_collection(&info.name)?;
             }
-            println!("{} Truncated database collections.", LOG_STR);
+            log(format!("Truncated database collections."), LogLevel::Info);
         }
-        _ => println!("No usage found, use --help"),
+        _ => log(format!("No usage found, use --help"), LogLevel::Info),
     };
     Ok(())
 }

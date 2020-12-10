@@ -71,6 +71,12 @@ test:password_hashing:
 #   script:
 #     - cargo test --features "blocking" --no-default-features --tests --
 
+test:packages:
+  image: rust:latest
+  <<: *test_template
+  script:
+    - cargo test --package aragog_cli --no-default-features
+
 test:examples:
   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
   <<: *test_template

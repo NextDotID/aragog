@@ -44,6 +44,11 @@ args:
       about: Sets the name of the config ArangoDB collection that will be used to synchronize database and schema version (by default "AragogConfiguration" is used)
       takes_value: true
       required: false
+  - verbose:
+      short: v
+      multiple: true
+      about: Sets the level of verbosity
+      takes_value: false
 subcommands:
   - migrate:
       about: Launches migrations

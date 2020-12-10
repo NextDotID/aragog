@@ -6,6 +6,8 @@ use serde_json::Value;
 use aragog::schema::{CollectionSchema, GraphSchema, IndexSchema, SchemaDatabaseOperation};
 
 use crate::error::MigrationError;
+use crate::log;
+use crate::log_level::LogLevel;
 use crate::VersionedDatabase;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -54,6 +56,7 @@ impl MigrationOperation {
     pub fn apply(self, db: &mut VersionedDatabase) -> Result<(), MigrationError> {
         match self {
             MigrationOperation::CreateCollection { name } => {
+                log("Executing create_collection operation", LogLevel::Verbose);
                 let mut item = match db.schema.collection(&name) {
                     Some(_) => return Err(MigrationError::DuplicateCollection { name }),
                     None => CollectionSchema::new(&name, false),
@@ -62,6 +65,10 @@ impl MigrationOperation {
                 db.schema.collections.push(item);
             }
             MigrationOperation::CreateEdgeCollection { name } => {
+                log(
+                    "Executing create_edge_collection operation",
+                    LogLevel::Verbose,
+                );
                 let mut item = match db.schema.collection(&name) {
                     Some(_) => return Err(MigrationError::DuplicateEdgeCollection { name }),
                     None => CollectionSchema::new(&name, true),
@@ -70,6 +77,7 @@ impl MigrationOperation {
                 db.schema.collections.push(item);
             }
             MigrationOperation::DeleteCollection { name } => {
+                log("Executing delete_collection operation", LogLevel::Verbose);
                 match db.schema.collection_index(&name) {
                     None => return Err(MigrationError::MissingCollection { name }),
                     Some(index) => {
@@ -79,6 +87,10 @@ impl MigrationOperation {
                 }
             }
             MigrationOperation::DeleteEdgeCollection { name } => {
+                log(
+                    "Executing delete_edge_collection operation",
+                    LogLevel::Verbose,
+                );
                 match db.schema.collection_index(&name) {
                     None => return Err(MigrationError::MissingEdgeCollection { name }),
                     Some(index) => {
@@ -93,6 +105,7 @@ impl MigrationOperation {
                 settings,
                 fields,
             } => {
+                log("Executing create_index operation", LogLevel::Verbose);
                 let mut item = match db.schema.index(&name) {
                     Some(_) => return Err(MigrationError::DuplicateIndex { name, collection }),
                     None => IndexSchema {
@@ -106,13 +119,16 @@ impl MigrationOperation {
                 item.apply_to_database(db, false)?;
                 db.schema.indexes.push(item);
             }
-            MigrationOperation::DeleteIndex { name } => match db.schema.index_index(&name) {
-                None => return Err(MigrationError::MissingIndex { name }),
-                Some(index) => {
-                    let item = db.schema.indexes.remove(index);
-                    item.drop(db)?;
+            MigrationOperation::DeleteIndex { name } => {
+                log("Executing delete_index operation", LogLevel::Verbose);
+                match db.schema.index_index(&name) {
+                    None => return Err(MigrationError::MissingIndex { name }),
+                    Some(index) => {
+                        let item = db.schema.indexes.remove(index);
+                        item.drop(db)?;
+                    }
                 }
-            },
+            }
             MigrationOperation::CreateGraph {
                 name,
                 edge_definitions,
@@ -121,6 +137,7 @@ impl MigrationOperation {
                 is_disjoint,
                 options,
             } => {
+                log("Executing create_graph operation", LogLevel::Verbose);
                 let mut item = match db.schema.graph(&name) {
                     Some(_) => return Err(MigrationError::DuplicateGraph { name }),
                     None => GraphSchema(Graph {
@@ -135,15 +152,18 @@ impl MigrationOperation {
                 item.apply_to_database(db, false)?;
                 db.schema.graphs.push(item);
             }
-            MigrationOperation::DeleteGraph { name } => match db.schema.graph_index(&name) {
-                None => return Err(MigrationError::MissingGraph { name }),
-                Some(graph) => {
-                    let item = db.schema.graphs.remove(graph);
-                    item.drop(db)?;
+            MigrationOperation::DeleteGraph { name } => {
+                log("Executing delete_graph operation", LogLevel::Verbose);
+                match db.schema.graph_index(&name) {
+                    None => return Err(MigrationError::MissingGraph { name }),
+                    Some(graph) => {
+                        let item = db.schema.graphs.remove(graph);
+                        item.drop(db)?;
+                    }
                 }
-            },
+            }
             MigrationOperation::Aql(aql) => {
-                log::debug!("Executing AQL {} ...", &aql);
+                log("Executing aql operation", LogLevel::Verbose);
                 db.aql_str::<Value>(aql.as_str())?;
             }
         };
