@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+* New `check` job
+* Verbose options
+* The schema is stored in a specific collection document and used to synchronize the migrations and database. The schema file is still generated.
+
 ## 0.1.4
 
 * Error handling improvement
