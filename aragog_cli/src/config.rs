@@ -2,8 +2,11 @@ use clap::ArgMatches;
 
 use crate::error::MigrationError;
 
+const ARAGOG_DEFAULT_COLLECTION: &str = "AragogConfiguration";
+
 #[derive(Debug)]
 pub struct Config {
+    pub collection_name: String,
     pub schema_path: String,
     pub db_host: String,
     pub db_name: String,
@@ -12,19 +15,23 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(matches: &ArgMatches) -> Self {
-        Self {
+    pub fn new(matches: &ArgMatches) -> Result<Self, MigrationError> {
+        Ok(Self {
+            collection_name: matches
+                .value_of("aragog_collection")
+                .unwrap_or(ARAGOG_DEFAULT_COLLECTION)
+                .to_string(),
             schema_path: {
                 match Self::load_str(matches, "schema_path", "SCHEMA_PATH", "path") {
                     Ok(val) => val,
                     Err(_err) => String::from(aragog::schema::SCHEMA_DEFAULT_PATH),
                 }
             },
-            db_host: Self::load_str(matches, "db_host", "DB_HOST", "db-host").unwrap(),
-            db_name: Self::load_str(matches, "db_name", "DB_NAME", "db-name").unwrap(),
-            db_user: Self::load_str(matches, "db_user", "DB_USER", "db-user").unwrap(),
-            db_pwd: Self::load_str(matches, "db_password", "DB_PASSWORD", "db-password").unwrap(),
-        }
+            db_host: Self::load_str(matches, "db_host", "DB_HOST", "db-host")?,
+            db_name: Self::load_str(matches, "db_name", "DB_NAME", "db-name")?,
+            db_user: Self::load_str(matches, "db_user", "DB_USER", "db-user")?,
+            db_pwd: Self::load_str(matches, "db_password", "DB_PASSWORD", "db-password")?,
+        })
     }
 
     pub fn load_str(
