@@ -1,5 +1,5 @@
 name: aragog
-version: "1.0"
+version: "0.1.4"
 author: Felix de Maneville <felix.maneville@qonfucius.team>
 about: CLI too for aragog crate, handles ArangoDB migrations and schema generation
 args:
@@ -38,6 +38,12 @@ args:
       about: Sets the ArangoDB database user password (by default env var DB_PASSWORD is used)
       takes_value: true
       required: false
+  - aragog_collection:
+      long: aragog-collection
+      value_name: COLLECTION_NAME
+      about: Sets the name of the config ArangoDB collection that will be used to synchronize database and schema version (by default "AragogConfiguration" is used)
+      takes_value: true
+      required: false
 subcommands:
   - migrate:
       about: Launches migrations
@@ -50,15 +56,18 @@ subcommands:
             about: Number of migrations to rollback
             help: Defines how many migrations to rollback
             required: false
+  - check:
+      takes_value: false
+      about: loads migrations and check their format
   - create_migration:
       takes_value: true
       value_name: MIGRATION_NAME
-      about: Sets the input file to use
+      about: creates a new migration file
       args:
         - MIGRATION_NAME:
             about: Migration name
             help: Sets the migration name
             required: true
   - truncate_database:
-        takes_value: false
-        about: Truncates the database, removes all collections and documents
+      takes_value: false
+      about: Truncates the database, removes all collections and documents. Does not remove Named Graphs

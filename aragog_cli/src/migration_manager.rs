@@ -1,26 +1,33 @@
 use std::fs;
-use std::io::{Read, Write};
-
-use arangors::client::reqwest::ReqwestClient;
-use arangors::Database;
+use std::fs::OpenOptions;
+use std::io::Write;
 
 use aragog::schema::DatabaseSchema;
 
 use crate::error::MigrationError;
 use crate::migration::Migration;
+use crate::VersionedDatabase;
 use crate::LOG_STR;
-use std::fs::OpenOptions;
 
 const SCHEMA_NAME: &str = "schema.yaml";
+
+const HELP_MESSAGE: &str = "# \n\
+                            # This schema file is auto generated and synchronized with the database.\n\
+                            # Editing it will have no effect.\n\
+                            # \n";
 
 #[derive(Debug)]
 pub struct MigrationManager {
     pub migrations: Vec<Migration>,
-    pub schema: DatabaseSchema,
     pub schema_file_path: String,
 }
 
 impl MigrationManager {
+    pub fn serialized_schema(schema: &DatabaseSchema) -> String {
+        let content = serde_yaml::to_string(&schema).unwrap();
+        format!("{}{}", HELP_MESSAGE, content)
+    }
+
     pub fn new(schema_path: &str) -> Result<Self, MigrationError> {
         let db_path = Migration::migration_path(schema_path)?;
         let dir = match fs::read_dir(&db_path) {
@@ -33,19 +40,11 @@ impl MigrationManager {
         };
         let schema_file_path = format!("{}/{}", schema_path, SCHEMA_NAME);
         println!("{} Loading schema.yaml", LOG_STR);
-        let schema = match fs::File::open(&schema_file_path) {
-            Ok(mut file) => {
-                let mut buff = String::new();
-                file.read_to_string(&mut buff)?;
-                serde_yaml::from_str(&buff)?
-            }
+        match fs::File::open(&schema_file_path) {
+            Ok(_) => (),
             Err(error) => {
                 println!("{} Missing schema file ({}) creating it...", LOG_STR, error);
-                let mut file = fs::File::create(&schema_file_path)?;
-                let schema = DatabaseSchema::default();
-                let content = serde_yaml::to_string(&schema).unwrap();
-                file.write_all(content.as_bytes())?;
-                schema
+                fs::File::create(&schema_file_path)?;
             }
         };
         println!("{} Loading migrations...", LOG_STR);
@@ -79,24 +78,20 @@ impl MigrationManager {
         println!("{} Migrations loaded.", LOG_STR);
         Ok(Self {
             migrations,
-            schema,
             schema_file_path,
         })
     }
 
-    pub fn current_version(&self) -> u64 {
-        self.schema.version.unwrap_or(0)
-    }
-
-    pub fn migrations_up(mut self, db: &Database<ReqwestClient>) -> Result<(), MigrationError> {
-        let current_version = self.current_version();
+    pub fn migrations_up(self, db: &mut VersionedDatabase) -> Result<(), MigrationError> {
+        let current_version = db.schema_version();
+        Self::write_schema(&db.schema, &self.schema_file_path)?;
         println!("{} Current Schema version: {}", LOG_STR, current_version);
         let mut i = 0;
         for migration in self.migrations.into_iter() {
             if migration.version > current_version {
-                let version = migration.apply_up(&mut self.schema, db)?;
-                self.schema.version = Some(version);
-                Self::write_schema(&self.schema, &self.schema_file_path)?;
+                migration.apply_up(db)?;
+                db.save()?;
+                Self::write_schema(&db.schema, &self.schema_file_path)?;
                 i += 1;
             }
         }
@@ -107,9 +102,10 @@ impl MigrationManager {
     pub fn migrations_down(
         mut self,
         count: usize,
-        db: &Database<ReqwestClient>,
+        db: &mut VersionedDatabase,
     ) -> Result<(), MigrationError> {
-        let current_version = self.current_version();
+        let current_version = db.schema_version();
+        Self::write_schema(&db.schema, &self.schema_file_path)?;
         println!("{} Current Schema version: {}", LOG_STR, current_version);
         let mut i = 0;
         self.migrations.reverse();
@@ -118,9 +114,9 @@ impl MigrationManager {
                 break;
             }
             if migration.version <= current_version {
-                let version = migration.apply_down(&mut self.schema, db)?;
-                self.schema.version = Some(version - 1);
-                Self::write_schema(&self.schema, &self.schema_file_path)?;
+                migration.apply_down(db)?;
+                db.save()?;
+                Self::write_schema(&db.schema, &self.schema_file_path)?;
                 i += 1;
             }
         }
@@ -134,7 +130,7 @@ impl MigrationManager {
     ) -> Result<(), MigrationError> {
         println!("{} Saving schema to {}", LOG_STR, schema_file_path);
         let mut file = OpenOptions::new().write(true).open(&schema_file_path)?;
-        let content = serde_yaml::to_string(&schema).unwrap();
+        let content = Self::serialized_schema(&schema);
         // Cleans the file
         file.set_len(0)?;
         file.write_all(content.as_bytes())?;

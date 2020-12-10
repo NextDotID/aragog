@@ -3,14 +3,11 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
-use arangors::client::reqwest::ReqwestClient;
-use arangors::Database;
 use chrono::Utc;
-
-use aragog::schema::DatabaseSchema;
 
 use crate::error::MigrationError;
 use crate::migration_data::MigrationData;
+use crate::versioned_database::VersionedDatabase;
 use crate::LOG_STR;
 
 pub type MigrationVersion = u64;
@@ -39,7 +36,7 @@ impl Migration {
         let db_path = format!("{}/{}", schema_path, MIGRATION_PATH);
         if !Path::new(&db_path).is_dir() {
             println!(
-                "{} Missing {}/ path in {}. creating it..",
+                "{} Missing {}/ path in {}. creating it...",
                 LOG_STR, MIGRATION_PATH, schema_path
             );
             fs::create_dir(&db_path)?;
@@ -89,7 +86,8 @@ impl Migration {
                 });
             }
         };
-        let name = split.collect();
+        let vec: Vec<&str> = split.collect();
+        let name = vec.join("_");
         let data = MigrationData::load(&file_path)?;
         Ok(Self {
             name,
@@ -98,28 +96,25 @@ impl Migration {
         })
     }
 
-    pub fn apply_up(
-        self,
-        schema: &mut DatabaseSchema,
-        db: &Database<ReqwestClient>,
-    ) -> Result<MigrationVersion, MigrationError> {
+    pub fn apply_up(self, db: &mut VersionedDatabase) -> Result<MigrationVersion, MigrationError> {
         println!("{} Apply Migration {} ...", LOG_STR, &self.name);
         for operation in self.data.up.into_iter() {
-            operation.apply(schema, db)?;
+            operation.apply(db)?;
         }
+        db.schema.version = Some(self.version);
         println!("{} Done.", LOG_STR);
         Ok(self.version)
     }
 
     pub fn apply_down(
         self,
-        schema: &mut DatabaseSchema,
-        db: &Database<ReqwestClient>,
+        db: &mut VersionedDatabase,
     ) -> Result<MigrationVersion, MigrationError> {
         println!("{} Rollback Migration {} ...", LOG_STR, &self.name);
         for operation in self.data.down.unwrap_or(Vec::new()).into_iter() {
-            operation.apply(schema, db)?;
+            operation.apply(db)?;
         }
+        db.schema.version = Some(self.version - 1);
         println!("{} Done.", LOG_STR);
         Ok(self.version)
     }

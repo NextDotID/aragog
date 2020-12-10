@@ -1,5 +1,3 @@
-use arangors::client::reqwest::ReqwestClient;
-use arangors::{Connection, Database};
 use clap::{load_yaml, App};
 
 use crate::config::Config;
@@ -7,6 +5,7 @@ use crate::error::MigrationError;
 use crate::migration::Migration;
 
 use crate::migration_manager::MigrationManager;
+use crate::versioned_database::VersionedDatabase;
 
 mod config;
 mod error;
@@ -14,6 +13,7 @@ mod migration;
 mod migration_data;
 mod migration_manager;
 mod migration_operation;
+mod versioned_database;
 
 pub const LOG_STR: &str = "[Aragog]";
 
@@ -25,7 +25,7 @@ pub enum MigrationDirection {
 
 fn migrate(
     direction: MigrationDirection,
-    db: &Database<ReqwestClient>,
+    db: &mut VersionedDatabase,
     manager: MigrationManager,
 ) -> Result<(), MigrationError> {
     match direction {
@@ -43,26 +43,18 @@ fn main() -> Result<(), MigrationError> {
     let yaml = load_yaml!("cli.yaml");
     let matches = App::from(yaml).get_matches();
 
-    let config = Config::new(&matches);
+    let config = Config::new(&matches)?;
     let schema_path = config.schema_path.clone();
 
-    let connection =
-        Connection::establish_basic_auth(&config.db_host, &config.db_user, &config.db_pwd).unwrap();
-    let db: Database<ReqwestClient> = match connection.db(&config.db_name) {
-        Ok(val) => val,
-        Err(_) => {
-            println!(
-                "{} Missing database {}, creating it.",
-                LOG_STR, &config.db_name
-            );
-            connection.create_database(&config.db_name).unwrap()
-        }
-    };
+    let mut db = VersionedDatabase::init(&config)?;
 
     match matches.subcommand() {
+        Some(("check", _args)) => {
+            MigrationManager::new(&schema_path)?;
+        }
         Some(("migrate", _args)) => {
             let manager = MigrationManager::new(&schema_path)?;
-            migrate(MigrationDirection::Up, &db, manager)?;
+            migrate(MigrationDirection::Up, &mut db, manager)?;
         }
         Some(("rollback", args)) => {
             let manager = MigrationManager::new(&schema_path)?;
@@ -75,7 +67,7 @@ fn main() -> Result<(), MigrationError> {
                     })
                 }
             };
-            migrate(MigrationDirection::Down(count), &db, manager)?;
+            migrate(MigrationDirection::Down(count), &mut db, manager)?;
         }
         Some(("create_migration", args)) => {
             Migration::new(args.value_of("MIGRATION_NAME").unwrap(), &schema_path)?;
@@ -90,7 +82,7 @@ fn main() -> Result<(), MigrationError> {
             }
             println!("{} Truncated database collections.", LOG_STR);
         }
-        _ => (),
+        _ => println!("No usage found, use --help"),
     };
     Ok(())
 }

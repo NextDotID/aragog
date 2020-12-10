@@ -1,15 +1,12 @@
-use arangors::client::reqwest::ReqwestClient;
 use arangors::graph::{EdgeDefinition, Graph, GraphOptions};
 use arangors::index::IndexSettings;
-use arangors::Database;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use aragog::schema::{
-    CollectionSchema, DatabaseSchema, GraphSchema, IndexSchema, SchemaDatabaseOperation,
-};
+use aragog::schema::{CollectionSchema, GraphSchema, IndexSchema, SchemaDatabaseOperation};
 
 use crate::error::MigrationError;
+use crate::VersionedDatabase;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -54,41 +51,39 @@ pub enum MigrationOperation {
 }
 
 impl MigrationOperation {
-    pub fn apply(
-        self,
-        schema: &mut DatabaseSchema,
-        database: &Database<ReqwestClient>,
-    ) -> Result<(), MigrationError> {
+    pub fn apply(self, db: &mut VersionedDatabase) -> Result<(), MigrationError> {
         match self {
             MigrationOperation::CreateCollection { name } => {
-                let mut item = match schema.collection(&name) {
+                let mut item = match db.schema.collection(&name) {
                     Some(_) => return Err(MigrationError::DuplicateCollection { name }),
                     None => CollectionSchema::new(&name, false),
                 };
-                item.apply_to_database(database, false)?;
-                schema.collections.push(item);
+                item.apply_to_database(db, false)?;
+                db.schema.collections.push(item);
             }
             MigrationOperation::CreateEdgeCollection { name } => {
-                let mut item = match schema.collection(&name) {
+                let mut item = match db.schema.collection(&name) {
                     Some(_) => return Err(MigrationError::DuplicateEdgeCollection { name }),
                     None => CollectionSchema::new(&name, true),
                 };
-                item.apply_to_database(database, false)?;
-                schema.collections.push(item);
+                item.apply_to_database(db, false)?;
+                db.schema.collections.push(item);
             }
-            MigrationOperation::DeleteCollection { name } => match schema.collection_index(&name) {
-                None => return Err(MigrationError::MissingCollection { name }),
-                Some(index) => {
-                    let item = schema.collections.remove(index);
-                    item.drop(database)?;
+            MigrationOperation::DeleteCollection { name } => {
+                match db.schema.collection_index(&name) {
+                    None => return Err(MigrationError::MissingCollection { name }),
+                    Some(index) => {
+                        let item = db.schema.collections.remove(index);
+                        item.drop(db)?;
+                    }
                 }
-            },
+            }
             MigrationOperation::DeleteEdgeCollection { name } => {
-                match schema.collection_index(&name) {
+                match db.schema.collection_index(&name) {
                     None => return Err(MigrationError::MissingEdgeCollection { name }),
                     Some(index) => {
-                        let item = schema.collections.remove(index);
-                        item.drop(database)?;
+                        let item = db.schema.collections.remove(index);
+                        item.drop(db)?;
                     }
                 }
             }
@@ -98,7 +93,7 @@ impl MigrationOperation {
                 settings,
                 fields,
             } => {
-                let mut item = match schema.index(&name) {
+                let mut item = match db.schema.index(&name) {
                     Some(_) => return Err(MigrationError::DuplicateIndex { name, collection }),
                     None => IndexSchema {
                         id: None,
@@ -108,14 +103,14 @@ impl MigrationOperation {
                         settings,
                     },
                 };
-                item.apply_to_database(database, false)?;
-                schema.indexes.push(item);
+                item.apply_to_database(db, false)?;
+                db.schema.indexes.push(item);
             }
-            MigrationOperation::DeleteIndex { name } => match schema.index_index(&name) {
+            MigrationOperation::DeleteIndex { name } => match db.schema.index_index(&name) {
                 None => return Err(MigrationError::MissingIndex { name }),
                 Some(index) => {
-                    let item = schema.indexes.remove(index);
-                    item.drop(database)?;
+                    let item = db.schema.indexes.remove(index);
+                    item.drop(db)?;
                 }
             },
             MigrationOperation::CreateGraph {
@@ -126,7 +121,7 @@ impl MigrationOperation {
                 is_disjoint,
                 options,
             } => {
-                let mut item = match schema.graph(&name) {
+                let mut item = match db.schema.graph(&name) {
                     Some(_) => return Err(MigrationError::DuplicateGraph { name }),
                     None => GraphSchema(Graph {
                         name,
@@ -137,19 +132,19 @@ impl MigrationOperation {
                         options,
                     }),
                 };
-                item.apply_to_database(database, false)?;
-                schema.graphs.push(item);
+                item.apply_to_database(db, false)?;
+                db.schema.graphs.push(item);
             }
-            MigrationOperation::DeleteGraph { name } => match schema.graph_index(&name) {
+            MigrationOperation::DeleteGraph { name } => match db.schema.graph_index(&name) {
                 None => return Err(MigrationError::MissingGraph { name }),
                 Some(graph) => {
-                    let item = schema.graphs.remove(graph);
-                    item.drop(database)?;
+                    let item = db.schema.graphs.remove(graph);
+                    item.drop(db)?;
                 }
             },
             MigrationOperation::Aql(aql) => {
                 log::debug!("Executing AQL {} ...", &aql);
-                database.aql_str::<Value>(aql.as_str())?;
+                db.aql_str::<Value>(aql.as_str())?;
             }
         };
         Ok(())
