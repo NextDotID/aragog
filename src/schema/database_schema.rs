@@ -202,6 +202,6 @@ mod tests {
     #[test]
     fn serialization_works() {
         let schema = schema();
-        let yaml = serde_yaml::to_string(&schema).unwrap();
+        serde_yaml::to_string(&schema).unwrap();
     }
 }

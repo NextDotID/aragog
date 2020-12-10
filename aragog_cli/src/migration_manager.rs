@@ -5,9 +5,10 @@ use std::io::Write;
 use aragog::schema::DatabaseSchema;
 
 use crate::error::MigrationError;
+use crate::log;
+use crate::log_level::LogLevel;
 use crate::migration::Migration;
 use crate::VersionedDatabase;
-use crate::LOG_STR;
 
 const SCHEMA_NAME: &str = "schema.yaml";
 
@@ -39,15 +40,18 @@ impl MigrationManager {
             }
         };
         let schema_file_path = format!("{}/{}", schema_path, SCHEMA_NAME);
-        println!("{} Loading schema.yaml", LOG_STR);
+        log(format!("Loading schema.yaml"), LogLevel::Debug);
         match fs::File::open(&schema_file_path) {
             Ok(_) => (),
             Err(error) => {
-                println!("{} Missing schema file ({}) creating it...", LOG_STR, error);
+                log(
+                    format!("Missing schema file ({}) creating it...", error),
+                    LogLevel::Debug,
+                );
                 fs::File::create(&schema_file_path)?;
             }
         };
-        println!("{} Loading migrations...", LOG_STR);
+        log(format!("Loading migrations..."), LogLevel::Debug);
         let mut migrations = Vec::new();
         for entry in dir {
             let entry = entry?;
@@ -75,7 +79,7 @@ impl MigrationManager {
             return Err(MigrationError::NoMigrations);
         }
         migrations.sort_by(|a, b| a.version.cmp(&b.version));
-        println!("{} Migrations loaded.", LOG_STR);
+        log(format!("Migrations loaded."), LogLevel::Debug);
         Ok(Self {
             migrations,
             schema_file_path,
@@ -85,7 +89,10 @@ impl MigrationManager {
     pub fn migrations_up(self, db: &mut VersionedDatabase) -> Result<(), MigrationError> {
         let current_version = db.schema_version();
         Self::write_schema(&db.schema, &self.schema_file_path)?;
-        println!("{} Current Schema version: {}", LOG_STR, current_version);
+        log(
+            format!("Current Schema version: {}", current_version),
+            LogLevel::Debug,
+        );
         let mut i = 0;
         for migration in self.migrations.into_iter() {
             if migration.version > current_version {
@@ -95,7 +102,7 @@ impl MigrationManager {
                 i += 1;
             }
         }
-        println!("{} Applied {} migrations", LOG_STR, i);
+        log(format!("Applied {} migrations", i), LogLevel::Info);
         Ok(())
     }
 
@@ -106,7 +113,10 @@ impl MigrationManager {
     ) -> Result<(), MigrationError> {
         let current_version = db.schema_version();
         Self::write_schema(&db.schema, &self.schema_file_path)?;
-        println!("{} Current Schema version: {}", LOG_STR, current_version);
+        log(
+            format!("Current Schema version: {}", current_version),
+            LogLevel::Debug,
+        );
         let mut i = 0;
         self.migrations.reverse();
         for migration in self.migrations.into_iter() {
@@ -120,7 +130,7 @@ impl MigrationManager {
                 i += 1;
             }
         }
-        println!("{} Rollbacked {} migrations", LOG_STR, i);
+        log(format!("Rollbacked {} migrations", i), LogLevel::Info);
         Ok(())
     }
 
@@ -128,16 +138,18 @@ impl MigrationManager {
         schema: &DatabaseSchema,
         schema_file_path: &str,
     ) -> Result<(), MigrationError> {
-        println!("{} Saving schema to {}", LOG_STR, schema_file_path);
+        log(
+            format!("Saving schema to {}", schema_file_path),
+            LogLevel::Debug,
+        );
         let mut file = OpenOptions::new().write(true).open(&schema_file_path)?;
         let content = Self::serialized_schema(&schema);
         // Cleans the file
         file.set_len(0)?;
         file.write_all(content.as_bytes())?;
-        println!(
-            "{} Bumped schema to version {}",
-            LOG_STR,
-            schema.version.unwrap()
+        log(
+            format!("Bumped schema to version {}", schema.version.unwrap()),
+            LogLevel::Debug,
         );
         Ok(())
     }

@@ -10,8 +10,9 @@ use aragog::schema::DatabaseSchema;
 
 use crate::config::Config;
 use crate::error::MigrationError;
+use crate::log;
+use crate::log_level::LogLevel;
 use crate::migration::MigrationVersion;
-use crate::LOG_STR;
 
 const SCHEMA_DOC_KEY: &str = "DatabaseSchema";
 
@@ -31,35 +32,51 @@ pub struct VersionedDatabase {
 
 impl VersionedDatabase {
     pub fn init(config: &Config) -> Result<Self, MigrationError> {
+        log(
+            format!("Establishing connection with {}", &config.db_host),
+            LogLevel::Verbose,
+        );
         let connection =
             Connection::establish_basic_auth(&config.db_host, &config.db_user, &config.db_pwd)
                 .unwrap();
+        log(
+            format!("Connecting to database {}", &config.db_name),
+            LogLevel::Verbose,
+        );
         let db: Database<ReqwestClient> = match connection.db(&config.db_name) {
             Ok(val) => val,
             Err(_) => {
-                println!(
-                    "{} Missing database {}, creating it...",
-                    LOG_STR, &config.db_name
+                log(
+                    format!("Missing database {}, creating it...", &config.db_name),
+                    LogLevel::Debug,
                 );
                 connection.create_database(&config.db_name)?
             }
         };
+        log(
+            format!("Retrieving collection {}", &config.collection_name),
+            LogLevel::Verbose,
+        );
         let collection = match db.collection(&config.collection_name) {
             Ok(coll) => coll,
             Err(_error) => {
-                println!(
-                    "{} Missing collection {}, creating it...",
-                    LOG_STR, &config.collection_name
+                log(
+                    format!(
+                        "Missing collection {}, creating it...",
+                        &config.collection_name
+                    ),
+                    LogLevel::Debug,
                 );
                 db.create_collection(&config.collection_name)?
             }
         };
+        log("Retrieving Schema document", LogLevel::Verbose);
         let schema = match collection.document(SCHEMA_DOC_KEY) {
             Ok(doc) => doc.document,
             Err(_err) => {
-                println!(
-                    "{} Missing database schema document, creating it...",
-                    LOG_STR
+                log(
+                    "Missing database schema document, creating it..",
+                    LogLevel::Debug,
                 );
                 let schema = DatabaseSchema::default();
                 let doc = SchemaWithKey {
@@ -80,6 +97,13 @@ impl VersionedDatabase {
     }
 
     pub fn save(&self) -> Result<(), MigrationError> {
+        log(
+            format!(
+                "Saving schema version {} to database",
+                self.schema_version()
+            ),
+            LogLevel::Verbose,
+        );
         // TODO: remove the to_string on arangors 0.4.6 and use clone()
         let doc = serde_json::to_string(&self.schema).unwrap();
         let schema: DatabaseSchema = serde_json::from_str(&doc).unwrap();

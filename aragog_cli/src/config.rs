@@ -1,6 +1,10 @@
 use clap::ArgMatches;
 
 use crate::error::MigrationError;
+use crate::log_level::LogLevel;
+use std::fmt::Display;
+
+static mut LOG_LEVEL: LogLevel = LogLevel::Info;
 
 const ARAGOG_DEFAULT_COLLECTION: &str = "AragogConfiguration";
 
@@ -14,8 +18,21 @@ pub struct Config {
     pub db_pwd: String,
 }
 
+pub fn log<T: Display>(text: T, level: LogLevel) {
+    unsafe {
+        if level > LOG_LEVEL {
+            return;
+        }
+        println!("{}> {}", level, text);
+    }
+}
+
 impl Config {
     pub fn new(matches: &ArgMatches) -> Result<Self, MigrationError> {
+        unsafe {
+            LOG_LEVEL = LogLevel::from(matches.occurrences_of("verbose"));
+            log(format!("Log level: {:?}", LOG_LEVEL), LogLevel::Verbose);
+        }
         Ok(Self {
             collection_name: matches
                 .value_of("aragog_collection")
@@ -68,14 +85,14 @@ mod tests {
         std::env::set_var("DB_USER", "test_DB_USER");
         std::env::set_var("DB_PASSWORD", "test_DB_PASSWORD");
         std::env::set_var("SCHEMA_PATH", "test_path");
-        let config = Config::new(&matches);
+        let config = Config::new(&matches).unwrap();
         assert_eq!(config.db_host, "test_DB_HOST".to_string());
         assert_eq!(config.db_name, "test_DB_NAME".to_string());
         assert_eq!(config.db_user, "test_DB_USER".to_string());
         assert_eq!(config.db_pwd, "test_DB_PASSWORD".to_string());
         assert_eq!(config.schema_path, "test_path".to_string());
         std::env::remove_var("SCHEMA_PATH");
-        let config = Config::new(&matches);
+        let config = Config::new(&matches).unwrap();
         assert_eq!(
             config.schema_path,
             aragog::schema::SCHEMA_DEFAULT_PATH.to_string()
