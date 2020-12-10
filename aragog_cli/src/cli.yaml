@@ -1,5 +1,5 @@
 name: aragog
-version: "0.2.0"
+version: "0.2.1"
 author: Felix de Maneville <felix.maneville@qonfucius.team>
 about: CLI too for aragog crate, handles ArangoDB migrations and schema generation
 args:

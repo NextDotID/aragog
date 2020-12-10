@@ -148,7 +148,7 @@ impl MigrationManager {
         file.set_len(0)?;
         file.write_all(content.as_bytes())?;
         log(
-            format!("Bumped schema to version {}", schema.version.unwrap()),
+            format!("Bumped schema to version {}", schema.version.unwrap_or(0)),
             LogLevel::Debug,
         );
         Ok(())

@@ -37,8 +37,7 @@ impl VersionedDatabase {
             LogLevel::Verbose,
         );
         let connection =
-            Connection::establish_basic_auth(&config.db_host, &config.db_user, &config.db_pwd)
-                .unwrap();
+            Connection::establish_basic_auth(&config.db_host, &config.db_user, &config.db_pwd)?;
         log(
             format!("Connecting to database {}", &config.db_name),
             LogLevel::Verbose,
