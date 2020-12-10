@@ -1,5 +1,9 @@
 # Aragog CLI
 
+[![pipeline status](https://gitlab.com/qonfucius/aragog/badges/master/pipeline.svg)](https://gitlab.com/qonfucius/aragog/commits/master)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Crates.io](https://img.shields.io/crates/v/aragog_cli.svg)](https://crates.io/crates/aragog_cli)
+
 Migration and schema generation tool for [aragog][aragog] (Version > `0.7`).
 
 > Note: Currently, transactional operations are not supported, a failing migrations will not automatically rollback and you may need to handle some errors manually
@@ -11,12 +15,9 @@ Migration and schema generation tool for [aragog][aragog] (Version > `0.7`).
 - `--db-password <DB_PASSWORD>` Sets the ArangoDB database user password (by default env var `DB_PASSWORD` is used)
 - `--db-user <DB_USER>` Sets the ArangoDB database user (by default env var `DB_USER` is used)
 - `--folder <PATH>` Sets the path for the migrations and schema (by default env var `SCHEMA_PATH` is used)
+- `--aragog-collection <COLLECTION>` Sets the name of the config ArangoDB collection that will be used to synchronize database and schema version (by default "AragogConfiguration" is used)
 
 ## Commands
-
-### Help
-
-Command: `aragog --help`
 
 ### Creating a Migration
 
