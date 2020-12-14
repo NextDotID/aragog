@@ -8,9 +8,6 @@ use serde::{Deserialize, Serialize};
 /// This struct is meant to load/generate the schema file.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IndexSchema {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    /// The id of the index, can be `None` on creation but id required to drop the index.
-    pub id: Option<String>,
     /// Index name (must be unique)
     pub name: String,
     /// Collection name
@@ -31,29 +28,35 @@ impl Into<Index> for IndexSchema {
     }
 }
 
+impl IndexSchema {
+    /// Retrieve the index id
+    pub fn id(&self) -> String {
+        format!("{}/{}", &self.collection, &self.name)
+    }
+}
+
 #[maybe_async::maybe_async]
 impl SchemaDatabaseOperation for IndexSchema {
     type PoolType = Index;
 
     async fn apply_to_database(
-        &mut self,
+        &self,
         database: &Database<ReqwestClient>,
         silent: bool,
-    ) -> Result<(), ClientError> {
+    ) -> Result<Option<Self::PoolType>, ClientError> {
         log::debug!("Creating index {}", &self.name);
         let duplicate = serde_json::to_string(self).unwrap();
         let duplicate: Self = serde_json::from_str(&duplicate).unwrap();
         let index = duplicate.into();
-        match database.create_index(&self.collection, &index).await {
-            Ok(index) => self.id = Some(index.id),
-            Err(error) => Self::handle_error(Err(error) as Result<Index, ClientError>, silent)?,
-        };
-        Ok(())
+        Self::handle_pool_result(
+            database.create_index(&self.collection, &index).await,
+            silent,
+        )
     }
 
     async fn drop(&self, database: &Database<ReqwestClient>) -> Result<(), ClientError> {
         log::debug!("Deleting index {}", &self.name);
-        database.delete_index(&self.id.as_ref().unwrap()).await?;
+        database.delete_index(&self.id()).await?;
         Ok(())
     }
 

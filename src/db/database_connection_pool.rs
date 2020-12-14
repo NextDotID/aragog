@@ -96,7 +96,7 @@ impl DatabaseConnectionPool {
         db_user: &str,
         db_password: &str,
         auth_mode: AuthMode,
-        mut schema: DatabaseSchema,
+        schema: DatabaseSchema,
         apply_schema: bool,
     ) -> Result<Self, ServiceError> {
         log::info!("Connecting to database server on {} ...", db_host);
@@ -109,7 +109,7 @@ impl DatabaseConnectionPool {
         log::info!("Connecting to database {} ...", db_name);
         let database = db_connection.db(&db_name).await.unwrap();
         if apply_schema {
-            schema.apply_to_database(&database, true).await?
+            schema.apply_to_database(&database, true).await?;
         }
         DatabaseConnectionPool::load_schema(database, schema).await
     }

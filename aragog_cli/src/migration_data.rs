@@ -89,6 +89,7 @@ mod tests {
                 },
                 MigrationOperation::DeleteIndex {
                     name: "OnNameAndEmail".to_string(),
+                    collection: "Collection1".to_string(),
                 },
                 MigrationOperation::DeleteCollection {
                     name: "Collection2".to_string(),

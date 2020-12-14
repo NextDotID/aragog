@@ -21,6 +21,7 @@ up:
           to: ["MyCollection2"]
 down:
   - delete_index:
+      collection: MyCollection2
       name: Expiration
   - delete_graph:
       name: Graph

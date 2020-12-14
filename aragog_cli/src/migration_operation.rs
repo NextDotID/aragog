@@ -33,6 +33,7 @@ pub enum MigrationOperation {
     },
     DeleteIndex {
         name: String,
+        collection: String,
     },
     CreateGraph {
         name: String,
@@ -57,7 +58,7 @@ impl MigrationOperation {
         match self {
             MigrationOperation::CreateCollection { name } => {
                 log("Executing create_collection operation", LogLevel::Verbose);
-                let mut item = match db.schema.collection(&name) {
+                let item = match db.schema.collection(&name) {
                     Some(_) => return Err(MigrationError::DuplicateCollection { name }),
                     None => CollectionSchema::new(&name, false),
                 };
@@ -69,7 +70,7 @@ impl MigrationOperation {
                     "Executing create_edge_collection operation",
                     LogLevel::Verbose,
                 );
-                let mut item = match db.schema.collection(&name) {
+                let item = match db.schema.collection(&name) {
                     Some(_) => return Err(MigrationError::DuplicateEdgeCollection { name }),
                     None => CollectionSchema::new(&name, true),
                 };
@@ -106,10 +107,9 @@ impl MigrationOperation {
                 fields,
             } => {
                 log("Executing create_index operation", LogLevel::Verbose);
-                let mut item = match db.schema.index(&name) {
+                let item = match db.schema.index(&collection, &name) {
                     Some(_) => return Err(MigrationError::DuplicateIndex { name, collection }),
                     None => IndexSchema {
-                        id: None,
                         name,
                         collection,
                         fields,
@@ -119,10 +119,10 @@ impl MigrationOperation {
                 item.apply_to_database(db, false)?;
                 db.schema.indexes.push(item);
             }
-            MigrationOperation::DeleteIndex { name } => {
+            MigrationOperation::DeleteIndex { name, collection } => {
                 log("Executing delete_index operation", LogLevel::Verbose);
-                match db.schema.index_index(&name) {
-                    None => return Err(MigrationError::MissingIndex { name }),
+                match db.schema.index_index(&collection, &name) {
+                    None => return Err(MigrationError::MissingIndex { collection, name }),
                     Some(index) => {
                         let item = db.schema.indexes.remove(index);
                         item.drop(db)?;
@@ -138,7 +138,7 @@ impl MigrationOperation {
                 options,
             } => {
                 log("Executing create_graph operation", LogLevel::Verbose);
-                let mut item = match db.schema.graph(&name) {
+                let item = match db.schema.graph(&name) {
                     Some(_) => return Err(MigrationError::DuplicateGraph { name }),
                     None => GraphSchema(Graph {
                         name,
