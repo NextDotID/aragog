@@ -126,8 +126,6 @@ You can use it with minimal parameters:
 
 ### Index
 
-> Note: For now Indexes must have a unique name even on different collection, this will be fixed in a future release
-
 ```yaml
 - create_index:               # Creates an Index
     name: MyIndex             # Mandatory name
@@ -140,6 +138,7 @@ You can use it with minimal parameters:
       deduplicate: false
 - delete_index:               # Deletes an Index
     name: MyIndex             # Mandatory name
+    collection: MyCollection  # Mandatory collection
 ```
 
 You have various parameters on the `settings`according to index type:

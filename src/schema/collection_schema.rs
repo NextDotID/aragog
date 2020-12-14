@@ -30,17 +30,17 @@ impl SchemaDatabaseOperation for CollectionSchema {
     type PoolType = Collection<ReqwestClient>;
 
     async fn apply_to_database(
-        &mut self,
+        &self,
         database: &Database<ReqwestClient>,
         silent: bool,
-    ) -> Result<(), ClientError> {
+    ) -> Result<Option<Self::PoolType>, ClientError> {
         log::debug!("Creating Collection {}", &self.name);
-        if self.is_edge_collection {
-            Self::handle_error(database.create_edge_collection(&self.name).await, silent)?;
+        let res = if self.is_edge_collection {
+            database.create_edge_collection(&self.name).await
         } else {
-            Self::handle_error(database.create_collection(self.name.as_str()).await, silent)?;
-        }
-        Ok(())
+            database.create_collection(self.name.as_str()).await
+        };
+        Self::handle_pool_result(res, silent)
     }
 
     async fn drop(&self, database: &Database<ReqwestClient>) -> Result<(), ClientError> {

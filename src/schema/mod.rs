@@ -37,16 +37,35 @@ pub trait SchemaDatabaseOperation {
         }
     }
 
+    /// Factorisation of result and error handling for schema operations
+    fn handle_pool_result(
+        result: Result<Self::PoolType, ClientError>,
+        silent: bool,
+    ) -> Result<Option<Self::PoolType>, ClientError> {
+        let res = match result {
+            Err(error) => {
+                Self::handle_error(Err(error) as Result<Self::PoolType, ClientError>, silent)?;
+                None
+            }
+            Ok(val) => Some(val),
+        };
+        Ok(res)
+    }
+
     /// Applies (creates) the schema element to the database
     ///
     /// # Parameters
     /// * `database` - reference the the db connection object (`arangors`)
     /// * `silent` - Should the errors be ignored
+    ///
+    /// # Returns
+    ///
+    /// On success the pool type is returned (`Ok(Some(elem))`, but on silenced error nothing is returned (`Ok(None)`)
     async fn apply_to_database(
-        &mut self,
+        &self,
         database: &Database<ReqwestClient>,
         silent: bool,
-    ) -> Result<(), ClientError>;
+    ) -> Result<Option<Self::PoolType>, ClientError>;
 
     /// Deletes the schema element from the database.
     async fn drop(&self, database: &Database<ReqwestClient>) -> Result<(), ClientError>;

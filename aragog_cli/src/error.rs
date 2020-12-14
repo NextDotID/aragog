@@ -12,8 +12,8 @@ pub enum MigrationError {
     MissingEdgeCollection { name: String },
     #[error("Duplicate Edge Collection: {name}")]
     DuplicateEdgeCollection { name: String },
-    #[error("Missing Index: {name}")]
-    MissingIndex { name: String },
+    #[error("Missing Index: {name} on collection {collection}")]
+    MissingIndex { name: String, collection: String },
     #[error("Duplicate Index: {name} on collection {collection}")]
     DuplicateIndex { name: String, collection: String },
     #[error("Missing Graph: {name}")]

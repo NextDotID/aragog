@@ -16,3 +16,4 @@ up:
 down:
   - delete_index:
       name: MyIndex
+      collection: MyCollection

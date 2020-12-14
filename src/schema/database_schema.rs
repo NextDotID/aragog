@@ -35,13 +35,17 @@ impl DatabaseSchema {
     }
 
     /// Find an index index from the schema instance
-    pub fn index_index(&self, name: &str) -> Option<usize> {
-        self.indexes.iter().position(|c| c.name == name)
+    pub fn index_index(&self, collection: &str, name: &str) -> Option<usize> {
+        self.indexes
+            .iter()
+            .position(|c| c.name == name && c.collection == collection)
     }
 
     /// Find an Index from the schema instance
-    pub fn index(&self, name: &str) -> Option<&IndexSchema> {
-        self.indexes.iter().find(|c| c.name == name)
+    pub fn index(&self, collection: &str, name: &str) -> Option<&IndexSchema> {
+        self.indexes
+            .iter()
+            .find(|c| c.name == name && c.collection == collection)
     }
 
     /// Find an index index from the schema instance
@@ -96,20 +100,20 @@ impl SchemaDatabaseOperation for DatabaseSchema {
     type PoolType = ();
 
     async fn apply_to_database(
-        &mut self,
+        &self,
         database: &Database<ReqwestClient>,
         silent: bool,
-    ) -> Result<(), ClientError> {
-        for item in self.collections.iter_mut() {
+    ) -> Result<Option<Self::PoolType>, ClientError> {
+        for item in self.collections.iter() {
             Self::handle_error(item.apply_to_database(database, silent).await, silent)?;
         }
-        for item in self.indexes.iter_mut() {
+        for item in self.indexes.iter() {
             Self::handle_error(item.apply_to_database(database, silent).await, silent)?;
         }
-        for item in self.graphs.iter_mut() {
+        for item in self.graphs.iter() {
             Self::handle_error(item.apply_to_database(database, silent).await, silent)?;
         }
-        Ok(())
+        Ok(Some(()))
     }
 
     async fn drop(&self, database: &Database<ReqwestClient>) -> Result<(), ClientError> {
@@ -161,7 +165,6 @@ mod tests {
             ],
             indexes: vec![
                 IndexSchema {
-                    id: None,
                     name: "OnUsername".to_string(),
                     collection: "CollectionA".to_string(),
                     fields: vec!["username".to_string()],
@@ -172,7 +175,6 @@ mod tests {
                     },
                 },
                 IndexSchema {
-                    id: None,
                     name: "OnAgeAndemail".to_string(),
                     collection: "CollectionB".to_string(),
                     fields: vec!["age".to_string(), "email".to_string()],
