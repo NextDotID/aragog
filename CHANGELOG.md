@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.4
+
+* Small improvements on schema application methods
+* `IndexSchema` doesn't store its `id`, "collection/name" is used for deletion.
+
 ## 0.7.3
 
 * Fixed `IndexSchema` application

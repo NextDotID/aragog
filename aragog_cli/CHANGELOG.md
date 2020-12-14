@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2
+
+* Fixed Index unicity issue, index deletion requires collection.
+* A few optimisation
+
 ## 0.2.1
 
 * Fixed crash on first launch
