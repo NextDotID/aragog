@@ -10,7 +10,7 @@ license = "MIT"
 description = "CLI for Aragog Crate"
 exclude= ["./example"]
 categories = ["web-programming", "database"]
-repository = "https://gitlab.com/qonfucius/aragog/aragog_cli"
+repository = "https://gitlab.com/qonfucius/aragog/-/tree/master/aragog_cli"
 readme = "README.md"
 
 [[bin]]

@@ -67,7 +67,7 @@
 
  It will add two functions in the `Authenticate` trait:
 
- ```rust ignore
+ ```rust
  fn hash_password(password: &str, secret_key: &str) -> Result<String, ServiceError>;
  fn verify_password(password: &str, password_hash: &str, secret_key: &str) -> Result<(), ServiceError>;
  ```
@@ -138,25 +138,23 @@
  #[tokio::main]
  async fn main() {
  // Database connection Setup
- # std::env::set_var("SCHEMA_PATH", "tests/schema.yaml");
-
-     let database_pool = DatabaseConnectionPool::builder()
-         .build()
-         .await
-         .unwrap();
-     // Define a document
-     let mut user = User {
-         username: String::from("LeRevenant1234"),
-         first_name: String::from("Robert"),
-         last_name: String::from("Surcouf"),
-         age: 18
-     };
-     // user_record is a DatabaseRecord<User>
-     let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
-     // You can access and edit the document
-     user_record.record.username = String::from("LeRevenant1524356");
-     // And directly save it
-     user_record.save(&database_pool).await;
+   let database_pool = DatabaseConnectionPool::builder()
+       .build()
+       .await
+       .unwrap();
+   // Define a document
+   let mut user = User {
+       username: String::from("LeRevenant1234"),
+       first_name: String::from("Robert"),
+       last_name: String::from("Surcouf"),
+       age: 18
+   };
+   // user_record is a DatabaseRecord<User>
+   let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
+   // You can access and edit the document
+   user_record.record.username = String::from("LeRevenant1524356");
+   // And directly save it
+   user_record.save(&database_pool).await.unwrap();
  }
  ```
  #### Edge Record
@@ -186,22 +184,22 @@
 
  #[tokio::main]
  async fn main() {
-     // Define a document
-     let mut dish = DatabaseRecord::create(Dish {
-         name: "Pizza".to_string(),
-         price: 10,
-     }, &database_pool).await.unwrap();
-     let mut order = DatabaseRecord::create(Order {
-         name: "Order 1".to_string(),
-     }, &database_pool).await.unwrap();
+   // Define a document
+   let mut dish = DatabaseRecord::create(Dish {
+       name: "Pizza".to_string(),
+       price: 10,
+   }, &database_pool).await.unwrap();
+   let mut order = DatabaseRecord::create(Order {
+       name: "Order 1".to_string(),
+   }, &database_pool).await.unwrap();
 
-     let edge = DatabaseRecord::link(&dish, &order, &database_pool, |_from, _to| {
-         PartOf { _from, _to }
-     }).await.unwrap();
-     assert_eq!(&edge.record._from(), &dish.id);
-     assert_eq!(&edge.record._to(), &order.id);
-     assert_eq!(&edge.record._from_key(), &dish.key);
-     assert_eq!(&edge.record._to_key(), &order.key);
+   let edge = DatabaseRecord::link(&dish, &order, &database_pool, |_from, _to| {
+       PartOf { _from, _to }
+   }).await.unwrap();
+   assert_eq!(&edge.record._from(), &dish.id);
+   assert_eq!(&edge.record._to(), &order.id);
+   assert_eq!(&edge.record._from_key(), &dish.key);
+   assert_eq!(&edge.record._to_key(), &order.key);
  }
  ```
 
@@ -279,7 +277,7 @@
  You can initialize a `Filter` with `Filter::new(comparison)`
 
  Each comparison is a `Comparison` struct built via `ComparisonBuilder`:
- ```rust ignore
+ ```rust
  // for a simple field comparison
 
  // Explicit
@@ -309,14 +307,12 @@
  Filters can be defined explicitely like this:
 
  ```rust
- # use aragog::query::{Comparison, Filter};
  let filter = Filter::new(Comparison::field("name").equals_str("felix"));
  ```
 
  or
 
  ```rust
- # use aragog::query::{Comparison, Filter};
  let filter :Filter = Comparison::field("name").equals_str("felix").into();
  ```
 
@@ -353,7 +349,6 @@
  * Edge traversal:
 
  ```rust
- # use aragog::query::Query;
  let query = Query::new("User")
      .join_inbound(1, 2, false, Query::new("edgeCollection"));
  ```
@@ -361,7 +356,6 @@
  * Named Graph traversal:
 
  ```rust
- # use aragog::query::Query;
  let query = Query::new("User")
      .join_inbound(1, 2, true, Query::new("SomeGraph"));
  ```
@@ -369,7 +363,6 @@
  It works with complex queries:
 
  ```rust
- # use aragog::query::{Query, Comparison};
  let query = Query::new("User")
      .filter(Comparison::field("age").greater_than(10).into())
      .join_inbound(1, 2, false,
@@ -402,7 +395,6 @@
      - [ ] Handle revisions/concurrency correctly
      - [ ] Implement Transactions
      - [ ] Define possible `async` validations for database advance state check
-
 
  ### Arango db setup
 

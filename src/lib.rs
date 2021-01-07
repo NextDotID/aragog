@@ -164,7 +164,7 @@
 //!     // You can access and edit the document
 //!     user_record.record.username = String::from("LeRevenant1524356");
 //!     // And directly save it
-//!     user_record.save(&database_pool).await;
+//!     user_record.save(&database_pool).await.unwrap();
 //! }
 //! ```
 //! #### Edge Record
@@ -470,7 +470,6 @@
 //!     - [ ] Handle revisions/concurrency correctly
 //!     - [ ] Implement Transactions
 //!     - [ ] Define possible `async` validations for database advance state check
-//!
 //!
 //! ### Arango db setup
 //!
