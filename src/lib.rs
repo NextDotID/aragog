@@ -5,6 +5,7 @@
 //! [![Crates.io](https://img.shields.io/crates/v/aragog.svg)](https://crates.io/crates/aragog)
 //! [![aragog](https://docs.rs/aragog/badge.svg)](https://docs.rs/aragog)
 //! [![Discord](https://img.shields.io/discord/763034131335741440.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Xyx3hUP)
+//! [![Gitter](https://badges.gitter.im/aragog-rs/community.svg)](https://gitter.im/aragog-rs/community)
 //!
 //! `aragog` is a simple lightweight ODM and OGM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
 //! The main concept is to provide behaviors allowing to synchronize documents and structs as simply an lightly as possible.
@@ -14,7 +15,7 @@
 //! ### Features
 //!
 //! By now the available features are:
-//! * Creating a database connection pool from a defined `schema.yaml`
+//! * Creating a database connection pool from a defined `schema.yaml` (See [aragog_cli][CLI])
 //! * Structures can implement different behaviors:
 //!     * `Record`: The structure can be written into a ArangoDB collection as well as retrieved, from its `_key` or other query arguments.
 //!     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
