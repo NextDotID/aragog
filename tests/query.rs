@@ -646,22 +646,20 @@ mod call {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn simple_outbound_request() -> Result<(), String> {
-        common::with_db(|pool| async move {
-            factory(&pool).await;
-            let query = Query::new("Dish")
-                .filter(compare!(field "name").like("Pizza%").into())
-                .join_outbound(1, 1, false, PartOf::query());
-            let res = query.call(&pool).await.unwrap();
-            common::expect_assert_eq(res.len(), 2)?;
-            let res = res.get_records::<Order>();
-            common::expect_assert_eq(res.len(), 2)?;
-            common::expect_assert_eq(
-                res.iter().map(|o| o.record.name.as_str()).collect(),
-                vec!["Menu Pizza", "Menu Pizza 2"],
-            )?;
-            Ok(())
-        })
-        .await
+        let pool = common::setup_db().await;
+        factory(&pool).await;
+        let query = Query::new("Dish")
+            .filter(compare!(field "name").like("Pizza%").into())
+            .join_outbound(1, 1, false, PartOf::query());
+        let res = query.call(&pool).await.unwrap();
+        common::expect_assert_eq(res.len(), 2)?;
+        let res = res.get_records::<Order>();
+        common::expect_assert_eq(res.len(), 2)?;
+        common::expect_assert_eq(
+            res.iter().map(|o| o.record.name.as_str()).collect(),
+            vec!["Menu Pizza", "Menu Pizza 2"],
+        )?;
+        Ok(())
     }
 
     #[maybe_async::test(
@@ -669,22 +667,20 @@ mod call {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn simple_inbound_request() -> Result<(), String> {
-        common::with_db(|pool| async move {
-            factory(&pool).await;
-            let query = Query::new("Order")
-                .filter(compare!(field "name").equals_str("Menu Pizza").into())
-                .join_inbound(1, 1, false, PartOf::query());
-            let res = query.call(&pool).await.unwrap();
-            common::expect_assert_eq(res.len(), 3)?;
-            let res = res.get_records::<Dish>();
-            common::expect_assert_eq(res.len(), 3)?;
-            common::expect_assert_eq(
-                res.iter().map(|o| o.record.name.as_str()).collect(),
-                vec!["Pizza Mozarella", "Wine", "Ice Cream"],
-            )?;
-            Ok(())
-        })
-        .await
+        let pool = common::setup_db().await;
+        factory(&pool).await;
+        let query = Query::new("Order")
+            .filter(compare!(field "name").equals_str("Menu Pizza").into())
+            .join_inbound(1, 1, false, PartOf::query());
+        let res = query.call(&pool).await.unwrap();
+        common::expect_assert_eq(res.len(), 3)?;
+        let res = res.get_records::<Dish>();
+        common::expect_assert_eq(res.len(), 3)?;
+        common::expect_assert_eq(
+            res.iter().map(|o| o.record.name.as_str()).collect(),
+            vec!["Pizza Mozarella", "Wine", "Ice Cream"],
+        )?;
+        Ok(())
     }
 
     #[maybe_async::test(
@@ -692,30 +688,28 @@ mod call {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn outbound_then_inbound_request() -> Result<(), String> {
-        common::with_db(|pool| async move {
-            factory(&pool).await;
-            let query = Query::new("Dish").join_outbound(
-                1,
-                1,
-                false,
-                PartOf::query().join_inbound(1, 1, false, PartOf::query().distinct()),
-            );
-            let res = query.call(&pool).await.unwrap();
-            common::expect_assert_eq(res.len(), 5)?;
-            let res = res.get_records::<Dish>();
-            common::expect_assert_eq(res.len(), 5)?;
-            common::expect_assert_eq(
-                res.iter().map(|o| o.record.name.as_str()).collect(),
-                vec![
-                    "Pizza Mozarella",
-                    "Wine",
-                    "Ice Cream",
-                    "Pizza Regina",
-                    "Spaghetti",
-                ],
-            )?;
-            Ok(())
-        })
-        .await
+        let pool = common::setup_db().await;
+        factory(&pool).await;
+        let query = Query::new("Dish").join_outbound(
+            1,
+            1,
+            false,
+            PartOf::query().join_inbound(1, 1, false, PartOf::query().distinct()),
+        );
+        let res = query.call(&pool).await.unwrap();
+        common::expect_assert_eq(res.len(), 5)?;
+        let res = res.get_records::<Dish>();
+        common::expect_assert_eq(res.len(), 5)?;
+        common::expect_assert_eq(
+            res.iter().map(|o| o.record.name.as_str()).collect(),
+            vec![
+                "Pizza Mozarella",
+                "Wine",
+                "Ice Cream",
+                "Pizza Regina",
+                "Spaghetti",
+            ],
+        )?;
+        Ok(())
     }
 }

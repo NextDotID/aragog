@@ -1,7 +1,5 @@
 use std::fmt::Debug;
 
-use tokio::macros::support::Future;
-
 use aragog::DatabaseConnectionPool;
 
 const DEFAULT_DB_HOST: &str = "http://localhost:8529";
@@ -25,16 +23,6 @@ pub async fn setup_db() -> DatabaseConnectionPool {
         .unwrap();
     pool.truncate().await;
     pool
-}
-
-#[maybe_async::maybe_async]
-pub async fn with_db<T, F>(test: T) -> Result<(), String>
-where
-    T: FnOnce(DatabaseConnectionPool) -> F,
-    F: Future<Output = Result<(), String>>,
-{
-    let db_pool = setup_db().await;
-    test(db_pool).await
 }
 
 pub fn expect_assert(expr: bool) -> Result<(), String> {
