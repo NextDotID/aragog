@@ -1,6 +1,4 @@
-use std::fmt::{Display, Result};
-
-use serde::export::Formatter;
+use std::fmt::{Display, Formatter, Result};
 
 use crate::query::Comparison;
 

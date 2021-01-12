@@ -56,23 +56,21 @@ impl Validate for PartOf {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn edge_can_be_created() -> Result<(), String> {
-    common::with_db(|pool| async move {
-        let dish = create_dish(&pool).await;
-        let order = create_order(&pool).await;
+    let pool = common::setup_db().await;
+    let dish = create_dish(&pool).await;
+    let order = create_order(&pool).await;
 
-        DatabaseRecord::create(
-            PartOf {
-                _from: dish.id.clone(),
-                _to: order.id.clone(),
-                description: "part of".to_string(),
-            },
-            &pool,
-        )
-        .await
-        .unwrap();
-        Ok(())
-    })
+    DatabaseRecord::create(
+        PartOf {
+            _from: dish.id.clone(),
+            _to: order.id.clone(),
+            description: "part of".to_string(),
+        },
+        &pool,
+    )
     .await
+    .unwrap();
+    Ok(())
 }
 
 #[maybe_async::test(
@@ -80,30 +78,28 @@ async fn edge_can_be_created() -> Result<(), String> {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn edge_can_be_created_with_a_simple_link() -> Result<(), String> {
-    common::with_db(|pool| async move {
-        let dish = create_dish(&pool).await;
-        let order = create_order(&pool).await;
+    let pool = common::setup_db().await;
+    let dish = create_dish(&pool).await;
+    let order = create_order(&pool).await;
 
-        let record = DatabaseRecord::link(&dish, &order, &pool, |_from, _to| PartOf {
-            _from,
-            _to,
-            description: "Test".to_string(),
-        })
-        .await
-        .unwrap();
-        common::expect_assert_eq(&record.record._from, &dish.id)?;
-        common::expect_assert_eq(&record.record._to, &order.id)?;
-        common::expect_assert_eq(
-            record.record._from_collection_name().as_str(),
-            Dish::collection_name(),
-        )?;
-        common::expect_assert_eq(
-            record.record._to_collection_name().as_str(),
-            Order::collection_name(),
-        )?;
-        Ok(())
+    let record = DatabaseRecord::link(&dish, &order, &pool, |_from, _to| PartOf {
+        _from,
+        _to,
+        description: "Test".to_string(),
     })
     .await
+    .unwrap();
+    common::expect_assert_eq(&record.record._from, &dish.id)?;
+    common::expect_assert_eq(&record.record._to, &order.id)?;
+    common::expect_assert_eq(
+        record.record._from_collection_name().as_str(),
+        Dish::collection_name(),
+    )?;
+    common::expect_assert_eq(
+        record.record._to_collection_name().as_str(),
+        Order::collection_name(),
+    )?;
+    Ok(())
 }
 
 #[test]

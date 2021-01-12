@@ -1,8 +1,7 @@
-use std::fmt::{self, Display};
+use std::fmt::{self, Display, Formatter};
 
 #[cfg(feature = "open-api")]
 use paperclip::actix::Apiv2Schema;
-use serde::export::Formatter;
 use serde::{Deserialize, Serialize};
 
 use crate::query::graph_query::{GraphQueryData, GraphQueryDirection};

@@ -46,32 +46,30 @@ impl Link<Dish> for Dish {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn relation_work() -> Result<(), String> {
-    common::with_db(|pool| async move {
-        let order = DatabaseRecord::create(
-            Order {
-                name: "Test".to_string(),
-            },
-            &pool,
-        )
-        .await
-        .unwrap();
-        let dish = DatabaseRecord::create(
-            Dish {
-                name: "DishTest".to_string(),
-                description: "relation Test".to_string(),
-                price: 10,
-                order_id: order.key.clone(),
-            },
-            &pool,
-        )
-        .await
-        .unwrap();
-
-        let relation: RecordQueryResult<Order> = dish.record.linked_models(&pool).await.unwrap();
-        common::expect_assert_eq(&relation.uniq().unwrap().key, &order.key)?;
-        Ok(())
-    })
+    let pool = common::setup_db().await;
+    let order = DatabaseRecord::create(
+        Order {
+            name: "Test".to_string(),
+        },
+        &pool,
+    )
     .await
+    .unwrap();
+    let dish = DatabaseRecord::create(
+        Dish {
+            name: "DishTest".to_string(),
+            description: "relation Test".to_string(),
+            price: 10,
+            order_id: order.key.clone(),
+        },
+        &pool,
+    )
+    .await
+    .unwrap();
+
+    let relation: RecordQueryResult<Order> = dish.record.linked_models(&pool).await.unwrap();
+    common::expect_assert_eq(&relation.uniq().unwrap().key, &order.key)?;
+    Ok(())
 }
 
 #[maybe_async::test(
@@ -79,30 +77,28 @@ async fn relation_work() -> Result<(), String> {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn foreign_key_relation_work() -> Result<(), String> {
-    common::with_db(|pool| async move {
-        let order = DatabaseRecord::create(
-            Order {
-                name: "Test".to_string(),
-            },
-            &pool,
-        )
-        .await
-        .unwrap();
-        let dish = DatabaseRecord::create(
-            Dish {
-                name: "DishTest".to_string(),
-                description: "relation Test".to_string(),
-                price: 10,
-                order_id: order.key.clone(),
-            },
-            &pool,
-        )
-        .await
-        .unwrap();
-
-        let relation: DatabaseRecord<Order> = dish.record.linked_model(&pool).await.unwrap();
-        common::expect_assert_eq(&relation.key, &order.key)?;
-        Ok(())
-    })
+    let pool = common::setup_db().await;
+    let order = DatabaseRecord::create(
+        Order {
+            name: "Test".to_string(),
+        },
+        &pool,
+    )
     .await
+    .unwrap();
+    let dish = DatabaseRecord::create(
+        Dish {
+            name: "DishTest".to_string(),
+            description: "relation Test".to_string(),
+            price: 10,
+            order_id: order.key.clone(),
+        },
+        &pool,
+    )
+    .await
+    .unwrap();
+
+    let relation: DatabaseRecord<Order> = dish.record.linked_model(&pool).await.unwrap();
+    common::expect_assert_eq(&relation.key, &order.key)?;
+    Ok(())
 }

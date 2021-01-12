@@ -65,11 +65,11 @@ test:password_hashing:
   script:
     - cargo test --features "password_hashing" --tests -- --test-threads=1
 
-# test:blocking:
-#   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
-#   <<: *test_template
-#   script:
-#     - cargo test --features "blocking derive" --no-default-features --tests --
+test:blocking:
+  image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
+  <<: *test_template
+  script:
+    - cargo test --features "blocking derive" --no-default-features --tests -- --test-threads=1
 
 test:packages:
   image: rust:latest
@@ -89,7 +89,7 @@ test::rustfmt:
   image: $CONTAINER_CUSTOM_REGISTRY/rust-clang-alpine:latest
   stage: test
   script:
-    - rustup component add rustfmt --toolchain 1.47.0-x86_64-unknown-linux-musl
+    - rustup component add rustfmt
     - cargo fmt --all -- --check
 
 rustdoc:
