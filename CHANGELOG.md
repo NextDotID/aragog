@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.5
+
+* Reworked tests to work with the blocking feature
+* Fixed CI issue with rusfmt
+* Fixed wrong imports for Query `fmt` implementation thanks to `serde 1.0.119`
+
 ## 0.7.4
 
 * Small improvements on schema application methods
