@@ -13,6 +13,7 @@ pub async fn update_record<T: DeserializeOwned + Serialize + Clone + Record>(
     db_pool: &DatabaseConnectionPool,
     collection_name: &str,
 ) -> Result<DatabaseRecord<T>, ServiceError> {
+    log::debug!("Updating document {} {}", collection_name, key);
     let collection = db_pool.get_collection(collection_name);
     // log::debug!("Trying to update a document in {:?}: {}", model, &db_pool.collections[model].collection_name);
     let response = match collection
@@ -40,7 +41,7 @@ pub async fn create_document<T: DeserializeOwned + Serialize + Clone + Record>(
     obj: T,
     collection: &Collection<ReqwestClient>,
 ) -> Result<DatabaseRecord<T>, ServiceError> {
-    // log::debug!("Trying to create a document in {:?}: {}", model, &db_pool.collections[model].collection_name);
+    log::debug!("Creating new {} document", collection.name());
     let response = match collection
         .create_document(
             obj,
@@ -76,6 +77,7 @@ pub async fn retrieve_record<T: Serialize + DeserializeOwned + Clone + Record>(
     db_pool: &DatabaseConnectionPool,
     collection_name: &str,
 ) -> Result<DatabaseRecord<T>, ServiceError> {
+    log::debug!("Retrieving {} {} from database", collection_name, key);
     let collection = db_pool.get_collection(collection_name);
     let record: Document<T> = match collection.document(key).await {
         Ok(doc) => doc,
@@ -100,8 +102,8 @@ pub async fn remove_record<T: Serialize + DeserializeOwned + Clone + Record>(
     db_pool: &DatabaseConnectionPool,
     collection_name: &str,
 ) -> Result<(), ServiceError> {
+    log::debug!("Removing {} {} from database", collection_name, key);
     let collection = db_pool.get_collection(collection_name);
-
     match collection
         .remove_document::<T>(
             key,

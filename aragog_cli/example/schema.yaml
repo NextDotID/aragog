@@ -1,0 +1,42 @@
+# 
+# This schema file is auto generated and synchronized with the database.
+# Editing it will have no effect.
+# 
+---
+version: 1607336998119
+collections:
+  - name: MyCollection
+    is_edge_collection: false
+  - name: MyCollection2
+    is_edge_collection: false
+  - name: MyEdgeCollection
+    is_edge_collection: true
+indexes:
+  - name: MyIndex
+    collection: MyCollection
+    fields:
+      - name
+    settings:
+      type: persistent
+      unique: true
+      sparse: false
+      deduplicate: false
+  - name: Expiration
+    collection: MyCollection2
+    fields:
+      - expires_in
+    settings:
+      type: ttl
+      expireAfter: 3600
+graphs:
+  - name: Graph
+    edgeDefinitions:
+      - collection: MyEdgeCollection
+        from:
+          - MyCollection
+        to:
+          - MyCollection2
+    orphanCollections:
+      - OrphanCollection
+    isSmart: ~
+    isDisjoint: ~
