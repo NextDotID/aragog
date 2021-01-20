@@ -145,6 +145,7 @@ impl DatabaseConnectionPool {
     /// Runs an AQL query and returns the found documents
     #[maybe_async::maybe_async]
     pub async fn aql_get(&self, aql: &str) -> Result<JsonQueryResult, ServiceError> {
+        log::debug!("Executing AQL: {}", aql);
         let query_result: Vec<Value> = match self.database.aql_str(aql).await {
             Ok(value) => value,
             Err(error) => {
@@ -160,6 +161,7 @@ impl DatabaseConnectionPool {
         database: Database<ReqwestClient>,
         schema: DatabaseSchema,
     ) -> Result<DatabaseConnectionPool, ServiceError> {
+        log::info!("Loading Schema with version {}", schema.version.unwrap_or(0));
         let mut collections = HashMap::new();
         for collection in schema.collections.iter() {
             collections.insert(
