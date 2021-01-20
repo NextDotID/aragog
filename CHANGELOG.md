@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.6
+
+* Added debug logging on database service functions
+* Added debug logging on AQL execution
+
 ## 0.7.5
 
 * Reworked tests to work with the blocking feature
