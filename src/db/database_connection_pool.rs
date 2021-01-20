@@ -161,7 +161,10 @@ impl DatabaseConnectionPool {
         database: Database<ReqwestClient>,
         schema: DatabaseSchema,
     ) -> Result<DatabaseConnectionPool, ServiceError> {
-        log::info!("Loading Schema with version {}", schema.version.unwrap_or(0));
+        log::info!(
+            "Loading Schema with version {}",
+            schema.version.unwrap_or(0)
+        );
         let mut collections = HashMap::new();
         for collection in schema.collections.iter() {
             collections.insert(
