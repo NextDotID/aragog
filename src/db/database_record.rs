@@ -3,7 +3,7 @@ use arangors::{AqlQuery, Document};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
-use std::fmt::{Display, Formatter, self};
+use std::fmt::{self, Display, Formatter};
 
 use crate::db::database_service;
 use crate::query::{Query, RecordQueryResult};
