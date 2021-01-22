@@ -3,6 +3,7 @@ use arangors::{AqlQuery, Document};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
+use std::fmt::{Display, Formatter, self};
 
 use crate::db::database_service;
 use crate::query::{Query, RecordQueryResult};
@@ -445,5 +446,11 @@ impl<T: Record> From<Document<T>> for DatabaseRecord<T> {
             rev: doc.header._rev,
             record: doc.document,
         }
+    }
+}
+
+impl<T: Record> Display for DatabaseRecord<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{} {} Database Record", T::collection_name(), self.key)
     }
 }

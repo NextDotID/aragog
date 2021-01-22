@@ -57,6 +57,29 @@ mod write {
     }
 }
 
+mod fmt {
+    use super::*;
+
+    #[maybe_async::test(
+    feature = "blocking",
+    async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn database_record_can_be_displayed() {
+        let pool = common::setup_db().await;
+        let db_record =DatabaseRecord::create(
+            Dish {
+                name: "Pizza".to_string(),
+                description: "Tomato and Mozarella".to_string(),
+                price: 10,
+            },
+            &pool,
+        )
+            .await
+            .unwrap();
+        assert_eq!(format!("{}", db_record), format!("Dish {} Database Record", db_record.key));
+    }
+}
+
 mod read {
     use aragog::query::{Comparison, Filter};
     use aragog::ServiceError;
