@@ -6,15 +6,17 @@ use serde_json::Value;
 
 use crate::db::database_service;
 use crate::query::{Query, RecordQueryResult};
-use crate::{Authenticate, DatabaseConnectionPool, EdgeRecord, Record, ServiceError, Validate};
+#[cfg(not(feature = "minimal_traits"))]
+use crate::Authenticate;
+use crate::{DatabaseConnectionPool, EdgeRecord, Record, ServiceError, Validate};
 
 /// Struct representing database stored documents
 ///
 /// The document of type `T` mut implement Serialize, DeserializeOwned, Clone and [`Record`]
 ///
 /// [`Record`]: trait.Record.html
-#[derive(Debug)]
-pub struct DatabaseRecord<T: Serialize + DeserializeOwned + Clone + Record> {
+#[derive(Debug, Clone)]
+pub struct DatabaseRecord<T: Record> {
     /// The Document unique and indexed `_key`
     pub key: String,
     /// The Document unique and indexed `_id`
@@ -26,7 +28,7 @@ pub struct DatabaseRecord<T: Serialize + DeserializeOwned + Clone + Record> {
 }
 
 #[allow(dead_code)]
-impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
+impl<T: Record> DatabaseRecord<T> {
     /// Writes in the database the new state of the record, "saving it". The record will first be validates
     /// as it should implement the [`Validate`] trait.
     ///
@@ -132,7 +134,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// use aragog::query::{Query, Comparison};
     ///
     /// let mut query = Query::new().filter(Filter::new(Comparison::field("username").equals_str("MichelDu93"))
-    ///     .and(Comparison::field("age").greater_than(10));
+    ///     .and(Comparison::field("age").greater_than(10)));
     ///
     /// User::get(query, &db_pool).await.unwrap();
     /// ```
@@ -331,7 +333,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     /// use aragog::query::{Query, Comparison};
     ///
     /// let mut query = Query::new().filter(Filter::new(Comparison::field("username").equals_str("MichelDu93"))
-    ///     .and(Comparison::field("age").greater_than(10));
+    ///     .and(Comparison::field("age").greater_than(10)));
     ///
     /// User::exists(query, &db_pool).await;
     /// ```
@@ -405,6 +407,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
         })
     }
 
+    #[cfg(not(feature = "minimal_traits"))]
     /// Authenticates the instance.
     /// The method is available if `T` implements [`Authenticate`] and will simply call
     /// the [`authenticate method`] on the `record`
@@ -434,7 +437,7 @@ impl<T: Serialize + DeserializeOwned + Clone + Record> DatabaseRecord<T> {
     }
 }
 
-impl<T: Serialize + DeserializeOwned + Clone + Record> From<Document<T>> for DatabaseRecord<T> {
+impl<T: Record> From<Document<T>> for DatabaseRecord<T> {
     fn from(doc: Document<T>) -> Self {
         Self {
             key: doc.header._key,

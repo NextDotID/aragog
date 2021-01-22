@@ -1,5 +1,3 @@
-use serde::{de::DeserializeOwned, Serialize};
-
 use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 
 /// The `ForeignLink` trait of the Aragog library.
@@ -51,7 +49,7 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 /// # }
 /// ```
 #[maybe_async::maybe_async]
-pub trait ForeignLink<T: Record + Serialize + DeserializeOwned + Clone> {
+pub trait ForeignLink<T: Record>: Sized {
     /// Defines the foreign key field to the linked `T` model.
     ///
     /// # Example
@@ -95,10 +93,7 @@ pub trait ForeignLink<T: Record + Serialize + DeserializeOwned + Clone> {
     fn linked_model(
         &self,
         db_pool: &DatabaseConnectionPool,
-    ) -> Result<DatabaseRecord<T>, ServiceError>
-    where
-        Self: Sized,
-    {
+    ) -> Result<DatabaseRecord<T>, ServiceError> {
         DatabaseRecord::find(self.foreign_key(), db_pool)
     }
 }

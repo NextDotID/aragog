@@ -10,7 +10,7 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, ServiceError};
 ///
 /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
 #[maybe_async::maybe_async]
-pub trait Record {
+pub trait Record: DeserializeOwned + Serialize + Clone {
     /// Finds a document in database from its unique key.
     /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`find`]
     ///
@@ -19,10 +19,7 @@ pub trait Record {
     async fn find(
         key: &str,
         db_pool: &DatabaseConnectionPool,
-    ) -> Result<DatabaseRecord<Self>, ServiceError>
-    where
-        Self: DeserializeOwned + Serialize + Clone,
-    {
+    ) -> Result<DatabaseRecord<Self>, ServiceError> {
         DatabaseRecord::find(key, &db_pool).await
     }
 
@@ -34,10 +31,7 @@ pub trait Record {
     async fn get(
         query: Query,
         db_pool: &DatabaseConnectionPool,
-    ) -> Result<RecordQueryResult<Self>, ServiceError>
-    where
-        Self: DeserializeOwned + Serialize + Clone,
-    {
+    ) -> Result<RecordQueryResult<Self>, ServiceError> {
         DatabaseRecord::get(query, &db_pool).await
     }
 
@@ -46,10 +40,7 @@ pub trait Record {
     ///
     /// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
     /// [`exists`]: db/database_record/struct.DatabaseRecord.html#method.exists
-    async fn exists(query: Query, db_pool: &DatabaseConnectionPool) -> bool
-    where
-        Self: DeserializeOwned + Serialize + Clone,
-    {
+    async fn exists(query: Query, db_pool: &DatabaseConnectionPool) -> bool {
         DatabaseRecord::<Self>::exists(query, &db_pool).await
     }
 
@@ -63,12 +54,14 @@ pub trait Record {
     /// ```rust
     /// # use aragog::query::Query;
     /// # use aragog::Record;
-    /// #[derive(Record)]
+    /// # use serde::{Serialize, Deserialize};
+    /// #[derive(Record, Clone, Serialize, Deserialize)]
     /// pub struct User { }
     ///
-    /// // Both statements are equivalent:
-    /// let q = Query::new("User");
+    /// // All three statements are equivalent:
     /// let q = User::query();
+    /// let q = Query::new(User::collection_name());
+    /// let q = Query::new("User");
     /// ```
     fn query() -> Query {
         Query::new(Self::collection_name())

@@ -1,3 +1,5 @@
+#![cfg(not(feature = "minimal_traits"))]
+
 use serde::{Deserialize, Serialize};
 
 use aragog::{AuthorizeAction, DatabaseRecord, Record, Validate};

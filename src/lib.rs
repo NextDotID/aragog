@@ -17,14 +17,16 @@
 //! By now the available features are:
 //! * Creating a database connection pool from a defined `schema.yaml` (See [aragog_cli][CLI])
 //! * Structures can implement different behaviors:
-//!     * `Record`: The structure can be written into a ArangoDB collection as well as retrieved, from its `_key` or other query arguments.
-//!     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
-//!     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
+//!     * `Record`: The structure can be written and retrieved as an ArangoDB [collection document][collection_document]. This is the main trait for your models
+//!     * `EdgeRecord`: The structure can be written and retrieved as an ArangoDB [edge collection document][edge_document]
 //!     * `Validate`: The structure can perform simple validations before being created or saved into the database.
-//!     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
-//!     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
 //!     * `Link`: The structure can define relations with other models based on defined queries.
 //!     * `ForeignLink`: The structure can define relations with other models based on defined foreign key.
+//! * Structures can also implement optional traits (disabled with the `minimal_traits` feature):
+//!     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
+//!     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
+//!     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
+//!     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
 //! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 //!
 //! #### Cargo features
@@ -74,6 +76,20 @@
 //!
 //! The Argon2 encryption is based on the [argonautica][argonautica] crate.
 //! That crate requires the `clang` lib, so if you deploy on docker you will need to install it or define a custom image.
+//!
+//! ##### Minimal Traits
+//!
+//! If you don't need the following traits:
+//! * `Authenticate`
+//! * `AuthorizeAction`
+//! * `New`
+//! * `Update`
+//!
+//! You can disable them with the `minimal_traits` feature:
+//!
+//! ```toml
+//! aragog = { version = "0.7", features = ["minimal_traits"] }
+//! ```
 //!
 //! ### Schema and collections
 //!
@@ -508,6 +524,11 @@
 //! [paperclip]: https://github.com/wafflespeanut/paperclip "Paperclip Github"
 //! [ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html
 //! [CLI]: https://crates.io/crates/aragog_cli
+//! [edge_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#edges
+//! [collection_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#document
+//! [fMeow]: https://github.com/fMeow/
+//! [inzanez]: https://github.com/inzanez/
+//!
 #![forbid(missing_docs)]
 
 #[cfg(all(feature = "async", feature = "blocking"))]
@@ -520,23 +541,27 @@ compile_error!(
 #[doc(hidden)]
 pub use aragog_macros::*;
 
+#[cfg(not(feature = "minimal_traits"))]
+pub use {authenticate::Authenticate, authorize_action::AuthorizeAction, new::New, update::Update};
 pub use {
-    authenticate::Authenticate, authorize_action::AuthorizeAction,
     db::database_connection_pool::AuthMode, db::database_connection_pool::DatabaseConnectionPool,
     db::database_record::DatabaseRecord, edge_record::EdgeRecord, error::ServiceError,
-    foreign_link::ForeignLink, link::Link, new::New, record::Record, update::Update,
-    validate::Validate,
+    foreign_link::ForeignLink, link::Link, record::Record, validate::Validate,
 };
 
+#[cfg(not(feature = "minimal_traits"))]
 mod authenticate;
+#[cfg(not(feature = "minimal_traits"))]
 mod authorize_action;
 mod db;
 mod edge_record;
 mod error;
 mod foreign_link;
 mod link;
+#[cfg(not(feature = "minimal_traits"))]
 mod new;
 mod record;
+#[cfg(not(feature = "minimal_traits"))]
 mod update;
 mod validate;
 
