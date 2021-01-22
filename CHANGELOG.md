@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.7
+
+Features:
+* Some traits can be opted out with `minimal_traits` feature
+* Documentation improved
+* Fixed some Database Record wrong doc examples
+* `DatabaseRecord` derives `Clone` and implements `Display`
+
+Repository:  
+* Updated CI configuration
+
 ## 0.7.6
 
 * Added debug logging on database service functions
