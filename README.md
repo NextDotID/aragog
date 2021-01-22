@@ -19,14 +19,16 @@
  By now the available features are:
  * Creating a database connection pool from a defined `schema.yaml` (See [aragog_cli][CLI])
  * Structures can implement different behaviors:
-     * `Record`: The structure can be written into a ArangoDB collection as well as retrieved, from its `_key` or other query arguments.
-     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
-     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
+     * `Record`: The structure can be written and retrieved as an ArangoDB [collection document][collection_document]. This is the main trait for your models
+     * `EdgeRecord`: The structure can be written and retrieved as an ArangoDB [edge collection document][edge_document]
      * `Validate`: The structure can perform simple validations before being created or saved into the database.
-     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
-     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
      * `Link`: The structure can define relations with other models based on defined queries.
      * `ForeignLink`: The structure can define relations with other models based on defined foreign key.
+ * Structures can also implement optional traits (disabled with the `minimal_traits` feature):
+     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
+     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
+     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
+     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
  * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 
  #### Cargo features
@@ -34,8 +36,7 @@
  ##### Async and Blocking
 
  By default all `aragog` items are asynchronous, you can compile `aragog` in a synchronous build using the `blocking` feature:
-
- ```toml 
+ ```toml
  aragog = { version = "0.7", features = ["blocking"], default-features = false }
  ```
 
@@ -79,9 +80,23 @@
  The Argon2 encryption is based on the [argonautica][argonautica] crate.
  That crate requires the `clang` lib, so if you deploy on docker you will need to install it or define a custom image.
 
+ ##### Minimal Traits
+
+ If you don't need the following traits:
+ * `Authenticate`
+ * `AuthorizeAction`
+ * `New`
+ * `Update`
+
+ You can disable them with the `minimal_traits` feature:
+
+ ```toml
+ aragog = { version = "0.7", features = ["minimal_traits"] }
+ ```
+
  ### Schema and collections
 
- In order for everything to work you need a `schema.yaml` file. Use the [aragog_cli][CLI] to create migrations and generate the schema.
+ In order for everything to work you need a `schema.yaml` file. Use [aragog_cli][CLI] to create migrations and generate the file.
 
  #### Creating a pool
 
@@ -91,15 +106,15 @@
  let db_pool = DatabaseConnectionPool::builder()
      // You can specify a host and credentials with this method.
      // Otherwise, the builder will look for the env vars: `DB_HOST`, `DB_NAME`, `DB_USER` and `DB_PASSWORD`.
-    .with_credentials("http://localhost:8529", "db", "user", "password")
+     .with_credentials("http://localhost:8529", "db", "user", "password")
      // You can specify a authentication mode between `Basic` and `Jwt`
      // Otherwise the default value will be used (`Basic`).
-    .with_auth_mode(AuthMode::Basic)
+     .with_auth_mode(AuthMode::Basic)
      // You can specify a schema path to initialize the database pool
      // Otherwise the env var `SCHEMA_PATH` or the default value `config/db/schema.yaml` will be used.
      .with_schema_path("config/db/schema.yaml")
      // If you prefer you can use your own custom schema
-     .with_schema(DatabaseSchema::load("config/db/schema.yaml").unwrap())
+     .with_schema(DatabaseSchema::default())
      // The schema wil silently apply to the database, useful only if you don't use the CLI and migrations
      .apply_schema()
      // You then need to build the pool
@@ -138,24 +153,24 @@
 
  #[tokio::main]
  async fn main() {
- // Database connection Setup
-   let database_pool = DatabaseConnectionPool::builder()
-       .build()
-       .await
-       .unwrap();
-   // Define a document
-   let mut user = User {
-       username: String::from("LeRevenant1234"),
-       first_name: String::from("Robert"),
-       last_name: String::from("Surcouf"),
-       age: 18
-   };
-   // user_record is a DatabaseRecord<User>
-   let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
-   // You can access and edit the document
-   user_record.record.username = String::from("LeRevenant1524356");
-   // And directly save it
-   user_record.save(&database_pool).await.unwrap();
+    // Database connection Setup
+     let database_pool = DatabaseConnectionPool::builder()
+         .build()
+         .await
+         .unwrap();
+     // Define a document
+     let mut user = User {
+         username: String::from("LeRevenant1234"),
+         first_name: String::from("Robert"),
+         last_name: String::from("Surcouf"),
+         age: 18
+     };
+     // user_record is a DatabaseRecord<User>
+     let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
+     // You can access and edit the document
+     user_record.record.username = String::from("LeRevenant1524356");
+     // And directly save it
+     user_record.save(&database_pool).await.unwrap();
  }
  ```
  #### Edge Record
@@ -404,7 +419,8 @@
  * [Download Link][arango_download]
  * Run it with `/usr/local/sbin/arangod` The default installation contains one database `_system` and a user named `root`
  * Create a user and database for the project with the `arangosh` shell
- ```rust
+
+ ```bash
  arangosh> db._createDatabase("DB_NAME");
  arangosh> var users = require("@arangodb/users");
  arangosh> users.save("DB_USER", "DB_PASSWORD");
@@ -425,13 +441,16 @@
 
  [arangors]: https://docs.rs/arangors
  [argonautica]: https://github.com/bcmyers/argonautica
- [fMeow]: https://github.com/fMeow/
- [inzanez]: https://github.com/inzanez/
+ [example_path]: examples/simple_app
  [ArangoDB]: https://www.arangodb.com/
  [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
  [actix]: https://actix.rs/ "Actix Homepage"
  [paperclip]: https://github.com/wafflespeanut/paperclip "Paperclip Github"
  [ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html
  [CLI]: https://crates.io/crates/aragog_cli
+ [edge_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#edges
+ [collection_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#document
+ [fMeow]: https://github.com/fMeow/
+ [inzanez]: https://github.com/inzanez/
 
 <!-- cargo-sync-readme end -->

@@ -24,6 +24,7 @@ derive = ["aragog-macros"]
 actix = ["actix-web"]
 open-api = ["paperclip"]
 password_hashing = ["argonautica"]
+minimal_traits = []
 
 [dependencies]
 # ArangoDB driver

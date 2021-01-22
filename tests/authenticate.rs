@@ -1,3 +1,5 @@
+#![cfg(not(feature = "minimal_traits"))]
+
 use aragog::{Authenticate, ServiceError};
 use serde::{Deserialize, Serialize};
 

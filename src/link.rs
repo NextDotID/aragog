@@ -1,5 +1,3 @@
-use serde::{de::DeserializeOwned, Serialize};
-
 use crate::query::{Query, RecordQueryResult};
 use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 
@@ -55,7 +53,7 @@ use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
 /// # }
 /// ```
 #[maybe_async::must_be_async]
-pub trait Link<T: Record + Serialize + DeserializeOwned + Clone> {
+pub trait Link<T: Record>: Sized {
     /// Defines the query to execute to find the `T` models linked to `Self`
     ///
     /// # Example
@@ -101,10 +99,7 @@ pub trait Link<T: Record + Serialize + DeserializeOwned + Clone> {
     fn linked_models(
         &self,
         db_pool: &DatabaseConnectionPool,
-    ) -> Result<RecordQueryResult<T>, ServiceError>
-    where
-        Self: Sized,
-    {
+    ) -> Result<RecordQueryResult<T>, ServiceError> {
         DatabaseRecord::get(self.link_query(), db_pool)
     }
 }

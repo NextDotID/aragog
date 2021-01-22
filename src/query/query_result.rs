@@ -1,6 +1,3 @@
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-
 use crate::{DatabaseRecord, Record, ServiceError};
 use serde_json::Value;
 
@@ -8,7 +5,7 @@ pub trait QueryResult {}
 
 /// Typed Query result
 #[derive(Debug)]
-pub struct RecordQueryResult<T: Record + Clone + Serialize + DeserializeOwned> {
+pub struct RecordQueryResult<T: Record> {
     /// Vector of the returned documents
     pub documents: Vec<DatabaseRecord<T>>,
     /// The total `documents` count
@@ -27,7 +24,7 @@ pub struct JsonQueryResult {
     doc_count: usize,
 }
 
-impl<T: Record + Clone + Serialize + DeserializeOwned> RecordQueryResult<T> {
+impl<T: Record> RecordQueryResult<T> {
     /// Instantiates a new `QueryResult` from a document collection
     pub fn new(documents: Vec<DatabaseRecord<T>>) -> Self {
         Self {
@@ -106,9 +103,7 @@ impl JsonQueryResult {
     /// let topic_results = json_results.get_records::<Topic>();
     /// let role_results = json_results.get_records::<Role>();
     /// ```
-    pub fn get_records<T: Record + Clone + Serialize + DeserializeOwned>(
-        &self,
-    ) -> Vec<DatabaseRecord<T>> {
+    pub fn get_records<T: Record>(&self) -> Vec<DatabaseRecord<T>> {
         let mut res = Vec::new();
         for value in self.documents.iter() {
             let key = value["_key"].as_str();
@@ -142,9 +137,7 @@ impl JsonQueryResult {
     }
 }
 
-impl<T: Record + Clone + Serialize + DeserializeOwned> From<JsonQueryResult>
-    for RecordQueryResult<T>
-{
+impl<T: Record> From<JsonQueryResult> for RecordQueryResult<T> {
     fn from(query_result: JsonQueryResult) -> Self {
         Self::new(query_result.get_records())
     }

@@ -1,5 +1,4 @@
 use crate::{DatabaseRecord, Record, ServiceError};
-use serde::{de::DeserializeOwned, Serialize};
 
 /// The `AuthorizeAction` trait of the Aragog library.
 /// This traits allows provides the ability to authorize a [`Record`] to execute a custom action on
@@ -42,7 +41,7 @@ use serde::{de::DeserializeOwned, Serialize};
 /// ```
 ///
 /// [`Record`]: trait.Record.html
-pub trait AuthorizeAction<T: Serialize + DeserializeOwned + Clone + Record> {
+pub trait AuthorizeAction<T: Record> {
     /// The action type to be authorized, like a custom enum of ACL actions (write, read) or more
     /// logic operations.
     type Action;
