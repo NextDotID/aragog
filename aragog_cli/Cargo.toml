@@ -1,6 +1,6 @@
 [package]
 name = "aragog_cli"
-version = "0.2.2"
+version = "0.2.3"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -8,7 +8,7 @@ authors = [
 edition = "2018"
 license = "MIT"
 description = "CLI for Aragog Crate"
-exclude= ["./example"]
+exclude= ["example"]
 categories = ["web-programming", "database"]
 repository = "https://gitlab.com/qonfucius/aragog/-/tree/master/aragog_cli"
 readme = "README.md"

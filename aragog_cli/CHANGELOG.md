@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3
+
+* Fixed `TODO` on `Clone` implementation with `aragog`0.7.8 and `arangors` 0.4.6
+* `describe` command for CLI
+* Added `MigrationConfig` `Display` implementation and debug on verbose
+
 ## 0.2.2
 
 * Fixed Index unicity issue, index deletion requires collection.

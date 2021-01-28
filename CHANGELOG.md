@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.8
+
+* Schema types implement `Clone`
+* `arangors` 0.4.6 available
+
 ## 0.7.7
 
 Features:
