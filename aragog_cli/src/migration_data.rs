@@ -38,13 +38,13 @@ impl Default for MigrationData {
 
 #[cfg(test)]
 mod tests {
-    use arangors::graph::EdgeDefinition;
+    use arangors::graph::{EdgeDefinition, GraphOptions};
     use arangors::index::IndexSettings;
 
     use super::*;
 
     #[test]
-    fn simple_migration_serializes() {
+    fn migration_serializes() {
         let migration = MigrationData {
             up: vec![
                 MigrationOperation::CreateCollection {
@@ -75,9 +75,14 @@ mod tests {
                         to: vec!["Collection2".to_string()],
                     }],
                     orphan_collections: None,
-                    is_smart: None,
-                    is_disjoint: None,
-                    options: None,
+                    is_smart: Some(false),
+                    is_disjoint: Some(true),
+                    options: Some(GraphOptions {
+                        smart_graph_attribute: None,
+                        number_of_shards: Some(10),
+                        replication_factor: None,
+                        write_concern: Some(2),
+                    }),
                 },
             ],
             down: Some(vec![
@@ -99,7 +104,56 @@ mod tests {
                 },
             ]),
         };
-        let res = serde_yaml::to_string(&migration).unwrap();
-        println!("{}", res);
+        serde_yaml::to_string(&migration).unwrap();
+    }
+
+    #[test]
+    fn migration_deserializes() {
+        let migration_yaml = "
+            up:
+              - create_collection:
+                  name: Collection1
+              - create_collection:
+                  name: Collection2
+              - create_index:
+                  name: OnNameAndEmail
+                  collection: Collection1
+                  fields:
+                    - name
+                    - email
+                  settings:
+                    type: persistent
+                    unique: true
+                    sparse: false
+                    deduplicate: false
+              - aql: This is a query
+              - create_edge_collection:
+                  name: Edge
+              - create_graph:
+                  name: Named Graph
+                  edge_definitions:
+                    - collection: Edge
+                      from:
+                        - Collection1
+                      to:
+                        - Collection2
+                  is_smart: false
+                  is_disjoint: true
+                  options:
+                    numberOfShards: 10
+                    writeConcern: 2
+            down:
+              - delete_graph:
+                  name: Named Graph
+              - delete_edge_collection:
+                  name: Edge
+              - delete_index:
+                  name: OnNameAndEmail
+                  collection: Collection1
+              - delete_collection:
+                  name: Collection2
+              - delete_collection:
+                  name: Collection1";
+        serde_yaml::from_str::<MigrationData>(&migration_yaml).unwrap();
     }
 }

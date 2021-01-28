@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate prettytable;
+
 use clap::{load_yaml, App};
 
 pub use config::log;
@@ -65,7 +68,7 @@ fn main() -> Result<(), MigrationError> {
                     return Err(MigrationError::InvalidParameter {
                         name: "COUNT".to_string(),
                         message: "Must be a valid number".to_string(),
-                    })
+                    });
                 }
             };
             migrate(MigrationDirection::Down(count), &mut db, manager)?;
@@ -85,6 +88,34 @@ fn main() -> Result<(), MigrationError> {
                 db.drop_collection(&info.name)?;
             }
             log(format!("Truncated database collections."), LogLevel::Info);
+        }
+        Some(("describe", _args)) => {
+            println!("\nDescription of {}: \n", db.name());
+            match db.schema.version {
+                Some(version) => println!("Database Schema version: {}", version),
+                None => println!("Database Schema is not versioned yet (use migrate)"),
+            };
+            let mut table = table!(["Name", "Type", "Document Count", "In Schema"]);
+            for info in db.accessible_collections()?.iter() {
+                if info.is_system {
+                    continue;
+                }
+                let collection = db.collection(&info.name)?;
+                let properties = collection.document_count()?;
+                let synced = db
+                    .schema
+                    .collections
+                    .iter()
+                    .find(|a| &a.name == &info.name)
+                    .is_some();
+                table.add_row(row![
+                    &info.name,
+                    format!("{:?}", &info.collection_type),
+                    &properties.info.count.unwrap_or(0),
+                    synced
+                ]);
+            }
+            table.printstd();
         }
         _ => log(format!("No usage found, use --help"), LogLevel::Info),
     };

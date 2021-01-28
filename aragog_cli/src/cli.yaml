@@ -76,3 +76,6 @@ subcommands:
   - truncate_database:
       takes_value: false
       about: Truncates the database, removes all collections and documents. Does not remove Named Graphs
+  - describe:
+      takes_value: false
+      about: Describes the current database state, the synced schema version, collections, document couts, etc.

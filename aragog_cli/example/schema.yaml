@@ -38,5 +38,8 @@ graphs:
           - MyCollection2
     orphanCollections:
       - OrphanCollection
-    isSmart: ~
-    isDisjoint: ~
+    isSmart: false
+    isDisjoint: true
+    options:
+      numberOfShards: 10
+      writeConcern: 2

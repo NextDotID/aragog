@@ -164,7 +164,8 @@ impl MigrationOperation {
             }
             MigrationOperation::Aql(aql) => {
                 log("Executing aql operation", LogLevel::Verbose);
-                db.aql_str::<Value>(aql.as_str())?;
+                let res: Vec<Value> = db.aql_str(aql.as_str())?;
+                log(format!("{:?}", res), LogLevel::Verbose);
             }
         };
         Ok(())

@@ -26,7 +26,7 @@ struct SchemaWithKey {
 #[derive(Debug)]
 pub struct VersionedDatabase {
     pub db: Database<ReqwestClient>,
-    pub collection: Collection<ReqwestClient>,
+    pub schema_collection: Collection<ReqwestClient>,
     pub schema: DatabaseSchema,
 }
 
@@ -53,24 +53,24 @@ impl VersionedDatabase {
             }
         };
         log(
-            format!("Retrieving collection {}", &config.collection_name),
+            format!("Retrieving collection {}", &config.schema_collection_name),
             LogLevel::Verbose,
         );
-        let collection = match db.collection(&config.collection_name) {
+        let schema_collection = match db.collection(&config.schema_collection_name) {
             Ok(coll) => coll,
             Err(_error) => {
                 log(
                     format!(
                         "Missing collection {}, creating it...",
-                        &config.collection_name
+                        &config.schema_collection_name
                     ),
                     LogLevel::Debug,
                 );
-                db.create_collection(&config.collection_name)?
+                db.create_collection(&config.schema_collection_name)?
             }
         };
         log("Retrieving Schema document", LogLevel::Verbose);
-        let schema = match collection.document(SCHEMA_DOC_KEY) {
+        let schema = match schema_collection.document(SCHEMA_DOC_KEY) {
             Ok(doc) => doc.document,
             Err(_err) => {
                 log(
@@ -83,14 +83,14 @@ impl VersionedDatabase {
                     version: schema.version,
                     collections: vec![],
                 };
-                collection
+                schema_collection
                     .create_document(doc, InsertOptions::builder().wait_for_sync(true).build())?;
                 DatabaseSchema::default()
             }
         };
         Ok(Self {
             db,
-            collection,
+            schema_collection,
             schema,
         })
     }
@@ -103,12 +103,9 @@ impl VersionedDatabase {
             ),
             LogLevel::Verbose,
         );
-        // TODO: remove the to_string on arangors 0.4.6 and use clone()
-        let doc = serde_json::to_string(&self.schema).unwrap();
-        let schema: DatabaseSchema = serde_json::from_str(&doc).unwrap();
-        self.collection.replace_document(
+        self.schema_collection.replace_document(
             SCHEMA_DOC_KEY,
-            schema,
+            self.schema.clone(),
             ReplaceOptions::builder().wait_for_sync(true).build(),
             None,
         )?;

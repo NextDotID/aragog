@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// Aragog schema representation of an ArangoDB Named Graph.
 /// This struct is meant to load/generate the schema file.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GraphSchema(pub Graph);
 
 impl Into<Graph> for GraphSchema {
