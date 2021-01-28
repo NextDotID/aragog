@@ -19,6 +19,11 @@ up:
         - collection: MyEdgeCollection
           from: ["MyCollection"]
           to: ["MyCollection2"]
+      is_smart: false
+      is_disjoint: true
+      options:
+        numberOfShards: 10
+        writeConcern: 2
 down:
   - delete_index:
       collection: MyCollection2

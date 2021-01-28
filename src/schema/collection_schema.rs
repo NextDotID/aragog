@@ -6,7 +6,7 @@ use crate::schema::SchemaDatabaseOperation;
 
 /// Aragog schema representation of an ArangoDB Collection.
 /// This struct is meant to load/generate the schema file.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CollectionSchema {
     /// Collection name
     pub name: String,

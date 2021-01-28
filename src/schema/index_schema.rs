@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// Aragog schema representation of an ArangoDB Index.
 /// This struct is meant to load/generate the schema file.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IndexSchema {
     /// Index name (must be unique)
     pub name: String,

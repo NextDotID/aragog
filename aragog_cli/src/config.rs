@@ -2,7 +2,7 @@ use clap::ArgMatches;
 
 use crate::error::MigrationError;
 use crate::log_level::LogLevel;
-use std::fmt::Display;
+use std::fmt::{self, Display, Formatter};
 
 static mut LOG_LEVEL: LogLevel = LogLevel::Info;
 
@@ -10,7 +10,7 @@ const ARAGOG_DEFAULT_COLLECTION: &str = "AragogConfiguration";
 
 #[derive(Debug)]
 pub struct Config {
-    pub collection_name: String,
+    pub schema_collection_name: String,
     pub schema_path: String,
     pub db_host: String,
     pub db_name: String,
@@ -33,8 +33,8 @@ impl Config {
             LOG_LEVEL = LogLevel::from(matches.occurrences_of("verbose"));
             log(format!("Log level: {:?}", LOG_LEVEL), LogLevel::Verbose);
         }
-        Ok(Self {
-            collection_name: matches
+        let res = Self {
+            schema_collection_name: matches
                 .value_of("aragog_collection")
                 .unwrap_or(ARAGOG_DEFAULT_COLLECTION)
                 .to_string(),
@@ -48,7 +48,9 @@ impl Config {
             db_name: Self::load_str(matches, "db_name", "DB_NAME", "db-name")?,
             db_user: Self::load_str(matches, "db_user", "DB_USER", "db-user")?,
             db_pwd: Self::load_str(matches, "db_password", "DB_PASSWORD", "db-password")?,
-        })
+        };
+        log(&res, LogLevel::Verbose);
+        Ok(res)
     }
 
     pub fn load_str(
@@ -70,6 +72,27 @@ impl Config {
                 }),
             },
         }
+    }
+}
+
+impl Display for Config {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Migration Config:\n\
+                -- aragog-collection: {}\n\
+                -- schema-path: {}\n\
+                -- db-host: {}\n\
+                -- db-name: {}\n\
+                -- db-user: {}\n\
+                -- db-password: {}",
+            self.schema_collection_name,
+            self.schema_path,
+            self.db_host,
+            self.db_name,
+            self.db_user,
+            self.db_pwd
+        )
     }
 }
 

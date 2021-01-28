@@ -9,7 +9,7 @@ use crate::ServiceError;
 
 /// Aragog schema representation of an ArangoDB Database.
 /// This struct is meant to load/generate the schema file.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DatabaseSchema {
     /// Schema version
     pub version: Option<u64>,
