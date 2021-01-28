@@ -1,6 +1,6 @@
 [package]
 name = "aragog_cli"
-version = "0.2.3"
+version = "0.2.4"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -21,7 +21,7 @@ doc = false
 [dependencies]
 # Aragog
 aragog = { path = "..", version = "0.7", features = ["blocking"], default-features = false }
-arangors = { version = "0.4", features = ["blocking"], default-features = false }
+arangors = { version = "0.4", features = ["blocking", "reqwest_blocking"], default-features = false }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }

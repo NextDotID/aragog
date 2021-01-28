@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4
+
+* ArangoDB connection is no longer async (`request/blocking`)
+
 ## 0.2.3
 
 * Fixed `TODO` on `Clone` implementation with `aragog`0.7.8 and `arangors` 0.4.6

@@ -17,6 +17,10 @@ Migration and schema generation tool for [aragog][aragog] (Version > `0.7`).
 - `--folder <PATH>` Sets the path for the migrations and schema (by default env var `SCHEMA_PATH` is used)
 - `--aragog-collection <COLLECTION>` Sets the name of the config ArangoDB collection that will be used to synchronize database and schema version (by default "AragogConfiguration" is used)
 
+### Verbose
+
+Add `-v` option for debug log and `-vv` for verbose log
+
 ## Commands
 
 ### Creating a Migration
@@ -47,6 +51,12 @@ Will rollback `$COUNT` migrations in `$SCHEMA_PATH/migrations/` and update the s
 Command: `aragog truncate_database`
 
 Will drop every graph and collection in the database.
+
+### Describe database
+
+Command: `argog describe`
+
+Will render information about the database, schema synced version and render a table describing every collection.
 
 ## Migration files
 
