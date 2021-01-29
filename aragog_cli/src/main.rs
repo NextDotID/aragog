@@ -50,14 +50,13 @@ fn main() -> Result<(), MigrationError> {
     let config = Config::new(&matches)?;
     let schema_path = config.schema_path.clone();
 
-    let mut db = VersionedDatabase::init(&config)?;
-
     match matches.subcommand() {
         Some(("check", _args)) => {
             MigrationManager::new(&schema_path)?;
         }
         Some(("migrate", _args)) => {
             let manager = MigrationManager::new(&schema_path)?;
+            let mut db = VersionedDatabase::init(&config)?;
             migrate(MigrationDirection::Up, &mut db, manager)?;
         }
         Some(("rollback", args)) => {
@@ -71,12 +70,14 @@ fn main() -> Result<(), MigrationError> {
                     });
                 }
             };
+            let mut db = VersionedDatabase::init(&config)?;
             migrate(MigrationDirection::Down(count), &mut db, manager)?;
         }
         Some(("create_migration", args)) => {
             Migration::new(args.value_of("MIGRATION_NAME").unwrap(), &schema_path)?;
         }
         Some(("truncate_database", _args)) => {
+            let db = VersionedDatabase::init(&config)?;
             for info in db.accessible_collections()?.iter() {
                 if info.is_system {
                     continue;
@@ -90,6 +91,7 @@ fn main() -> Result<(), MigrationError> {
             log(format!("Truncated database collections."), LogLevel::Info);
         }
         Some(("describe", _args)) => {
+            let db = VersionedDatabase::init(&config)?;
             println!("\nDescription of {}: \n", db.name());
             match db.schema.version {
                 Some(version) => println!("Database Schema version: {}", version),
