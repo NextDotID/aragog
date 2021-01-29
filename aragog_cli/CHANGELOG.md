@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.5
+
+* Enabled `rocksdb` feature
+
 ## 0.2.4
 
 * ArangoDB connection is no longer async (`request/blocking`)
