@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.6
+
+* Internal small refactoring (`MigrationError` to `AragogCliError`)
+* `describe_index` subcommand
+
 ## 0.2.5
 
 * Enabled `rocksdb` feature
