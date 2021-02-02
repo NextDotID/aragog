@@ -5,7 +5,7 @@ use serde_json::Value;
 
 use aragog::schema::{CollectionSchema, GraphSchema, IndexSchema, SchemaDatabaseOperation};
 
-use crate::error::MigrationError;
+use crate::error::AragogCliError;
 use crate::log;
 use crate::log_level::LogLevel;
 use crate::VersionedDatabase;
@@ -54,12 +54,12 @@ pub enum MigrationOperation {
 }
 
 impl MigrationOperation {
-    pub fn apply(self, db: &mut VersionedDatabase) -> Result<(), MigrationError> {
+    pub fn apply(self, db: &mut VersionedDatabase) -> Result<(), AragogCliError> {
         match self {
             MigrationOperation::CreateCollection { name } => {
                 log("Executing create_collection operation", LogLevel::Verbose);
                 let item = match db.schema.collection(&name) {
-                    Some(_) => return Err(MigrationError::DuplicateCollection { name }),
+                    Some(_) => return Err(AragogCliError::DuplicateCollection { name }),
                     None => CollectionSchema::new(&name, false),
                 };
                 item.apply_to_database(db, false)?;
@@ -71,7 +71,7 @@ impl MigrationOperation {
                     LogLevel::Verbose,
                 );
                 let item = match db.schema.collection(&name) {
-                    Some(_) => return Err(MigrationError::DuplicateEdgeCollection { name }),
+                    Some(_) => return Err(AragogCliError::DuplicateEdgeCollection { name }),
                     None => CollectionSchema::new(&name, true),
                 };
                 item.apply_to_database(db, false)?;
@@ -80,7 +80,7 @@ impl MigrationOperation {
             MigrationOperation::DeleteCollection { name } => {
                 log("Executing delete_collection operation", LogLevel::Verbose);
                 match db.schema.collection_index(&name) {
-                    None => return Err(MigrationError::MissingCollection { name }),
+                    None => return Err(AragogCliError::MissingCollection { name }),
                     Some(index) => {
                         let item = db.schema.collections.remove(index);
                         item.drop(db)?;
@@ -93,7 +93,7 @@ impl MigrationOperation {
                     LogLevel::Verbose,
                 );
                 match db.schema.collection_index(&name) {
-                    None => return Err(MigrationError::MissingEdgeCollection { name }),
+                    None => return Err(AragogCliError::MissingEdgeCollection { name }),
                     Some(index) => {
                         let item = db.schema.collections.remove(index);
                         item.drop(db)?;
@@ -108,7 +108,7 @@ impl MigrationOperation {
             } => {
                 log("Executing create_index operation", LogLevel::Verbose);
                 let item = match db.schema.index(&collection, &name) {
-                    Some(_) => return Err(MigrationError::DuplicateIndex { name, collection }),
+                    Some(_) => return Err(AragogCliError::DuplicateIndex { name, collection }),
                     None => IndexSchema {
                         name,
                         collection,
@@ -122,7 +122,7 @@ impl MigrationOperation {
             MigrationOperation::DeleteIndex { name, collection } => {
                 log("Executing delete_index operation", LogLevel::Verbose);
                 match db.schema.index_index(&collection, &name) {
-                    None => return Err(MigrationError::MissingIndex { collection, name }),
+                    None => return Err(AragogCliError::MissingIndex { collection, name }),
                     Some(index) => {
                         let item = db.schema.indexes.remove(index);
                         item.drop(db)?;
@@ -139,7 +139,7 @@ impl MigrationOperation {
             } => {
                 log("Executing create_graph operation", LogLevel::Verbose);
                 let item = match db.schema.graph(&name) {
-                    Some(_) => return Err(MigrationError::DuplicateGraph { name }),
+                    Some(_) => return Err(AragogCliError::DuplicateGraph { name }),
                     None => GraphSchema(Graph {
                         name,
                         edge_definitions,
@@ -155,7 +155,7 @@ impl MigrationOperation {
             MigrationOperation::DeleteGraph { name } => {
                 log("Executing delete_graph operation", LogLevel::Verbose);
                 match db.schema.graph_index(&name) {
-                    None => return Err(MigrationError::MissingGraph { name }),
+                    None => return Err(AragogCliError::MissingGraph { name }),
                     Some(graph) => {
                         let item = db.schema.graphs.remove(graph);
                         item.drop(db)?;

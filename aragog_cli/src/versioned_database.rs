@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use aragog::schema::DatabaseSchema;
 
 use crate::config::Config;
-use crate::error::MigrationError;
+use crate::error::AragogCliError;
 use crate::log;
 use crate::log_level::LogLevel;
 use crate::migration::MigrationVersion;
@@ -31,7 +31,7 @@ pub struct VersionedDatabase {
 }
 
 impl VersionedDatabase {
-    pub fn init(config: &Config) -> Result<Self, MigrationError> {
+    pub fn init(config: &Config) -> Result<Self, AragogCliError> {
         log(
             format!("Establishing connection with {}", &config.db_host),
             LogLevel::Verbose,
@@ -95,7 +95,7 @@ impl VersionedDatabase {
         })
     }
 
-    pub fn save(&self) -> Result<(), MigrationError> {
+    pub fn save(&self) -> Result<(), AragogCliError> {
         log(
             format!(
                 "Saving schema version {} to database",

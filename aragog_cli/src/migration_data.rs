@@ -1,4 +1,4 @@
-use crate::error::MigrationError;
+use crate::error::AragogCliError;
 use crate::migration_operation::MigrationOperation;
 
 use serde::{Deserialize, Serialize};
@@ -14,7 +14,7 @@ pub struct MigrationData {
 }
 
 impl MigrationData {
-    pub fn load(file_path: &str) -> Result<Self, MigrationError> {
+    pub fn load(file_path: &str) -> Result<Self, AragogCliError> {
         let mut file = File::open(file_path)?;
         let mut migration = String::new();
         file.read_to_string(&mut migration)?;
