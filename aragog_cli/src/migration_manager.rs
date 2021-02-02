@@ -4,7 +4,7 @@ use std::io::Write;
 
 use aragog::schema::DatabaseSchema;
 
-use crate::error::MigrationError;
+use crate::error::AragogCliError;
 use crate::log;
 use crate::log_level::LogLevel;
 use crate::migration::Migration;
@@ -29,12 +29,12 @@ impl MigrationManager {
         format!("{}{}", HELP_MESSAGE, content)
     }
 
-    pub fn new(schema_path: &str) -> Result<Self, MigrationError> {
+    pub fn new(schema_path: &str) -> Result<Self, AragogCliError> {
         let db_path = Migration::migration_path(schema_path)?;
         let dir = match fs::read_dir(&db_path) {
             Ok(val) => val,
             Err(error) => {
-                return Err(MigrationError::IOError {
+                return Err(AragogCliError::IOError {
                     message: error.to_string(),
                 });
             }
@@ -58,7 +58,7 @@ impl MigrationManager {
             let path = entry.path();
             let path = match path.to_str() {
                 None => {
-                    return Err(MigrationError::InvalidFileName {
+                    return Err(AragogCliError::InvalidFileName {
                         file_name: format!("{}", entry.path().display()),
                     });
                 }
@@ -67,7 +67,7 @@ impl MigrationManager {
             let file_name = match entry.file_name().into_string() {
                 Ok(str) => str,
                 Err(_) => {
-                    return Err(MigrationError::InvalidFileName {
+                    return Err(AragogCliError::InvalidFileName {
                         file_name: path.to_string(),
                     });
                 }
@@ -76,7 +76,7 @@ impl MigrationManager {
             migrations.push(migration);
         }
         if migrations.is_empty() {
-            return Err(MigrationError::NoMigrations);
+            return Err(AragogCliError::NoMigrations);
         }
         migrations.sort_by(|a, b| a.version.cmp(&b.version));
         log(format!("Migrations loaded."), LogLevel::Debug);
@@ -86,7 +86,7 @@ impl MigrationManager {
         })
     }
 
-    pub fn migrations_up(self, db: &mut VersionedDatabase) -> Result<(), MigrationError> {
+    pub fn migrations_up(self, db: &mut VersionedDatabase) -> Result<(), AragogCliError> {
         let current_version = db.schema_version();
         Self::write_schema(&db.schema, &self.schema_file_path)?;
         log(
@@ -110,7 +110,7 @@ impl MigrationManager {
         mut self,
         count: usize,
         db: &mut VersionedDatabase,
-    ) -> Result<(), MigrationError> {
+    ) -> Result<(), AragogCliError> {
         let current_version = db.schema_version();
         Self::write_schema(&db.schema, &self.schema_file_path)?;
         log(
@@ -137,7 +137,7 @@ impl MigrationManager {
     pub fn write_schema(
         schema: &DatabaseSchema,
         schema_file_path: &str,
-    ) -> Result<(), MigrationError> {
+    ) -> Result<(), AragogCliError> {
         log(
             format!("Saving schema to {}", schema_file_path),
             LogLevel::Debug,

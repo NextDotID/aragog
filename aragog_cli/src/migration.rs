@@ -5,7 +5,7 @@ use std::path::Path;
 
 use chrono::Utc;
 
-use crate::error::MigrationError;
+use crate::error::AragogCliError;
 use crate::log;
 use crate::log_level::LogLevel;
 use crate::migration_data::MigrationData;
@@ -27,9 +27,9 @@ pub struct Migration {
 }
 
 impl Migration {
-    pub fn migration_path(schema_path: &str) -> Result<String, MigrationError> {
+    pub fn migration_path(schema_path: &str) -> Result<String, AragogCliError> {
         if !Path::new(&schema_path).is_dir() {
-            return Err(MigrationError::InitError {
+            return Err(AragogCliError::InitError {
                 item: schema_path.to_string(),
                 message: String::from("Is not a valid directory"),
             });
@@ -48,7 +48,7 @@ impl Migration {
         Ok(db_path)
     }
 
-    pub fn new(name: &str, schema_path: &str) -> Result<Self, MigrationError> {
+    pub fn new(name: &str, schema_path: &str) -> Result<Self, AragogCliError> {
         let data = MigrationData::default();
         let data_str = serde_yaml::to_string(&data).unwrap();
         let version = Utc::now().timestamp_millis() as u64;
@@ -70,7 +70,7 @@ impl Migration {
         })
     }
 
-    pub fn load(file_name: &str, schema_path: &str) -> Result<Self, MigrationError> {
+    pub fn load(file_name: &str, schema_path: &str) -> Result<Self, AragogCliError> {
         let file_path = format!("{}/{}/{}", schema_path, MIGRATION_PATH, file_name);
         log(
             format!("Loading migration file {}", file_path),
@@ -80,7 +80,7 @@ impl Migration {
         let version = match split.next() {
             Some(str) => str,
             None => {
-                return Err(MigrationError::InvalidFileName {
+                return Err(AragogCliError::InvalidFileName {
                     file_name: file_name.to_string(),
                 });
             }
@@ -88,7 +88,7 @@ impl Migration {
         let version: MigrationVersion = match version.parse() {
             Ok(value) => value,
             Err(_error) => {
-                return Err(MigrationError::InvalidFileName {
+                return Err(AragogCliError::InvalidFileName {
                     file_name: file_name.to_string(),
                 });
             }
@@ -103,7 +103,7 @@ impl Migration {
         })
     }
 
-    pub fn apply_up(self, db: &mut VersionedDatabase) -> Result<MigrationVersion, MigrationError> {
+    pub fn apply_up(self, db: &mut VersionedDatabase) -> Result<MigrationVersion, AragogCliError> {
         log(
             format!("Apply Migration {} ...", &self.name),
             LogLevel::Info,
@@ -119,7 +119,7 @@ impl Migration {
     pub fn apply_down(
         self,
         db: &mut VersionedDatabase,
-    ) -> Result<MigrationVersion, MigrationError> {
+    ) -> Result<MigrationVersion, AragogCliError> {
         log(
             format!("Rollback Migration {} ...", &self.name),
             LogLevel::Info,

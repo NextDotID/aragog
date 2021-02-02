@@ -3,7 +3,7 @@
 # Editing it will have no effect.
 # 
 ---
-version: 1607336998119
+version: 1612197498618
 collections:
   - name: MyCollection
     is_edge_collection: false
@@ -28,6 +28,13 @@ indexes:
     settings:
       type: ttl
       expireAfter: 3600
+  - name: Expiration
+    collection: MyCollection
+    fields:
+      - expire_after
+    settings:
+      type: ttl
+      expireAfter: 0
 graphs:
   - name: Graph
     edgeDefinitions:

@@ -320,7 +320,7 @@ mod tests {
     struct TestElem;
 
     impl Validate for TestElem {
-        fn validations(&self, errors: &mut Vec<String>) {}
+        fn validations(&self, _errors: &mut Vec<String>) {}
     }
 
     mod string_validators {

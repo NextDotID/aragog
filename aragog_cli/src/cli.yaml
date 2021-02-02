@@ -1,5 +1,5 @@
 name: aragog
-version: "0.2.5"
+version: "0.2.6"
 author: Felix de Maneville <felix.maneville@qonfucius.team>
 about: CLI too for aragog crate, handles ArangoDB migrations and schema generation
 args:
@@ -79,3 +79,12 @@ subcommands:
   - describe:
       takes_value: false
       about: Describes the current database state, the synced schema version, collections, document couts, etc.
+  - describe_indexes:
+      takes_value: true
+      about: Describes a database collection current indexes.
+      value_name: COLLECTION_NAME
+      args:
+        - COLLECTION_NAME:
+            about: Database collection name
+            help: Sets the collection name
+            required: true

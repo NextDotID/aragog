@@ -6,13 +6,15 @@ use clap::{load_yaml, App};
 pub use config::log;
 
 use crate::config::Config;
-use crate::error::MigrationError;
+use crate::describe::{describe_collection_indexes, describe_db};
+use crate::error::AragogCliError;
 use crate::log_level::LogLevel;
 use crate::migration::Migration;
 use crate::migration_manager::MigrationManager;
 use crate::versioned_database::VersionedDatabase;
 
 mod config;
+mod describe;
 mod error;
 mod log_level;
 mod migration;
@@ -31,7 +33,7 @@ fn migrate(
     direction: MigrationDirection,
     db: &mut VersionedDatabase,
     manager: MigrationManager,
-) -> Result<(), MigrationError> {
+) -> Result<(), AragogCliError> {
     match direction {
         MigrationDirection::Up => {
             manager.migrations_up(db)?;
@@ -43,7 +45,7 @@ fn migrate(
     Ok(())
 }
 
-fn main() -> Result<(), MigrationError> {
+fn main() -> Result<(), AragogCliError> {
     let yaml = load_yaml!("cli.yaml");
     let matches = App::from(yaml).get_matches();
 
@@ -64,7 +66,7 @@ fn main() -> Result<(), MigrationError> {
             let count = match args.value_of("COUNT").unwrap_or("1").parse() {
                 Ok(val) => val,
                 Err(_error) => {
-                    return Err(MigrationError::InvalidParameter {
+                    return Err(AragogCliError::InvalidParameter {
                         name: "COUNT".to_string(),
                         message: "Must be a valid number".to_string(),
                     });
@@ -91,33 +93,10 @@ fn main() -> Result<(), MigrationError> {
             log(format!("Truncated database collections."), LogLevel::Info);
         }
         Some(("describe", _args)) => {
-            let db = VersionedDatabase::init(&config)?;
-            println!("\nDescription of {}: \n", db.name());
-            match db.schema.version {
-                Some(version) => println!("Database Schema version: {}", version),
-                None => println!("Database Schema is not versioned yet (use migrate)"),
-            };
-            let mut table = table!(["Name", "Type", "Document Count", "In Schema"]);
-            for info in db.accessible_collections()?.iter() {
-                if info.is_system {
-                    continue;
-                }
-                let collection = db.collection(&info.name)?;
-                let properties = collection.document_count()?;
-                let synced = db
-                    .schema
-                    .collections
-                    .iter()
-                    .find(|a| &a.name == &info.name)
-                    .is_some();
-                table.add_row(row![
-                    &info.name,
-                    format!("{:?}", &info.collection_type),
-                    &properties.info.count.unwrap_or(0),
-                    synced
-                ]);
-            }
-            table.printstd();
+            describe_db(&config)?;
+        }
+        Some(("describe_indexes", args)) => {
+            describe_collection_indexes(&config, args.value_of("COLLECTION_NAME").unwrap())?;
         }
         _ => log(format!("No usage found, use --help"), LogLevel::Info),
     };

@@ -3,7 +3,7 @@ use std::io;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum MigrationError {
+pub enum AragogCliError {
     #[error("Missing Collection: {name}")]
     MissingCollection { name: String },
     #[error("Duplicate Collection: {name}")]
@@ -36,13 +36,13 @@ pub enum MigrationError {
     ClientError(ClientError),
 }
 
-impl From<ClientError> for MigrationError {
+impl From<ClientError> for AragogCliError {
     fn from(error: ClientError) -> Self {
         Self::ClientError(error)
     }
 }
 
-impl From<io::Error> for MigrationError {
+impl From<io::Error> for AragogCliError {
     fn from(error: io::Error) -> Self {
         Self::IOError {
             message: error.to_string(),
@@ -50,7 +50,7 @@ impl From<io::Error> for MigrationError {
     }
 }
 
-impl From<serde_yaml::Error> for MigrationError {
+impl From<serde_yaml::Error> for AragogCliError {
     fn from(error: serde_yaml::Error) -> Self {
         Self::ParsingError {
             message: error.to_string(),

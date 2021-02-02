@@ -1,6 +1,6 @@
 use clap::ArgMatches;
 
-use crate::error::MigrationError;
+use crate::error::AragogCliError;
 use crate::log_level::LogLevel;
 use std::fmt::{self, Display, Formatter};
 
@@ -28,7 +28,7 @@ pub fn log<T: Display>(text: T, level: LogLevel) {
 }
 
 impl Config {
-    pub fn new(matches: &ArgMatches) -> Result<Self, MigrationError> {
+    pub fn new(matches: &ArgMatches) -> Result<Self, AragogCliError> {
         unsafe {
             LOG_LEVEL = LogLevel::from(matches.occurrences_of("verbose"));
             log(format!("Log level: {:?}", LOG_LEVEL), LogLevel::Verbose);
@@ -58,12 +58,12 @@ impl Config {
         value: &str,
         env_default: &str,
         option: &str,
-    ) -> Result<String, MigrationError> {
+    ) -> Result<String, AragogCliError> {
         match matches.value_of(value) {
             Some(value) => Ok(value.to_string()),
             None => match std::env::var(env_default) {
                 Ok(value) => Ok(value),
-                Err(_error) => Err(MigrationError::InitError {
+                Err(_error) => Err(AragogCliError::InitError {
                     item: value.to_string(),
                     message: format!(
                         "{} is not specified, please set the env var or use the --{} option",
@@ -79,7 +79,7 @@ impl Display for Config {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Migration Config:\n\
+            "CLI Config:\n\
                 -- aragog-collection: {}\n\
                 -- schema-path: {}\n\
                 -- db-host: {}\n\

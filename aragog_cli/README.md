@@ -187,6 +187,8 @@ type: ttl
 expireAfter: 3600
 ```
 
+> The expireAfter field is in camelCase instead of snake_case, this will be fixed in future releases
+
 #### GeoSpatial index
 
 ```yaml
@@ -194,11 +196,24 @@ type: geo
 geoJson: false
 ```
 
+> The geoJson field is in camelCase instead of snake_case, this will be fixed in future releases
+
 #### Fulltext index
 
 ```yaml
 type: ttl
 minLength: 3600
 ```
+
+> The minLength field is in camelCase instead of snake_case, this will be fixed in future releases
+
+## Todo list
+
+- [ ] Migration commands:
+    - [ ] `rename_collection`
+    
+- [ ] Transaction Support
+    - [X] `arangors` 0.4.6
+    - [ ] Wrap migration files on transactions
 
 [aragog]: https://crates.io/crates/aragog
