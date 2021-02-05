@@ -8,6 +8,7 @@ up:
       name: MyCollection2
   - create_edge_collection:
       name: MyEdgeCollection
+      wait_for_sync: false
 down:
   - delete_collection:
       name: MyCollection2

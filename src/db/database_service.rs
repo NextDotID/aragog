@@ -15,14 +15,7 @@ pub async fn update_record<T: Record>(
     let collection = db_pool.get_collection(collection_name);
     // log::debug!("Trying to update a document in {:?}: {}", model, &db_pool.collections[model].collection_name);
     let response = match collection
-        .update_document(
-            key,
-            obj,
-            UpdateOptions::builder()
-                //.wait_for_sync(true)
-                .return_new(true)
-                .build(),
-        )
+        .update_document(key, obj, UpdateOptions::builder().return_new(true).build())
         .await
     {
         Ok(resp) => resp,
@@ -41,13 +34,7 @@ pub async fn create_document<T: Record>(
 ) -> Result<DatabaseRecord<T>, ServiceError> {
     log::debug!("Creating new {} document", collection.name());
     let response = match collection
-        .create_document(
-            obj,
-            InsertOptions::builder()
-                // .wait_for_sync(true)
-                .return_new(true)
-                .build(),
-        )
+        .create_document(obj, InsertOptions::builder().return_new(true).build())
         .await
     {
         Ok(resp) => resp,
@@ -103,13 +90,7 @@ pub async fn remove_record<T: Record>(
     log::debug!("Removing {} {} from database", collection_name, key);
     let collection = db_pool.get_collection(collection_name);
     match collection
-        .remove_document::<T>(
-            key,
-            RemoveOptions::builder()
-                //.wait_for_sync(true)
-                .build(),
-            None,
-        )
+        .remove_document::<T>(key, RemoveOptions::builder().build(), None)
         .await
     {
         Ok(_result) => Ok(()),

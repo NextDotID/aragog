@@ -6,6 +6,7 @@
 up:
   - create_collection:
       name: MyCollection
+      wait_for_sync: true
 down:
   - delete_collection:
       name: MyCollection

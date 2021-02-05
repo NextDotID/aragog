@@ -15,12 +15,16 @@ use crate::VersionedDatabase;
 pub enum MigrationOperation {
     CreateCollection {
         name: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        wait_for_sync: Option<bool>,
     },
     DeleteCollection {
         name: String,
     },
     CreateEdgeCollection {
         name: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        wait_for_sync: Option<bool>,
     },
     DeleteEdgeCollection {
         name: String,
@@ -56,23 +60,29 @@ pub enum MigrationOperation {
 impl MigrationOperation {
     pub fn apply(self, db: &mut VersionedDatabase) -> Result<(), AragogCliError> {
         match self {
-            MigrationOperation::CreateCollection { name } => {
+            MigrationOperation::CreateCollection {
+                name,
+                wait_for_sync,
+            } => {
                 log("Executing create_collection operation", LogLevel::Verbose);
                 let item = match db.schema.collection(&name) {
                     Some(_) => return Err(AragogCliError::DuplicateCollection { name }),
-                    None => CollectionSchema::new(&name, false),
+                    None => CollectionSchema::new(&name, false, wait_for_sync),
                 };
                 item.apply_to_database(db, false)?;
                 db.schema.collections.push(item);
             }
-            MigrationOperation::CreateEdgeCollection { name } => {
+            MigrationOperation::CreateEdgeCollection {
+                name,
+                wait_for_sync,
+            } => {
                 log(
                     "Executing create_edge_collection operation",
                     LogLevel::Verbose,
                 );
                 let item = match db.schema.collection(&name) {
                     Some(_) => return Err(AragogCliError::DuplicateEdgeCollection { name }),
-                    None => CollectionSchema::new(&name, true),
+                    None => CollectionSchema::new(&name, true, wait_for_sync),
                 };
                 item.apply_to_database(db, false)?;
                 db.schema.collections.push(item);
