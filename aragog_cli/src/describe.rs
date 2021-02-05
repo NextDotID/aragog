@@ -1,3 +1,5 @@
+use arangors::collection::response::Properties;
+
 use crate::config::Config;
 use crate::error::AragogCliError;
 use crate::versioned_database::VersionedDatabase;
@@ -10,13 +12,20 @@ pub fn describe_db(config: &Config) -> Result<(), AragogCliError> {
         None => println!("- Database Schema is not versioned yet (use migrate)"),
     };
     println!("- Database Graph count: {}", db.graphs()?.graphs.len());
-    let mut table = table!(["Name", "Type", "Doc Count", "Index Count", "In Schema"]);
+    let mut table = table!([
+        "Name",
+        "Type",
+        "Doc Count",
+        "Index Count",
+        "Wait for Sync",
+        "In Schema"
+    ]);
     for info in db.accessible_collections()?.iter() {
         if info.is_system {
             continue;
         }
         let collection = db.collection(&info.name)?;
-        let properties = collection.document_count()?;
+        let properties: Properties = collection.properties()?;
         let synced = db
             .schema
             .collections
@@ -29,6 +38,7 @@ pub fn describe_db(config: &Config) -> Result<(), AragogCliError> {
             format!("{:?}", &info.collection_type),
             &properties.info.count.unwrap_or(0),
             index_count,
+            &properties.detail.wait_for_sync,
             synced
         ]);
     }

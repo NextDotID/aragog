@@ -28,6 +28,7 @@ impl Default for MigrationData {
         Self {
             up: vec![MigrationOperation::CreateCollection {
                 name: String::from("MyCollection"),
+                wait_for_sync: None,
             }],
             down: Some(vec![MigrationOperation::DeleteCollection {
                 name: String::from("MyCollection"),
@@ -49,9 +50,11 @@ mod tests {
             up: vec![
                 MigrationOperation::CreateCollection {
                     name: "Collection1".to_string(),
+                    wait_for_sync: None,
                 },
                 MigrationOperation::CreateCollection {
                     name: "Collection2".to_string(),
+                    wait_for_sync: Some(true),
                 },
                 MigrationOperation::CreateIndex {
                     name: "OnNameAndEmail".to_string(),
@@ -66,6 +69,7 @@ mod tests {
                 MigrationOperation::Aql("This is a query".to_string()),
                 MigrationOperation::CreateEdgeCollection {
                     name: "Edge".to_string(),
+                    wait_for_sync: None,
                 },
                 MigrationOperation::CreateGraph {
                     name: "Named Graph".to_string(),
@@ -115,6 +119,7 @@ mod tests {
                   name: Collection1
               - create_collection:
                   name: Collection2
+                  wait_for_sync: true
               - create_index:
                   name: OnNameAndEmail
                   collection: Collection1

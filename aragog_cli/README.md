@@ -210,10 +210,9 @@ minLength: 3600
 ## Todo list
 
 - [ ] Migration commands:
-    - [ ] `rename_collection`
-    
+  - [ ] `rename_collection`
+  - [ ] check on graph creation the existence of the orphan collections
 - [ ] Transaction Support
-    - [X] `arangors` 0.4.6
-    - [ ] Wrap migration files on transactions
+  - [ ] Wrap migration files on transactions
 
 [aragog]: https://crates.io/crates/aragog

@@ -153,14 +153,17 @@ mod tests {
                 CollectionSchema {
                     name: "collectionA".to_string(),
                     is_edge_collection: false,
+                    wait_for_sync: None,
                 },
                 CollectionSchema {
                     name: "collectionB".to_string(),
                     is_edge_collection: false,
+                    wait_for_sync: Some(true),
                 },
                 CollectionSchema {
                     name: "edgeCollectionA".to_string(),
                     is_edge_collection: true,
+                    wait_for_sync: None,
                 },
             ],
             indexes: vec![
