@@ -236,6 +236,57 @@
 //! }
 //! ```
 //!
+//! #### Transactions
+//!
+//! Aragog now supports transactional operations without API changes through the new `Transaction` Object.
+//!
+//! ```rust
+//! # use aragog::{Record, transaction::Transaction, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
+//! # use serde::{Serialize, Deserialize};
+//! # use tokio;
+//! #
+//! #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+//! pub struct Dish {
+//!     pub name: String,
+//!     pub price: usize
+//! }
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!     let database_pool = DatabaseConnectionPool::builder()
+//!         # .with_schema_path("tests/schema.yaml").apply_schema()
+//!         .build().await.unwrap();
+//!     #  database_pool.truncate().await;
+//!
+//!     // Instantiate a new transaction
+//!     let transaction = Transaction::new(&database_pool).await.unwrap();
+//!     // Safely execute operations:
+//!     let output = transaction.safe_execute(|transaction_pool| async move {
+//!         // We use the provided `transaction_pool` instead of the classic pool
+//!         DatabaseRecord::create(Dish {
+//!             name: "Pizza".to_string(),
+//!             price: 10,
+//!         }, &transaction_pool).await?;
+//!         DatabaseRecord::create(Dish {
+//!             name: "Pasta".to_string(),
+//!             price: 8,
+//!         }, &transaction_pool).await?;
+//!         DatabaseRecord::create(Dish {
+//!             name: "Sandwich".to_string(),
+//!             price: 5,
+//!         }, &transaction_pool).await?;
+//!         Ok(())
+//!     }).await.unwrap();
+//!
+//!     // The output allows to check the transaction state: Committed or Aborted
+//!     assert!(output.is_committed());
+//! }
+//! ```
+//!
+//! If an operation fails in the `safe_execute` block the transaction will be aborted and every operaiton cancelled.
+//!
+//!> Note: All the `DatabaseRecord` operation (create, save, link, etc) work as transactional, simply use the the provded transaction `pool` instead of the classic pool
+//!
 //! #### Querying
 //!
 //! You can retrieve a document from the database as simply as it gets, from the unique ArangoDB `_key` or from multiple conditions.
@@ -485,7 +536,7 @@
 //!     - [ ] Handle key-value pair system (redis like)
 //! * Middle and long term:
 //!     - [ ] Handle revisions/concurrency correctly
-//!     - [ ] Implement Transactions
+//!     - [X] Transaction Support
 //!     - [ ] Define possible `async` validations for database advance state check
 //!
 //! ### Arango db setup
@@ -528,6 +579,8 @@
 //! [collection_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#document
 //! [fMeow]: https://github.com/fMeow/
 //! [inzanez]: https://github.com/inzanez/
+//! [arango_download]: https://www.arangodb.com/download "Download Arango"
+//! [arango_doc]: https://www.arangodb.com/docs/stable/getting-started.html "Arango getting started"
 //!
 #![forbid(missing_docs)]
 
@@ -537,6 +590,11 @@ compile_error!(
     If what you want is "blocking", please turn off default features by adding "default-features=false" in your Cargo.toml"#
 );
 
+#[cfg(all(not(feature = "async"), not(feature = "blocking")))]
+compile_error!(
+    r#"feature "blocking" and "async" cannot be disabled at the same time. Enable one of them"#
+);
+
 #[cfg(feature = "derive")]
 #[doc(hidden)]
 pub use aragog_macros::*;
@@ -544,9 +602,10 @@ pub use aragog_macros::*;
 #[cfg(not(feature = "minimal_traits"))]
 pub use {authenticate::Authenticate, authorize_action::AuthorizeAction, new::New, update::Update};
 pub use {
-    db::database_connection_pool::AuthMode, db::database_connection_pool::DatabaseConnectionPool,
-    db::database_record::DatabaseRecord, edge_record::EdgeRecord, error::ServiceError,
-    foreign_link::ForeignLink, link::Link, record::Record, validate::Validate,
+    db::database_access::DatabaseAccess, db::database_connection_pool::AuthMode,
+    db::database_connection_pool::DatabaseConnectionPool, db::database_record::DatabaseRecord,
+    db::transaction, edge_record::EdgeRecord, error::ServiceError, foreign_link::ForeignLink,
+    link::Link, record::Record, validate::Validate,
 };
 
 #[cfg(not(feature = "minimal_traits"))]

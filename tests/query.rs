@@ -610,33 +610,33 @@ mod call {
         .unwrap();
 
         // Menu 1
-        DatabaseRecord::link(&p1, &m1, &db_pool, linker)
+        DatabaseRecord::link(&p1, &m1, db_pool, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&wi, &m1, &db_pool, linker)
+        DatabaseRecord::link(&wi, &m1, db_pool, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&ic, &m1, &db_pool, linker)
+        DatabaseRecord::link(&ic, &m1, db_pool, linker)
             .await
             .unwrap();
         // Menu 2
-        DatabaseRecord::link(&p2, &m2, &db_pool, linker)
+        DatabaseRecord::link(&p2, &m2, db_pool, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&wi, &m2, &db_pool, linker)
+        DatabaseRecord::link(&wi, &m2, db_pool, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&ic, &m2, &db_pool, linker)
+        DatabaseRecord::link(&ic, &m2, db_pool, linker)
             .await
             .unwrap();
         // Menu 3
-        DatabaseRecord::link(&pa, &m3, &db_pool, linker)
+        DatabaseRecord::link(&pa, &m3, db_pool, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&wi, &m3, &db_pool, linker)
+        DatabaseRecord::link(&wi, &m3, db_pool, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&ic, &m3, &db_pool, linker)
+        DatabaseRecord::link(&ic, &m3, db_pool, linker)
             .await
             .unwrap();
     }

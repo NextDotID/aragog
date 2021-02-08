@@ -32,7 +32,7 @@ use crate::query::{string_array_from_array, string_array_from_array_str, Filter}
 /// # }
 /// ```
 ///
-/// [`Comparison`]: query/struct.Comparison.html
+/// [`Comparison`]: struct.Comparison.html
 #[macro_export]
 macro_rules! compare {
     ($value:expr) => {
