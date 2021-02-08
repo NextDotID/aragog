@@ -9,7 +9,7 @@ use crate::query::operations::{AqlOperation, OperationContainer};
 use crate::query::query_id_helper::get_str_identifier;
 use crate::query::query_result::JsonQueryResult;
 use crate::query::{string_from_array, Filter, OptionalQueryString};
-use crate::{DatabaseConnectionPool, ServiceError};
+use crate::{DatabaseAccess, ServiceError};
 
 /// Macro to simplify the [`Query`] construction:
 ///
@@ -27,7 +27,7 @@ use crate::{DatabaseConnectionPool, ServiceError};
 /// # }
 /// ```
 ///
-/// [`Query`]: query/struct.Query.html
+/// [`Query`]: struct.Query.html
 #[macro_export]
 macro_rules! query {
     ($collection:expr) => {
@@ -587,13 +587,13 @@ impl Query {
     /// This will return a wrapper for `serde_json`::`Value`
     /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`get`]
     ///
-    /// [`DatabaseRecord`]: ../struct.DatabaseRecord.html
-    /// [`get`]: ../struct.DatabaseRecord.html#method.get
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`get`]: struct.DatabaseRecord.html#method.get
     #[maybe_async::maybe_async]
-    pub async fn call(
-        self,
-        db_pool: &DatabaseConnectionPool,
-    ) -> Result<JsonQueryResult, ServiceError> {
+    pub async fn call<D>(self, db_pool: &D) -> Result<JsonQueryResult, ServiceError>
+    where
+        D: DatabaseAccess,
+    {
         db_pool.aql_get(&self.to_aql()).await
     }
 }

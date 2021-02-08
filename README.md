@@ -153,7 +153,7 @@
 
  #[tokio::main]
  async fn main() {
-    // Database connection Setup
+ // Database connection Setup
      let database_pool = DatabaseConnectionPool::builder()
          .build()
          .await
@@ -200,24 +200,69 @@
 
  #[tokio::main]
  async fn main() {
-   // Define a document
-   let mut dish = DatabaseRecord::create(Dish {
-       name: "Pizza".to_string(),
-       price: 10,
-   }, &database_pool).await.unwrap();
-   let mut order = DatabaseRecord::create(Order {
-       name: "Order 1".to_string(),
-   }, &database_pool).await.unwrap();
+     // Define a document
+     let mut dish = DatabaseRecord::create(Dish {
+         name: "Pizza".to_string(),
+         price: 10,
+     }, &database_pool).await.unwrap();
+     let mut order = DatabaseRecord::create(Order {
+         name: "Order 1".to_string(),
+     }, &database_pool).await.unwrap();
 
-   let edge = DatabaseRecord::link(&dish, &order, &database_pool, |_from, _to| {
-       PartOf { _from, _to }
-   }).await.unwrap();
-   assert_eq!(&edge.record._from(), &dish.id);
-   assert_eq!(&edge.record._to(), &order.id);
-   assert_eq!(&edge.record._from_key(), &dish.key);
-   assert_eq!(&edge.record._to_key(), &order.key);
+     let edge = DatabaseRecord::link(&dish, &order, &database_pool, |_from, _to| {
+         PartOf { _from, _to }
+     }).await.unwrap();
+     assert_eq!(&edge.record._from(), &dish.id);
+     assert_eq!(&edge.record._to(), &order.id);
+     assert_eq!(&edge.record._from_key(), &dish.key);
+     assert_eq!(&edge.record._to_key(), &order.key);
  }
  ```
+
+ #### Transactions
+
+ Aragog now supports transactional operations without API changes through the new `Transaction` Object.
+
+ ```rust
+ #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+ pub struct Dish {
+     pub name: String,
+     pub price: usize
+ }
+
+ #[tokio::main]
+ async fn main() {
+     let database_pool = DatabaseConnectionPool::builder()
+         # .with_schema_path("tests/schema.yaml").apply_schema()
+         .build().await.unwrap();
+     // Instantiate a new transaction
+     let transaction = Transaction::new(&database_pool).await.unwrap();
+     // Safely execute operations:
+     let output = transaction.safe_execute(|transaction_pool| async move {
+         // We use the provided `transaction_pool` instead of the classic pool
+         DatabaseRecord::create(Dish {
+             name: "Pizza".to_string(),
+             price: 10,
+         }, &transaction_pool).await?;
+         DatabaseRecord::create(Dish {
+             name: "Pasta".to_string(),
+             price: 8,
+         }, &transaction_pool).await?;
+         DatabaseRecord::create(Dish {
+             name: "Sandwich".to_string(),
+             price: 5,
+         }, &transaction_pool).await?;
+         Ok(())
+     }).await.unwrap();
+
+     // The output allows to check the transaction state: Committed or Aborted
+     assert!(output.is_committed());
+ }
+ ```
+
+ If an operation fails in the `safe_execute` block the transaction will be aborted and every operaiton cancelled.
+
+> Note: All the `DatabaseRecord` operation (create, save, link, etc) work as transactional, simply use the the provded transaction `pool` instead of the classic pool
 
  #### Querying
 
@@ -409,7 +454,7 @@
      - [ ] Handle key-value pair system (redis like)
  * Middle and long term:
      - [ ] Handle revisions/concurrency correctly
-     - [ ] Implement Transactions
+     - [X] Transaction Support
      - [ ] Define possible `async` validations for database advance state check
 
  ### Arango db setup
@@ -452,5 +497,8 @@
  [collection_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#document
  [fMeow]: https://github.com/fMeow/
  [inzanez]: https://github.com/inzanez/
+ [arango_download]: https://www.arangodb.com/download "Download Arango"
+ [arango_doc]: https://www.arangodb.com/docs/stable/getting-started.html "Arango getting started"
+
 
 <!-- cargo-sync-readme end -->

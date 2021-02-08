@@ -9,7 +9,7 @@ use crate::db::database_service;
 use crate::query::{Query, RecordQueryResult};
 #[cfg(not(feature = "minimal_traits"))]
 use crate::Authenticate;
-use crate::{DatabaseConnectionPool, EdgeRecord, Record, ServiceError, Validate};
+use crate::{DatabaseAccess, EdgeRecord, Record, ServiceError, Validate};
 
 /// Struct representing database stored documents
 ///
@@ -35,7 +35,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Arguments:
     ///
-    /// * `db_pool` - database connection pool reference
+    /// * `db_accessor` - database connection pool reference
     ///
     /// # Returns
     ///
@@ -51,15 +51,16 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     /// [`ValidationError`]: enum.ServiceError.html#variant.ValidationError
     #[maybe_async::maybe_async]
-    pub async fn save(&mut self, db_pool: &DatabaseConnectionPool) -> Result<(), ServiceError>
+    pub async fn save<U>(&mut self, db_accessor: &U) -> Result<(), ServiceError>
     where
         T: Validate,
+        U: DatabaseAccess,
     {
         self.record.validate()?;
         let new_record = database_service::update_record(
             self.record.clone(),
             &self.key,
-            &db_pool,
+            db_accessor,
             T::collection_name(),
         )
         .await?;
@@ -72,7 +73,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Arguments:
     ///
-    /// * `db_pool` - database connection pool reference
+    /// * `db_accessor` - database connection pool reference
     ///
     /// # Returns
     ///
@@ -85,8 +86,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn delete(&self, db_pool: &DatabaseConnectionPool) -> Result<(), ServiceError> {
-        database_service::remove_record::<T>(&self.key, &db_pool, T::collection_name()).await
+    pub async fn delete<U>(&self, db_accessor: &U) -> Result<(), ServiceError>
+    where
+        U: DatabaseAccess,
+    {
+        database_service::remove_record::<T, U>(&self.key, db_accessor, T::collection_name()).await
     }
 
     /// Retrieves a record from the database with the associated unique `key`
@@ -94,7 +98,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments:
     ///
     /// * `key` - the unique record key as a string slice
-    /// * `db_pool` - database connection pool reference
+    /// * `db_accessor` - database connection pool reference
     ///
     /// # Returns
     ///
@@ -107,8 +111,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn find(key: &str, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
-        database_service::retrieve_record(key, &db_pool, T::collection_name()).await
+    pub async fn find<U>(key: &str, db_accessor: &U) -> Result<Self, ServiceError>
+    where
+        U: DatabaseAccess,
+    {
+        database_service::retrieve_record(key, db_accessor, T::collection_name()).await
     }
 
     /// Retrieves all records from the database matching the associated conditions.
@@ -116,7 +123,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments:
     ///
     /// * `query` - The `Query` to match
-    /// * `db_pool` - database connection pool reference
+    /// * `db_accessor` - database connection pool reference
     ///
     /// # Note
     ///
@@ -137,18 +144,18 @@ impl<T: Record> DatabaseRecord<T> {
     /// let mut query = Query::new().filter(Filter::new(Comparison::field("username").equals_str("MichelDu93"))
     ///     .and(Comparison::field("age").greater_than(10)));
     ///
-    /// User::get(query, &db_pool).await.unwrap();
+    /// User::get(query, &db_accessor).await.unwrap();
     /// ```
     ///
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn get(
-        query: Query,
-        db_pool: &DatabaseConnectionPool,
-    ) -> Result<RecordQueryResult<T>, ServiceError> {
-        Self::aql_get(&query.to_aql(), db_pool).await
+    pub async fn get<U>(query: Query, db_accessor: &U) -> Result<RecordQueryResult<T>, ServiceError>
+    where
+        U: DatabaseAccess,
+    {
+        Self::aql_get(&query.to_aql(), db_accessor).await
     }
 
     /// Retrieves all records from the database matching the associated conditions.
@@ -156,7 +163,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments:
     ///
     /// * `query` - The AQL request string
-    /// * `db_pool` - database connection pool reference
+    /// * `db_accessor` - database connection pool reference
     ///
     /// # Returns
     ///
@@ -176,18 +183,21 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// let mut query = r#"FOR i in User FILTER i.username == "MichelDu93" && i.age > 10 return i"#;
     ///
-    /// User::aql_get(query, &db_pool).await.unwrap();
+    /// User::aql_get(query, &db_accessor).await.unwrap();
     /// ```
     ///
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn aql_get(
+    pub async fn aql_get<U>(
         query: &str,
-        db_pool: &DatabaseConnectionPool,
-    ) -> Result<RecordQueryResult<T>, ServiceError> {
-        let result = db_pool.aql_get(query).await?;
+        db_accessor: &U,
+    ) -> Result<RecordQueryResult<T>, ServiceError>
+    where
+        U: DatabaseAccess,
+    {
+        let result = db_accessor.aql_get(query).await?;
         Ok(result.into())
     }
 
@@ -297,10 +307,10 @@ impl<T: Record> DatabaseRecord<T> {
     /// }).await.unwrap();
     /// ```
     #[maybe_async::maybe_async]
-    pub async fn link<U, V, W>(
+    pub async fn link<U, V, W, A>(
         from_record: &DatabaseRecord<U>,
         to_record: &DatabaseRecord<V>,
-        db_pool: &DatabaseConnectionPool,
+        db_accessor: &A,
         document: W,
     ) -> Result<DatabaseRecord<T>, ServiceError>
     where
@@ -308,9 +318,10 @@ impl<T: Record> DatabaseRecord<T> {
         V: Serialize + DeserializeOwned + Clone + Record,
         T: EdgeRecord,
         W: FnOnce(String, String) -> T,
+        A: DatabaseAccess,
     {
         let edge = document(from_record.id.clone(), to_record.id.clone());
-        database_service::create_record(edge, &db_pool, T::collection_name()).await
+        database_service::create_record(edge, db_accessor, T::collection_name()).await
     }
 
     /// Checks if any document matching the associated conditions exist
@@ -318,7 +329,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments:
     ///
     /// * `query` - The `Query` to match
-    /// * `db_pool` - database connection pool reference
+    /// * `db_accessor` - database connection pool reference
     ///
     /// # Note
     ///
@@ -336,17 +347,24 @@ impl<T: Record> DatabaseRecord<T> {
     /// let mut query = Query::new().filter(Filter::new(Comparison::field("username").equals_str("MichelDu93"))
     ///     .and(Comparison::field("age").greater_than(10)));
     ///
-    /// User::exists(query, &db_pool).await;
+    /// User::exists(query, &db_accessor).await;
     /// ```
     #[maybe_async::maybe_async]
-    pub async fn exists(query: Query, db_pool: &DatabaseConnectionPool) -> bool {
+    pub async fn exists<U>(query: Query, db_accessor: &U) -> bool
+    where
+        U: DatabaseAccess,
+    {
         let aql_string = query.to_aql();
         let aql_query = AqlQuery::builder()
             .query(&aql_string)
             .batch_size(1)
             .count(true)
             .build();
-        match db_pool.database.aql_query_batch::<Value>(aql_query).await {
+        match db_accessor
+            .database()
+            .aql_query_batch::<Value>(aql_query)
+            .await
+        {
             Ok(cursor) => match cursor.count {
                 Some(count) => count > 0,
                 None => false,
@@ -361,7 +379,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments
     ///
     /// * `record` - The document to create, it will be returned exactly as the `DatabaseRecord<T>` record
-    /// * `db_pool` - database connection pool reference
+    /// * `db_accessor` - database connection pool reference
     ///
     /// # Returns
     ///
@@ -373,12 +391,13 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn create(record: T, db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError>
+    pub async fn create<U>(record: T, db_accessor: &U) -> Result<Self, ServiceError>
     where
         T: Validate,
+        U: DatabaseAccess,
     {
         record.validate()?;
-        database_service::create_record(record, &db_pool, T::collection_name()).await
+        database_service::create_record(record, db_accessor, T::collection_name()).await
     }
 
     /// Builds a DatabaseRecord from a arangors crate `DocumentResponse<T>`

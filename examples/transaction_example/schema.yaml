@@ -1,0 +1,16 @@
+collections:
+    - name: Order
+      is_edge_collection: false
+    - name: Dish
+      is_edge_collection: false
+
+indexes:
+    - name: by_name
+      collection: Dish
+      fields:
+          - name
+      settings:
+          type: persistent
+          unique: true
+          sparse: false
+          deduplicate: false

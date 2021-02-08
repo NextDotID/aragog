@@ -18,7 +18,7 @@ fn create_child(_from: String, _to: String) -> ChildOf {
 
 #[tokio::main]
 async fn main() {
-    std::env::set_var("RUSTLOG", "debug, aragog=debug");
+    std::env::set_var("RUST_LOG", "info,aragog=debug");
     env_logger::init();
 
     // Connect to database and generates collections and indexes

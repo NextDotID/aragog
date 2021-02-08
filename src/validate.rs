@@ -35,7 +35,7 @@ use crate::{EdgeRecord, ServiceError};
 ///     }
 /// }
 /// ```
-/// [`Record`]: record/trait.Record.html
+/// [`Record`]: trait.Record.html
 pub trait Validate {
     /// Validates the object field formats, logic or anything. Calls the [`validations`] method
     /// and will render a complete [`ServiceError`]::[`ValidationError`] on validation failure.
@@ -141,7 +141,7 @@ pub trait Validate {
     /// new error message is added to `errors`
     ///
     /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: validate/trait.Validate.html#tymethod.validations
+    /// [`validations`]: trait.Validate.html#tymethod.validations
     #[allow(dead_code)]
     fn validate_numeric_string(field_path: &str, str: &str, errors: &mut Vec<String>) -> bool {
         for char in str.chars() {
@@ -170,7 +170,7 @@ pub trait Validate {
     /// new error message is added to `errors`
     ///
     /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: validate/trait.Validate.html#tymethod.validations
+    /// [`validations`]: trait.Validate.html#tymethod.validations
     #[allow(dead_code)]
     fn validate_max_len(
         field_path: &str,
@@ -205,7 +205,7 @@ pub trait Validate {
     /// new error message is added to `errors`
     ///
     /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: validate/trait.Validate.html#tymethod.validations
+    /// [`validations`]: trait.Validate.html#tymethod.validations
     #[allow(dead_code)]
     fn validate_min_len(
         field_path: &str,
@@ -240,7 +240,7 @@ pub trait Validate {
     /// new error message is added to `errors`
     ///
     /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: validate/trait.Validate.html#tymethod.validations
+    /// [`validations`]: trait.Validate.html#tymethod.validations
     #[allow(dead_code)]
     fn validate_len(field_path: &str, str: &str, len: usize, errors: &mut Vec<String>) -> bool {
         if str.len() != len {
@@ -270,7 +270,7 @@ pub trait Validate {
     /// new error message is added to `errors`
     ///
     /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: validate/trait.Validate.html#tymethod.validations
+    /// [`validations`]: trait.Validate.html#tymethod.validations
     #[allow(dead_code)]
     fn validate_regex(field_path: &str, str: &str, regex: &str, errors: &mut Vec<String>) -> bool {
         let reg = match Regex::new(regex) {

@@ -38,7 +38,7 @@
 /// }).await.unwrap();
 /// ```
 ///
-/// [`DatabaseRecord`]: db/database_record/struct.DatabaseRecord.html
+/// [`DatabaseRecord`]: struct.DatabaseRecord.html
 pub trait EdgeRecord {
     /// Retrieves the struct `_from` field
     fn _from(&self) -> String;

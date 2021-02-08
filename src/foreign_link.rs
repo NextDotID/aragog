@@ -1,4 +1,4 @@
-use crate::{DatabaseConnectionPool, DatabaseRecord, Record, ServiceError};
+use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 
 /// The `ForeignLink` trait of the Aragog library.
 /// It allows to define foreign_key relations between different models.
@@ -76,24 +76,22 @@ pub trait ForeignLink<T: Record>: Sized {
     fn foreign_key(&self) -> &str;
 
     /// Retrieves the record matching the defined `foreign_key`. Type inference may be required.
-    #[cfg(not(feature = "blocking"))]
-    async fn linked_model(
-        &self,
-        db_pool: &DatabaseConnectionPool,
-    ) -> Result<DatabaseRecord<T>, ServiceError>
+    #[cfg(feature = "async")]
+    async fn linked_model<D>(&self, db_pool: &D) -> Result<DatabaseRecord<T>, ServiceError>
     where
         Self: Sized,
         T: 'async_trait,
+        D: DatabaseAccess,
     {
         DatabaseRecord::find(self.foreign_key(), db_pool).await
     }
 
     /// Retrieves the record matching the defined `foreign_key`. Type inference may be required.
-    #[cfg(feature = "blocking")]
-    fn linked_model(
-        &self,
-        db_pool: &DatabaseConnectionPool,
-    ) -> Result<DatabaseRecord<T>, ServiceError> {
+    #[cfg(not(feature = "async"))]
+    fn linked_model<D>(&self, db_pool: &D) -> Result<DatabaseRecord<T>, ServiceError>
+    where
+        D: DatabaseAccess,
+    {
         DatabaseRecord::find(self.foreign_key(), db_pool)
     }
 }

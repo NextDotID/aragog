@@ -2,15 +2,13 @@ use std::collections::HashMap;
 
 use arangors::client::reqwest::ReqwestClient;
 use arangors::{Collection, Connection, Database};
-use serde_json::Value;
 
 use crate::db::database_collection::DatabaseCollection;
 use crate::db::database_connection_pool_builder::{
     DatabaseConnectionPoolBuilder, DatabaseSchemaOption, PoolCredentialsOption,
 };
-use crate::query::JsonQueryResult;
 use crate::schema::{DatabaseSchema, SchemaDatabaseOperation};
-use crate::ServiceError;
+use crate::{DatabaseAccess, ServiceError};
 
 /// Struct containing ArangoDB connections and information to access the database, collections and documents
 #[derive(Clone)]
@@ -114,16 +112,9 @@ impl DatabaseConnectionPool {
         DatabaseConnectionPool::load_schema(database, schema).await
     }
 
-    /// Simple wrapper to retrieve a Collection without using the HashMap directly.
-    /// Can panic if the key matching `collection` is missing
-    pub fn get_collection(&self, collection: &str) -> &Collection<ReqwestClient> {
-        if !self.collections.contains_key(collection) {
-            panic!(
-                "Undefined collection {}, check your schema.yaml file",
-                collection
-            )
-        }
-        &self.collections[collection].collection
+    /// retrieves a vector of all collection names from the pool
+    pub fn collections_names(&self) -> Vec<String> {
+        self.collections.keys().cloned().collect()
     }
 
     /// **DESTRUCTIVE OPERATION**
@@ -140,20 +131,6 @@ impl DatabaseConnectionPool {
         for collection in self.collections.iter() {
             collection.1.collection.truncate().await.unwrap();
         }
-    }
-
-    /// Runs an AQL query and returns the found documents
-    #[maybe_async::maybe_async]
-    pub async fn aql_get(&self, aql: &str) -> Result<JsonQueryResult, ServiceError> {
-        log::debug!("Executing AQL: {}", aql);
-        let query_result: Vec<Value> = match self.database.aql_str(aql).await {
-            Ok(value) => value,
-            Err(error) => {
-                log::error!("{}", error);
-                return Err(ServiceError::from(error));
-            }
-        };
-        Ok(JsonQueryResult::new(query_result))
     }
 
     #[maybe_async::maybe_async]
@@ -179,5 +156,21 @@ impl DatabaseConnectionPool {
             collections,
             database,
         })
+    }
+}
+
+impl DatabaseAccess for DatabaseConnectionPool {
+    fn get_collection(&self, collection: &str) -> &Collection<ReqwestClient> {
+        if !self.collections.contains_key(collection) {
+            panic!(
+                "Undefined collection {}, check your schema.yaml file",
+                collection
+            )
+        }
+        &self.collections[collection].collection
+    }
+
+    fn database(&self) -> &Database<ReqwestClient> {
+        &self.database
     }
 }

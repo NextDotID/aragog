@@ -59,6 +59,9 @@ pub enum ServiceError {
     /// Can be interpreted as a HTTP code `409` conflict.
     #[error("Conflict")]
     Conflict,
+    /// A transaction failed to commit or abort
+    #[error("TransactionError: `{0}`")]
+    TransactionError(String),
 }
 
 #[cfg(feature = "actix")]
