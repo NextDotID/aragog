@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.9
+
+* Collection schemas support `wait_for_sync` attribute
+
 ## 0.7.8
 
 * Schema types implement `Clone`

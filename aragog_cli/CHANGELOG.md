@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.7
+
+* `create_collection` and `create_edge_collection` support `wait_for_sync` optional_attribute
+
 ## 0.2.6
 
 * Internal small refactoring (`MigrationError` to `AragogCliError`)

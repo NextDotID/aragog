@@ -83,10 +83,12 @@ There is a list of all available commands for the `up` and `down` section:
 ```yaml
 - create_collection:          # Creates a colllection with
     name: CollectionName      # Mandatory name
+    wait_for_sync: true       # Optional waitForSync attribute
 - delete_collection:          # Deletes a collection with
     name: CollectionName      # Mandatory name
 - create_edge_collection:     # Creates a edge collection
     name: EdgeCollectionName  # Mandatory name
+    wait_for_sync: false      # Optional waitForSync attribute
 - delete_edge_collection:     # Deletes a edge collection
     name: EdgeCollectionName  # Mandatory name
 ```
