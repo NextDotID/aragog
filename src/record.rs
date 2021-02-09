@@ -16,11 +16,11 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`find`]: struct.DatabaseRecord.html#method.find
-    async fn find<D>(key: &str, db_pool: &D) -> Result<DatabaseRecord<Self>, ServiceError>
+    async fn find<D>(key: &str, db_accessor: &D) -> Result<DatabaseRecord<Self>, ServiceError>
     where
         D: DatabaseAccess,
     {
-        DatabaseRecord::find(key, db_pool).await
+        DatabaseRecord::find(key, db_accessor).await
     }
 
     /// Finds all documents in database matching a `Query`.
@@ -28,11 +28,11 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`get`]: struct.DatabaseRecord.html#method.get
-    async fn get<D>(query: Query, db_pool: &D) -> Result<RecordQueryResult<Self>, ServiceError>
+    async fn get<D>(query: Query, db_accessor: &D) -> Result<RecordQueryResult<Self>, ServiceError>
     where
         D: DatabaseAccess,
     {
-        DatabaseRecord::get(query, db_pool).await
+        DatabaseRecord::get(query, db_accessor).await
     }
 
     /// Returns true if there are any document in database matching a `Query`.
@@ -40,11 +40,11 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`exists`]: struct.DatabaseRecord.html#method.exists
-    async fn exists<D>(query: Query, db_pool: &D) -> bool
+    async fn exists<D>(query: Query, db_accessor: &D) -> bool
     where
         D: DatabaseAccess,
     {
-        DatabaseRecord::<Self>::exists(query, db_pool).await
+        DatabaseRecord::<Self>::exists(query, db_accessor).await
     }
 
     /// returns the associated Collection

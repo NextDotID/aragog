@@ -1,9 +1,7 @@
-#[macro_use]
 extern crate aragog;
 
 use serde::{Deserialize, Serialize};
 
-use aragog::DatabaseConnectionPool;
 use aragog::{DatabaseRecord, Record, Validate};
 
 pub mod common;

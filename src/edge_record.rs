@@ -1,3 +1,5 @@
+use crate::Record;
+
 /// Trait for structures that can be stored in Database as a ArangoDB EdgeCollection.
 /// The trait must be implemented to be used as a edge record in [`DatabaseRecord`].
 ///
@@ -39,7 +41,7 @@
 /// ```
 ///
 /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-pub trait EdgeRecord {
+pub trait EdgeRecord: Record {
     /// Retrieves the struct `_from` field
     fn _from(&self) -> String;
 

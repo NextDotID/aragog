@@ -38,17 +38,12 @@ async fn create_order(pool: &DatabaseConnectionPool) -> DatabaseRecord<Order> {
     .unwrap()
 }
 
-#[derive(Clone, EdgeRecord, Serialize, Deserialize)]
+#[derive(Clone, EdgeRecord, Serialize, Deserialize, Validate)]
+#[validate(func("validate_edge_fields"))]
 pub struct PartOf {
     _from: String,
     _to: String,
     description: String,
-}
-
-impl Validate for PartOf {
-    fn validations(&self, errors: &mut Vec<String>) {
-        self.validate_edge_fields(errors);
-    }
 }
 
 #[maybe_async::test(

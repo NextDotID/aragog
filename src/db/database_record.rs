@@ -51,10 +51,10 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     /// [`ValidationError`]: enum.ServiceError.html#variant.ValidationError
     #[maybe_async::maybe_async]
-    pub async fn save<U>(&mut self, db_accessor: &U) -> Result<(), ServiceError>
+    pub async fn save<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
         T: Validate,
-        U: DatabaseAccess,
+        D: DatabaseAccess,
     {
         self.record.validate()?;
         let new_record = database_service::update_record(
@@ -86,11 +86,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn delete<U>(&self, db_accessor: &U) -> Result<(), ServiceError>
+    pub async fn delete<D>(&self, db_accessor: &D) -> Result<(), ServiceError>
     where
-        U: DatabaseAccess,
+        D: DatabaseAccess,
     {
-        database_service::remove_record::<T, U>(&self.key, db_accessor, T::collection_name()).await
+        database_service::remove_record::<T, D>(&self.key, db_accessor, T::collection_name()).await
     }
 
     /// Retrieves a record from the database with the associated unique `key`
@@ -111,9 +111,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn find<U>(key: &str, db_accessor: &U) -> Result<Self, ServiceError>
+    pub async fn find<D>(key: &str, db_accessor: &D) -> Result<Self, ServiceError>
     where
-        U: DatabaseAccess,
+        D: DatabaseAccess,
     {
         database_service::retrieve_record(key, db_accessor, T::collection_name()).await
     }
@@ -151,9 +151,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn get<U>(query: Query, db_accessor: &U) -> Result<RecordQueryResult<T>, ServiceError>
+    pub async fn get<D>(query: Query, db_accessor: &D) -> Result<RecordQueryResult<T>, ServiceError>
     where
-        U: DatabaseAccess,
+        D: DatabaseAccess,
     {
         Self::aql_get(&query.to_aql(), db_accessor).await
     }
@@ -190,12 +190,12 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn aql_get<U>(
+    pub async fn aql_get<D>(
         query: &str,
-        db_accessor: &U,
+        db_accessor: &D,
     ) -> Result<RecordQueryResult<T>, ServiceError>
     where
-        U: DatabaseAccess,
+        D: DatabaseAccess,
     {
         let result = db_accessor.aql_get(query).await?;
         Ok(result.into())
@@ -307,20 +307,20 @@ impl<T: Record> DatabaseRecord<T> {
     /// }).await.unwrap();
     /// ```
     #[maybe_async::maybe_async]
-    pub async fn link<U, V, W, A>(
-        from_record: &DatabaseRecord<U>,
-        to_record: &DatabaseRecord<V>,
-        db_accessor: &A,
-        document: W,
+    pub async fn link<A, B, D, E>(
+        from_record: &DatabaseRecord<A>,
+        to_record: &DatabaseRecord<B>,
+        db_accessor: &D,
+        edge_record: E,
     ) -> Result<DatabaseRecord<T>, ServiceError>
     where
-        U: Serialize + DeserializeOwned + Clone + Record,
-        V: Serialize + DeserializeOwned + Clone + Record,
+        A: Serialize + DeserializeOwned + Clone + Record,
+        B: Serialize + DeserializeOwned + Clone + Record,
+        D: DatabaseAccess,
+        E: FnOnce(String, String) -> T,
         T: EdgeRecord,
-        W: FnOnce(String, String) -> T,
-        A: DatabaseAccess,
     {
-        let edge = document(from_record.id.clone(), to_record.id.clone());
+        let edge = edge_record(from_record.id.clone(), to_record.id.clone());
         database_service::create_record(edge, db_accessor, T::collection_name()).await
     }
 
@@ -350,9 +350,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// User::exists(query, &db_accessor).await;
     /// ```
     #[maybe_async::maybe_async]
-    pub async fn exists<U>(query: Query, db_accessor: &U) -> bool
+    pub async fn exists<D>(query: Query, db_accessor: &D) -> bool
     where
-        U: DatabaseAccess,
+        D: DatabaseAccess,
     {
         let aql_string = query.to_aql();
         let aql_query = AqlQuery::builder()
@@ -391,10 +391,10 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn create<U>(record: T, db_accessor: &U) -> Result<Self, ServiceError>
+    pub async fn create<D>(record: T, db_accessor: &D) -> Result<Self, ServiceError>
     where
         T: Validate,
-        U: DatabaseAccess,
+        D: DatabaseAccess,
     {
         record.validate()?;
         database_service::create_record(record, db_accessor, T::collection_name()).await
