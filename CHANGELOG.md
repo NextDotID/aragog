@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.8.0
+
+* `aragog_macros`:
+  - `Validate` derive proc macro attributes
+    - `validate` field attributes
+    - `validate` extension attributes
+  - Updated examples and tests using the new macros
+* Transaction support:
+  - New `Transaction` and `TransactionPool` object
+  - All Database related function can take a `TransactionPool` through `DatabaseAccess`
+  - New example
+* `EdgeRecord` is only available for structs implementing `Record`
+* Added official book and cleaned the `README`
+
+Note: No breaking changes from 0.7 to 0.8
+
 ## 0.7.9
 
 * Collection schemas support `wait_for_sync` attribute

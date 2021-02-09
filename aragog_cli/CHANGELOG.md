@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.8
+
+* `aragog` depedency from 0.7 to 0.8
+
 ## 0.2.7
 
 * `create_collection` and `create_edge_collection` support `wait_for_sync` optional_attribute
