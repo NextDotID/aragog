@@ -3,10 +3,13 @@ use serde::{Deserialize, Serialize};
 
 use aragog::{New, Record, ServiceError, Update, Validate};
 
-#[derive(Serialize, Deserialize, Clone, Record)]
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
 pub struct Dish {
+    #[validate(min_length = 5, max_length(20))]
     pub name: String,
+    #[validate(min_length = 15)]
     pub description: String,
+    #[validate(greater_than(0), lesser_or_equal(35))]
     pub price: u16,
     pub is_alcohol: bool,
     created_at: u64,
@@ -18,16 +21,6 @@ pub struct DishDTO {
     pub description: String,
     pub price: u16,
     pub is_alcohol: bool,
-}
-
-impl Validate for Dish {
-    fn validations(&self, errors: &mut Vec<String>) {
-        Self::validate_min_len("name", &self.name, 5, errors);
-        Self::validate_min_len("name", &self.description, 15, errors);
-        if self.price == 0 {
-            errors.push("price should be above zero".to_string())
-        }
-    }
 }
 
 impl New<DishDTO> for Dish {

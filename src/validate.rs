@@ -288,6 +288,146 @@ pub trait Validate {
         false
     }
 
+    /// Validates that `value` is greater than `min_value`. Usually used as a helper function for implementations of
+    /// [`Validate`] trait.
+    ///
+    /// # Arguments
+    ///
+    /// * `field_path` - the string slice representing the field name or path for clear errors
+    /// * `value` - the field value to validate
+    /// * `min_value` - The comparison value
+    /// * `errors` - a mutable reference to a vector of String to be filled with error messages like provided
+    /// in [`Validate`]::[`validations`]
+    ///
+    /// # Returns
+    ///
+    /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
+    /// new error message is added to `errors`
+    ///
+    /// [`Validate`]: trait.Validate.html
+    /// [`validations`]: trait.Validate.html#tymethod.validations
+    #[allow(dead_code)]
+    fn validate_greater_than(
+        field_path: &str,
+        value: i32,
+        min_value: i32,
+        errors: &mut Vec<String>,
+    ) -> bool {
+        if value <= min_value {
+            errors.push(format!(
+                "{} '{}' must be greater than {}",
+                field_path, value, min_value
+            ));
+            return false;
+        }
+        true
+    }
+
+    /// Validates that `value` is greater or equal to `min_value`. Usually used as a helper function for implementations of
+    /// [`Validate`] trait.
+    ///
+    /// # Arguments
+    ///
+    /// * `field_path` - the string slice representing the field name or path for clear errors
+    /// * `value` - the field value to validate
+    /// * `min_value` - The comparison value
+    /// * `errors` - a mutable reference to a vector of String to be filled with error messages like provided
+    /// in [`Validate`]::[`validations`]
+    ///
+    /// # Returns
+    ///
+    /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
+    /// new error message is added to `errors`
+    ///
+    /// [`Validate`]: trait.Validate.html
+    /// [`validations`]: trait.Validate.html#tymethod.validations
+    #[allow(dead_code)]
+    fn validate_greater_or_equal_to(
+        field_path: &str,
+        value: i32,
+        min_value: i32,
+        errors: &mut Vec<String>,
+    ) -> bool {
+        if value < min_value {
+            errors.push(format!(
+                "{} '{}' must be greater or equal to {}",
+                field_path, value, min_value
+            ));
+            return false;
+        }
+        true
+    }
+
+    /// Validates that `value` is lower than `max_value`. Usually used as a helper function for implementations of
+    /// [`Validate`] trait.
+    ///
+    /// # Arguments
+    ///
+    /// * `field_path` - the string slice representing the field name or path for clear errors
+    /// * `value` - the field value to validate
+    /// * `max_value` - The comparison value
+    /// * `errors` - a mutable reference to a vector of String to be filled with error messages like provided
+    /// in [`Validate`]::[`validations`]
+    ///
+    /// # Returns
+    ///
+    /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
+    /// new error message is added to `errors`
+    ///
+    /// [`Validate`]: trait.Validate.html
+    /// [`validations`]: trait.Validate.html#tymethod.validations
+    #[allow(dead_code)]
+    fn validate_lesser_than(
+        field_path: &str,
+        value: i32,
+        max_value: i32,
+        errors: &mut Vec<String>,
+    ) -> bool {
+        if value >= max_value {
+            errors.push(format!(
+                "{} '{}' must be lower than {}",
+                field_path, value, max_value
+            ));
+            return false;
+        }
+        true
+    }
+
+    /// Validates that `value` is lower or equal to `max_value`. Usually used as a helper function for implementations of
+    /// [`Validate`] trait.
+    ///
+    /// # Arguments
+    ///
+    /// * `field_path` - the string slice representing the field name or path for clear errors
+    /// * `value` - the field value to validate
+    /// * `max_value` - The comparison value
+    /// * `errors` - a mutable reference to a vector of String to be filled with error messages like provided
+    /// in [`Validate`]::[`validations`]
+    ///
+    /// # Returns
+    ///
+    /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
+    /// new error message is added to `errors`
+    ///
+    /// [`Validate`]: trait.Validate.html
+    /// [`validations`]: trait.Validate.html#tymethod.validations
+    #[allow(dead_code)]
+    fn validate_lesser_or_equal_to(
+        field_path: &str,
+        value: i32,
+        max_value: i32,
+        errors: &mut Vec<String>,
+    ) -> bool {
+        if value > max_value {
+            errors.push(format!(
+                "{} '{}' must be lower or equal to {}",
+                field_path, value, max_value
+            ));
+            return false;
+        }
+        true
+    }
+
     /// Validation method for `EdgeRecord` to use on [`Validate`] implementation.
     /// Verifies that both `_from` and `_to` fields have correct format.
     fn validate_edge_fields(&self, errors: &mut Vec<String>)

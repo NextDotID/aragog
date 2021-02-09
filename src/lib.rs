@@ -28,6 +28,7 @@
 //!     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
 //!     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
 //! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
+//! * Transactional operations
 //!
 //! #### Cargo features
 //!
@@ -519,26 +520,6 @@
 //!     );
 //! ```
 //!
-//! ### TODO
-//!
-//! * Query system:
-//!     - [ ] Advanced query system supporting:
-//!         - [X] Array variant querying (`ANY`, `NONE`, `ALL`)
-//!         - [X] Sort, limit and distinct methods
-//!         - [ ] Custom return system
-//!         - [X] `PRUNE` operation
-//!         - [ ] Procedural Macros for syntax simplification and field presence validation at compile time
-//!         - [ ] ArangoDB functions (`LENGTH`, `ABS`, etc.)
-//! * ORM and OGM
-//!     - [X] Pundit like authorizations (authorize actions on model)
-//!     - [X] Relations
-//!     - [X] Named Graph handling
-//!     - [ ] Handle key-value pair system (redis like)
-//! * Middle and long term:
-//!     - [ ] Handle revisions/concurrency correctly
-//!     - [X] Transaction Support
-//!     - [ ] Define possible `async` validations for database advance state check
-//!
 //! ### Arango db setup
 //!
 //! **Installation** (See official documentation [Here][arango_doc])
@@ -568,7 +549,6 @@
 //!
 //! [arangors]: https://docs.rs/arangors
 //! [argonautica]: https://github.com/bcmyers/argonautica
-//! [example_path]: examples/simple_app
 //! [ArangoDB]: https://www.arangodb.com/
 //! [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
 //! [actix]: https://actix.rs/ "Actix Homepage"

@@ -1,4 +1,5 @@
 extern crate proc_macro;
+extern crate proc_macro2;
 #[macro_use]
 extern crate proc_macro_error;
 
@@ -12,7 +13,7 @@ use crate::derives::{impl_edge_record_macro, impl_record_macro, impl_validate_ma
 mod derives;
 
 #[proc_macro_error]
-#[proc_macro_derive(Record)]
+#[proc_macro_derive(Record, attributes(before_save, after_save))]
 pub fn record_macro_derive(attr: TokenStream) -> TokenStream {
     // Span for error
     let span = attr.clone().into_iter().next().unwrap().span();
@@ -29,14 +30,24 @@ pub fn record_macro_derive(attr: TokenStream) -> TokenStream {
     impl_record_macro(&ast)
 }
 
-#[proc_macro_derive(Validate)]
+#[proc_macro_error]
+#[proc_macro_derive(Validate, attributes(validate))]
 pub fn validate_macro_derive(attr: TokenStream) -> TokenStream {
+    // Span for error
+    let span = attr.clone().into_iter().next().unwrap().span();
+
     // Construct a representation of Rust code as a syntax tree
     // that we can manipulate
     let ast: DeriveInput = syn::parse(attr).unwrap();
 
     // Build the trait implementation
-    impl_validate_macro(&ast)
+    match impl_validate_macro(&ast) {
+        Ok(stream) => stream,
+        Err(error) => {
+            emit_error!(span, error);
+            TokenStream::new()
+        }
+    }
 }
 
 #[proc_macro_error]

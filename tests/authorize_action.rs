@@ -6,23 +6,19 @@ use aragog::{AuthorizeAction, DatabaseRecord, Record, Validate};
 
 pub mod common;
 
-#[derive(Serialize, Deserialize, Clone, Record)]
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
 pub struct Dish {
     pub name: String,
     pub price: u16,
     pub is_alcohol: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, Record)]
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
 pub struct User {
     pub name: String,
     pub age: u8,
     pub money: u16,
     pub is_cook: bool,
-}
-
-impl Validate for Dish {
-    fn validations(&self, _errors: &mut Vec<String>) {}
 }
 
 pub enum DishAction {

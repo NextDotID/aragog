@@ -2,18 +2,15 @@ use crate::models::dish::Dish;
 use aragog::{AuthorizeAction, DatabaseRecord, Record, Validate};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Record)]
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
 pub struct User {
     pub username: String,
     pub first_name: String,
     pub last_name: String,
+    #[validate(greater_than(13))]
     pub age: usize,
     pub is_cook: bool,
     pub money: u16,
-}
-
-impl Validate for User {
-    fn validations(&self, _errors: &mut Vec<String>) {}
 }
 
 pub enum DishAction {

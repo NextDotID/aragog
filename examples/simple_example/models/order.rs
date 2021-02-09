@@ -3,7 +3,8 @@ use aragog::{Record, Validate};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Record)]
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
+#[validate(func = "extra_validations")]
 pub struct Order {
     pub dishes: Vec<Dish>,
     pub total_price: u16,
@@ -25,10 +26,8 @@ impl Order {
         self.total_price += dish.price;
         self.dishes.push(dish.clone());
     }
-}
 
-impl Validate for Order {
-    fn validations(&self, errors: &mut Vec<String>) {
+    fn extra_validations(&self, errors: &mut Vec<String>) {
         if self.dishes.is_empty() {
             errors.push(String::from("Should have at least one dish"));
         }

@@ -4,6 +4,7 @@ use crate::ServiceError;
 ///
 /// [`TransactionPool`]: transaction/struct.TransactionPool.html
 /// [`safe_execute`]: transaction/struct.TransactionPool.html#method.safe_execute
+#[must_use]
 pub enum TransactionOutput<T> {
     /// The transaction was committed
     Committed(T),

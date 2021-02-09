@@ -3,7 +3,9 @@ extern crate aragog;
 extern crate env_logger;
 
 use aragog::query::{Comparison, Filter};
-use aragog::{AuthMode, DatabaseConnectionPool, DatabaseRecord, New, Record, ServiceError, Update};
+use aragog::{
+    AuthMode, DatabaseConnectionPool, DatabaseRecord, New, Record, ServiceError, Update, Validate,
+};
 
 use crate::models::dish::{Dish, DishDTO};
 use crate::models::order::Order;
@@ -52,6 +54,8 @@ async fn main() {
 
     // New empty order
     let mut order = Order::new();
+    // An empty order is not valid
+    assert!(!order.is_valid());
     // Add a dish
     order.add(&dish_record.record);
     // Creates a database record
@@ -82,7 +86,7 @@ async fn main() {
         Ok(()) => panic!("Validations should have failed"),
         Err(error) => match error {
             ServiceError::ValidationError(msg) => {
-                assert_eq!(msg, String::from("price should be above zero"))
+                assert_eq!(msg, String::from("price '0' must be greater than 0"))
             }
             _ => panic!("Wrong error returned"),
         },
