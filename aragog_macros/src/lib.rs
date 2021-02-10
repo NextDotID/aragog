@@ -13,7 +13,7 @@ use crate::derives::{impl_edge_record_macro, impl_record_macro, impl_validate_ma
 mod derives;
 
 #[proc_macro_error]
-#[proc_macro_derive(Record, attributes(before_save, after_save))]
+#[proc_macro_derive(Record)]
 pub fn record_macro_derive(attr: TokenStream) -> TokenStream {
     // Span for error
     let span = attr.clone().into_iter().next().unwrap().span();
