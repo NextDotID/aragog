@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+- HOTFIX: (yanking 0.2.1) validate derive macro was crashing compilation on other derive macro attributes.
+
 ## 0.2.1
 
 - HOTFIX: (yanking 0.2.0) validate derive macro was crashing compilation on doc comments

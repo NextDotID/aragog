@@ -1,6 +1,6 @@
 [package]
 name = "aragog-macros"
-version = "0.2.1"
+version = "0.2.2"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
