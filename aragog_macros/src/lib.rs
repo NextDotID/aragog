@@ -11,8 +11,8 @@ use syn::{self, Data, DeriveInput, Fields};
 use crate::derives::{impl_edge_record_macro, impl_record_macro, impl_validate_macro};
 
 mod derives;
+mod symbol;
 
-#[proc_macro_error]
 #[proc_macro_derive(Record)]
 pub fn record_macro_derive(attr: TokenStream) -> TokenStream {
     // Span for error
