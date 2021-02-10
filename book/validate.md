@@ -67,9 +67,9 @@ On more complex cases, simple field validations are not enough and you may want 
 use aragog::{Record, Validate};
 
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
-#[validate(func("custom_validations"))] // We added this validation attribute on top of the struct
+#[validate(func("custom_validations"))] // We added this global validation attribute on top of the struct
 pub struct User {
-    #[validate(length = 10)]
+    #[validate(length = 10, func("validate_username"))] // We added this field validation attribute
     pub username: String,
     #[validate(min_length = 3)]
     pub first_name: String,
@@ -83,17 +83,21 @@ pub struct User {
 }
 
 impl User {
-    // We added the custom validation method
+    // We added the global custom validation method (uses multi-fields)
     fn custom_validations(&self, errors: &mut Vec<String>) {
         if self.phone.is_some() || self.phone_country_code.is_some() {
             // We use built-in validation methods
             Self::validate_field_presence("phone", &self.phone, errors);
             Self::validate_field_presence("phone_country_code", &self.phone_country_code, erros);
         }
-        if self.username == "SUPERADMIN" {
+    }
+    
+    // We added the field custom validation method (field-specific)
+    fn validate_username(field_name: &str, value: &str, errors: &mut Vec<String>) {
+        if value == "SUPERADMIN" {
             // We can push our own validation errors
-            errors.push("username can't be SUPERADMIN")
-        }
+            errors.push(format!("{} can't be SUPERADMIN", field_name))
+        }   
     }
 }
 ```
@@ -101,13 +105,21 @@ impl User {
 The macro attribute `#[validate(func("METHOD"))]"` must link to an existing method of your struct.
 
 This method must follow the following pattern:
-```rust
-fn my_method(&self, errors: &mut Vec<String>) {}
-```
+
+- global validation method (top of the struct)
+  ```rust
+  fn my_method(&self, errors: &mut Vec<String>) {}
+  ```
+- field validation method
+  ```rust
+  fn my_method(field_name: &str, field_value: &T, errors: &mut Vec<String>) {}
+  ```
+  `T` being the type of your field
+
 > Note: The method can have any visibility and can return whatever you want 
 
-the `errors` argument is the mutable array of error messages it contains all the current errorsa and you can push your own errors in it.
-When the `validate()` method is called, this `errors` vector is used to build the error messagge.
+the `errors` argument is the mutable array of error messages it contains all the current errors and you can push your own errors in it.
+When the `validate()` method is called, this `errors` vector is used to build the error message.
 
 ## Technical notes
 
@@ -152,4 +164,6 @@ So please report any bug or strange behaviour as this feature is still in its ea
     - [ ] Array validations
     - [ ] `Option` validations
     - [ ] Boolean validations
+    - [X] function validations of fields
 - [ ] Interrupt compilation after a derive macro error
+- [ ] Be able to propagate validations

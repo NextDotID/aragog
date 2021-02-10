@@ -60,10 +60,18 @@ impl ValidateCommand {
                     Self::validate_lesser_or_equal_to(#field, self.#field_ident as i32, #value, errors);
                 }
             }
-            Operation::Function(func) => {
+            Operation::Function { func, field } => {
                 let func_ident = Ident::new(&func, Span::call_site());
-                quote! {
-                    self.#func_ident(errors);
+                match field {
+                    Some(field) => {
+                        let field_ident = Ident::new(&field, Span::call_site());
+                        quote! {
+                            Self::#func_ident(&#field, &self.#field_ident, errors);
+                        }
+                    }
+                    None => quote! {
+                        self.#func_ident(errors);
+                    },
                 }
             }
         }
@@ -130,8 +138,14 @@ impl ValidateCommand {
                         }
                     }
                 }
-                _ => {
-                    emit_error!(attr.span(), "Expected a meta list, add operations")
+                Meta::Path(_) => {
+                    emit_warning!(
+                        attr.span(),
+                        "Expected a meta list not a path, add operations"
+                    )
+                }
+                Meta::NameValue(_) => {
+                    // We do nothing as it detects the documentation comments
                 }
             },
             Err(error) => emit_error!(

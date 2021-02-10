@@ -3,6 +3,7 @@ use aragog::{Record, Validate};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
+/// this is an Order
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
 #[validate(func = "extra_validations")]
 pub struct Order {
