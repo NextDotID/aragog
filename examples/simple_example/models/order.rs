@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 /// this is an Order
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
 #[validate(func = "extra_validations")]
+#[serde(rename_all = "PascalCase")]
 pub struct Order {
     pub dishes: Vec<Dish>,
     pub total_price: u16,

@@ -3,6 +3,7 @@ use syn::Ident;
 use syn::{spanned::Spanned, Attribute, Field, Meta, NestedMeta, Path};
 
 use crate::derives::validate::operation::Operation;
+use crate::symbol::VALIDATE_ATTR_SYMBOL;
 
 #[derive(Debug)]
 pub struct ValidateCommand {
@@ -113,6 +114,9 @@ impl ValidateCommand {
     }
 
     pub fn parse_attribute(attr: &Attribute, field: Option<&Field>, commands: &mut Vec<Self>) {
+        if attr.path != VALIDATE_ATTR_SYMBOL {
+            return;
+        }
         match attr.parse_meta() {
             Ok(meta) => match meta {
                 Meta::List(list) => {
@@ -138,14 +142,8 @@ impl ValidateCommand {
                         }
                     }
                 }
-                Meta::Path(_) => {
-                    emit_warning!(
-                        attr.span(),
-                        "Expected a meta list not a path, add operations"
-                    )
-                }
-                Meta::NameValue(_) => {
-                    // We do nothing as it detects the documentation comments
+                _ => {
+                    emit_error!(attr.span(), "Expected a meta list. Add valid operations")
                 }
             },
             Err(error) => emit_error!(
