@@ -92,6 +92,17 @@ async fn main() {
         },
     }
 
+    // User validation check
+    let wrong_user = User {
+        username: String::from("ADMIN"),
+        first_name: String::from("foo"),
+        last_name: String::from("bar"),
+        age: 18,
+        is_cook: false,
+        money: 100,
+    };
+    assert!(!wrong_user.is_valid());
+
     // Query examples
 
     let user = User {

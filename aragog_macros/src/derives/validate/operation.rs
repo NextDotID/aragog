@@ -11,56 +11,55 @@ pub enum Operation {
     LesserThan { value: i32, field: String },
     GreaterOrEqual { value: i32, field: String },
     LesserOrEqual { value: i32, field: String },
-    Function(String),
+    Function { func: String, field: Option<String> },
 }
 
 impl Operation {
-    pub fn parse(str: &str, lit: &Lit, field_name: Option<String>) -> Result<Self, String> {
+    pub fn parse(str: &str, lit: &Lit, field: Option<String>) -> Result<Self, String> {
         let res = match str {
             "min_length" => {
                 let value = Self::expect_usize_lit(lit)?;
-                let field = Self::expect_field_name(field_name)?;
+                let field = Self::expect_field_name(field)?;
                 Self::MinLength { value, field }
             }
             "max_length" => {
                 let value = Self::expect_usize_lit(lit)?;
-                let field = Self::expect_field_name(field_name)?;
+                let field = Self::expect_field_name(field)?;
                 Self::MaxLength { value, field }
             }
             "length" => {
                 let value = Self::expect_usize_lit(lit)?;
-                let field = Self::expect_field_name(field_name)?;
+                let field = Self::expect_field_name(field)?;
                 Self::Length { value, field }
             }
             "regex" => {
                 let value = Self::expect_str_lit(lit)?;
-                let field = Self::expect_field_name(field_name)?;
+                let field = Self::expect_field_name(field)?;
                 Self::Regex { value, field }
             }
             "greater_than" => {
                 let value = Self::expect_int_lit(lit)?;
-                let field = Self::expect_field_name(field_name)?;
+                let field = Self::expect_field_name(field)?;
                 Self::GreaterThan { value, field }
             }
             "lesser_than" => {
                 let value = Self::expect_int_lit(lit)?;
-                let field = Self::expect_field_name(field_name)?;
+                let field = Self::expect_field_name(field)?;
                 Self::LesserThan { value, field }
             }
             "greater_or_equal" => {
                 let value = Self::expect_int_lit(lit)?;
-                let field = Self::expect_field_name(field_name)?;
+                let field = Self::expect_field_name(field)?;
                 Self::GreaterOrEqual { value, field }
             }
             "lesser_or_equal" => {
                 let value = Self::expect_int_lit(lit)?;
-                let field = Self::expect_field_name(field_name)?;
+                let field = Self::expect_field_name(field)?;
                 Self::LesserOrEqual { value, field }
             }
             "func" => {
-                let v = Self::expect_str_lit(lit)?;
-                Self::expect_no_field_name(field_name)?;
-                Self::Function(v)
+                let func = Self::expect_str_lit(lit)?;
+                Self::Function { func, field }
             }
             _ => return Err("Can't find a valid operation for field validation".to_string()),
         };
@@ -71,15 +70,6 @@ impl Operation {
         match field {
             Some(v) => Ok(v),
             None => Err(String::from("This attribute must be placed on a field")),
-        }
-    }
-
-    fn expect_no_field_name(field: Option<String>) -> Result<(), String> {
-        match field {
-            Some(_) => Err(String::from(
-                "This attribute must be placed on the struct definition",
-            )),
-            None => Ok(()),
         }
     }
 
@@ -131,7 +121,7 @@ impl Display for Operation {
                 Operation::LesserThan { .. } => "lesser_than",
                 Operation::GreaterOrEqual { .. } => "greater_or_equal",
                 Operation::LesserOrEqual { .. } => "lesser_or_equal",
-                Operation::Function(_) => "func",
+                Operation::Function { .. } => "func",
             }
         )
     }

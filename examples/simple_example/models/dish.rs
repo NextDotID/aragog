@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use aragog::{New, Record, ServiceError, Update, Validate};
 
+/// this is a Dish
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
 pub struct Dish {
     #[validate(min_length = 5, max_length(20))]
