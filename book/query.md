@@ -188,3 +188,4 @@ It works with complex queries:
   - [ ] Procedural Macros for syntax simplification and field presence validation at compile time
   - [ ] ArangoDB functions (`LENGTH`, `ABS`, etc.)
 - [ ] Make batch write operation queries
+- [ ] Make query engine optional through a feature gate

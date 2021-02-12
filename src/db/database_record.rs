@@ -7,13 +7,16 @@ use std::fmt::{self, Display, Formatter};
 
 use crate::db::database_service;
 use crate::query::{Query, RecordQueryResult};
-#[cfg(not(feature = "minimal_traits"))]
-use crate::Authenticate;
 use crate::{DatabaseAccess, EdgeRecord, Record, ServiceError};
+use std::ops::{Deref, DerefMut};
 
-/// Struct representing database stored documents
+/// Struct representing database stored documents.
 ///
-/// The document of type `T` mut implement Serialize, DeserializeOwned, Clone and [`Record`]
+/// The document of type `T` mut implement [`Record`]
+///
+/// # Note
+///
+/// `DatabaseRecord` implements `Deref` and `DerefMut` into `T`
 ///
 /// [`Record`]: trait.Record.html
 #[derive(Debug, Clone)]
@@ -477,30 +480,6 @@ impl<T: Record> DatabaseRecord<T> {
         })
     }
 
-    #[cfg(not(feature = "minimal_traits"))]
-    /// Authenticates the instance.
-    /// The method is available if `T` implements [`Authenticate`] and will simply call
-    /// the [`authenticate method`] on the `record`
-    ///
-    /// # Arguments
-    ///
-    /// * `password` - the value supposed to validate authentication, password or secret
-    ///
-    /// # Returns
-    ///
-    /// On success `()` is returned, on failure it will return a [`ServiceError`] according to
-    /// the Authenticate implementation
-    ///
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`Authenticate`]: trait.Authenticate.html
-    /// [`authenticate method`]: trait.Authenticate.html#tymethod.authenticate
-    pub fn authenticate(&self, password: &str) -> Result<(), ServiceError>
-    where
-        T: Authenticate,
-    {
-        self.record.authenticate(password)
-    }
-
     /// Retrieves the ArangoDB `_id` built as `$collection_name/$_key
     pub fn get_id(&self) -> String {
         format!("{}/{}", T::collection_name(), &self.key)
@@ -521,5 +500,19 @@ impl<T: Record> From<Document<T>> for DatabaseRecord<T> {
 impl<T: Record> Display for DatabaseRecord<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{} {} Database Record", T::collection_name(), self.key)
+    }
+}
+
+impl<T: Record> Deref for DatabaseRecord<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.record
+    }
+}
+
+impl<T: Record> DerefMut for DatabaseRecord<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.record
     }
 }

@@ -33,8 +33,8 @@ use crate::{DatabaseRecord, Record, ServiceError};
 ///         if target.is_none() { return false; }
 ///         let target = target.unwrap();
 ///         match action {
-///             EmployeeAction::Cook => self.is_cook && !target.record.is_cooking_done,
-///             EmployeeAction::PayTaxes => self.is_accountant && !target.record.taxes_payed,
+///             EmployeeAction::Cook => self.is_cook && !target.is_cooking_done,
+///             EmployeeAction::PayTaxes => self.is_accountant && !target.taxes_payed,
 ///         }
 ///     }
 /// }

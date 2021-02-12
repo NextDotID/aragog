@@ -54,7 +54,7 @@ const LOCK_TIMEOUT: usize = 60000;
 ///     };
 ///     // The closure safely checks for errors, use the `?` operator and avoid `unwrap()`
 ///     let mut db_doc = DatabaseRecord::create(doc, &pool).await?;
-///     db_doc.record.field1 = String::from("not foo");
+///     db_doc.field1 = String::from("not foo");
 ///     db_doc.save(&pool).await?;
 ///     Ok(db_doc)
 /// }).await.unwrap();
@@ -286,7 +286,7 @@ impl Transaction {
     ///     };
     ///     // The closure safely checks for errors, use the `?` operator and avoid `unwrap()`
     ///     let mut db_doc = DatabaseRecord::create(doc, &pool).await?;
-    ///     db_doc.record.field1 = String::from("not foo");
+    ///     db_doc.field1 = String::from("not foo");
     ///     db_doc.save(&pool).await?;
     ///     Ok(db_doc)
     /// }).await.unwrap();
@@ -349,7 +349,7 @@ impl Transaction {
     ///     };
     ///     // The closure safely checks for errors, use the `?` operator and avoid `unwrap()`
     ///     let mut db_doc = DatabaseRecord::create(doc, &pool).await?;
-    ///     db_doc.record.field1 = String::from("not foo");
+    ///     db_doc.field1 = String::from("not foo");
     ///     db_doc.save(&pool).await?;
     ///     Ok(db_doc)
     /// }).await.unwrap();

@@ -75,17 +75,17 @@ async fn main() {
         })
         .unwrap();
     // Add the updated dish to the order
-    order_record.record.add(&dish_record.record);
+    order_record.add(&dish_record.record);
     // Save the order record
     order_record.save(&db_pool).await.unwrap();
 
     // Checking
-    assert_eq!(order_record.record.dishes.len(), 2);
-    assert_eq!(order_record.record.total_price, 17);
+    assert_eq!(order_record.dishes.len(), 2);
+    assert_eq!(order_record.total_price, 17);
     assert_eq!(db_pool.collections["Dish"].record_count().await.unwrap(), 1);
 
     // Making validation fail
-    dish_record.record.price = 0;
+    dish_record.price = 0;
     match dish_record.save(&db_pool).await {
         Ok(()) => panic!("Validations should have failed"),
         Err(error) => match error {

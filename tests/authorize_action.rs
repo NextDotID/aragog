@@ -40,10 +40,10 @@ impl AuthorizeAction<Dish> for User {
         let target = target.unwrap();
         match action {
             DishAction::Order => {
-                if self.money < target.record.price {
+                if self.money < target.price {
                     return false;
                 }
-                if target.record.is_alcohol {
+                if target.is_alcohol {
                     return self.age >= 18;
                 }
                 true

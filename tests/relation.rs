@@ -67,7 +67,7 @@ async fn relation_work() -> Result<(), String> {
     .await
     .unwrap();
 
-    let relation: RecordQueryResult<Order> = dish.record.linked_models(&pool).await.unwrap();
+    let relation: RecordQueryResult<Order> = dish.linked_models(&pool).await.unwrap();
     common::expect_assert_eq(&relation.uniq().unwrap().key, &order.key)?;
     Ok(())
 }
@@ -98,7 +98,7 @@ async fn foreign_key_relation_work() -> Result<(), String> {
     .await
     .unwrap();
 
-    let relation: DatabaseRecord<Order> = dish.record.linked_model(&pool).await.unwrap();
+    let relation: DatabaseRecord<Order> = dish.linked_model(&pool).await.unwrap();
     common::expect_assert_eq(&relation.key, &order.key)?;
     Ok(())
 }

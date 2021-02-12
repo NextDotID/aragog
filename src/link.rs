@@ -49,7 +49,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 ///     },
 ///     &database_pool).await.unwrap();
 /// let orders = user.linked_models(&database_pool).await.unwrap();
-/// assert_eq!(&user.key, &orders.first().unwrap().record.user_id);
+/// assert_eq!(&user.key, &orders.first().unwrap().user_id);
 /// # }
 /// ```
 #[maybe_async::must_be_async]
