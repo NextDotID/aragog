@@ -18,7 +18,7 @@ documentation = "https://docs.rs/aragog"
 [features]
 default = ["derive", "async"]
 async = ["arangors/reqwest_async"]
-blocking = ["arangors/blocking", "arangors/reqwest_blocking", "maybe-async/is_sync"]
+blocking = ["arangors/blocking", "arangors/reqwest_blocking", "maybe-async/is_sync", "aragog-macros/blocking"]
 entreprise = ["arangors/enterprise"]
 derive = ["aragog-macros"]
 actix = ["actix-web"]
@@ -28,7 +28,7 @@ minimal_traits = []
 
 [dependencies]
 # ArangoDB driver
-arangors = { version = "0.4", default-features = false, features = ["rocksdb"] }
+arangors = { version = "~0.4.6", default-features = false, features = ["rocksdb"] }
 # Used for string validation toolbox, not used otherwise
 regex = "1.4"
 # Record trait has async methods

@@ -47,10 +47,6 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
         DatabaseRecord::<Self>::exists(query, db_accessor).await
     }
 
-    /// returns the associated Collection
-    /// for read and write operations.
-    fn collection_name() -> &'static str;
-
     /// Creates a new `Query` instance for `Self`.
     ///
     /// # Example
@@ -69,4 +65,52 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     fn query() -> Query {
         Query::new(Self::collection_name())
     }
+
+    /// returns the associated Collection
+    /// for read and write operations.
+    fn collection_name() -> &'static str;
+
+    /// method called by [`DatabaseRecord`]::[`create`]
+    /// before the database operation.
+    ///
+    /// Define hooks manually or with macros (see the book)
+    ///
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`create`]: struct.DatabaseRecored.html#method.create
+    async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess;
+
+    /// method called by [`DatabaseRecord`]::[`save`]
+    /// before the database operation.
+    ///
+    /// Define hooks manually or with macros (see the book)
+    ///
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`save`]: struct.DatabaseRecored.html#method.save
+    async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess;
+
+    /// method called automatically by [`DatabaseRecord`]::[`create`]
+    /// after the database operation.
+    ///
+    /// Define hooks manually or with macros (see the book)
+    ///
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`create`]: struct.DatabaseRecored.html#method.create
+    async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess;
+
+    /// method called automatically by [`DatabaseRecord`]::[`save`]
+    /// after the database operation.
+    ///
+    /// Define hooks manually or with macros (see the book)
+    ///
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`save`]: struct.DatabaseRecored.html#method.save
+    async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess;
 }

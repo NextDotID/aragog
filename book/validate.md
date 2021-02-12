@@ -56,6 +56,8 @@ The current available field attribute validation macros (can be chained):
     - `greater_or_equal(VAL)` validated the field is greater or equal to *VAL*
     - `lesser_than(VAL)` validated the field is lesser than *VAL*
     - `lesser_or_equal(VAL)` validated the field is lesser or equal to*VAL*
+- Method
+    - `func(FUNC)` calls the *FUNC* method (see [Extra Validations](#extra-validations))
     
 > Note: The order of the validations is not guaranteed
 
@@ -104,7 +106,7 @@ impl User {
 
 The macro attribute `#[validate(func("METHOD"))]"` must link to an existing method of your struct.
 
-This method must follow the following pattern:
+This method can follow various patterns:
 
 - global validation method (top of the struct)
   ```rust
@@ -121,14 +123,28 @@ This method must follow the following pattern:
 the `errors` argument is the mutable array of error messages it contains all the current errors and you can push your own errors in it.
 When the `validate()` method is called, this `errors` vector is used to build the error message.
 
+### `Validate` with `Record`
+
+If you derive the [Record](./record.md) trait, you may want validations to be launched automatically in record hooks.
+
+```rust
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
+#[hook(before_all(func = "validate"))] // This hook will launch validations before `create` and `save`
+ pub struct User {
+     pub username: String,
+     pub first_name: String,
+     pub last_name: String,
+     pub age: usize
+ }
+```
+
 ## Technical notes
 
 ### Direct implementation
 
 You can implement `Validate` directly instead of deriving it.
 
-> We strongly suggest you derive the `Validate` trait instead of implementing it,
-as in the future this trait may be handled a more implicit way
+> We suggest you derive the `Validate` trait instead of implementing it unless you need specific operation order
 
 You need to specify the `validations` method which, when deriving is filled with all the macro attributes
 

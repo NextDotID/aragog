@@ -9,7 +9,7 @@ use crate::db::database_service;
 use crate::query::{Query, RecordQueryResult};
 #[cfg(not(feature = "minimal_traits"))]
 use crate::Authenticate;
-use crate::{DatabaseAccess, EdgeRecord, Record, ServiceError, Validate};
+use crate::{DatabaseAccess, EdgeRecord, Record, ServiceError};
 
 /// Struct representing database stored documents
 ///
@@ -53,10 +53,9 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn save<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
-        T: Validate,
         D: DatabaseAccess,
     {
-        self.record.validate()?;
+        self.record.before_save_hook(db_accessor).await?;
         let new_record = database_service::update_record(
             self.record.clone(),
             &self.key,
@@ -64,6 +63,7 @@ impl<T: Record> DatabaseRecord<T> {
             T::collection_name(),
         )
         .await?;
+        self.record.after_save_hook(db_accessor).await?;
         self.record = new_record.record;
         Ok(())
     }
@@ -116,6 +116,53 @@ impl<T: Record> DatabaseRecord<T> {
         D: DatabaseAccess,
     {
         database_service::retrieve_record(key, db_accessor, T::collection_name()).await
+    }
+
+    /// Reloads a record from the database, returning the new record.
+    ///
+    /// # Arguments
+    ///
+    /// * `db_accessor` - database connection pool reference
+    ///
+    /// # Returns
+    ///
+    /// On success `Self` is returned,
+    /// On failure a [`ServiceError`] is returned:
+    /// * [`NotFound`] on invalid document key
+    /// * [`UnprocessableEntity`] on data corruption
+    ///
+    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    #[maybe_async::maybe_async]
+    pub async fn reload<D>(self, db_accessor: &D) -> Result<Self, ServiceError>
+    where
+        D: DatabaseAccess,
+        T: Send,
+    {
+        T::find(&self.key, db_accessor).await
+    }
+
+    /// Reloads a record from the database.
+    ///
+    /// # Returns
+    ///
+    /// On success `()` is returned and `self` is updated,
+    /// On failure a [`ServiceError`] is returned:
+    /// * [`NotFound`] on invalid document key
+    /// * [`UnprocessableEntity`] on data corruption
+    ///
+    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    #[maybe_async::maybe_async]
+    pub async fn reload_mut<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess,
+        T: Send,
+    {
+        *self = T::find(&self.key, db_accessor).await?;
+        Ok(())
     }
 
     /// Retrieves all records from the database matching the associated conditions.
@@ -289,10 +336,10 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Example
     /// ```rust ignore
-    /// # use aragog::{DatabaseRecord, EdgeRecord, Record, Validate};
+    /// # use aragog::{DatabaseRecord, EdgeRecord, Record};
     /// # use serde::{Serialize, Deserialize, de::DeserializeOwned}
     /// #
-    /// #[derive(Clone, EdgeRecord, Validate, Serialize, Deserialize)]
+    /// #[derive(Clone, EdgeRecord, Serialize, Deserialize)]
     /// struct Edge {
     ///     _from: String,
     ///     _to: String,
@@ -393,11 +440,14 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn create<D>(record: T, db_accessor: &D) -> Result<Self, ServiceError>
     where
-        T: Validate,
         D: DatabaseAccess,
     {
-        record.validate()?;
-        database_service::create_record(record, db_accessor, T::collection_name()).await
+        let mut record = record.clone();
+        record.before_create_hook(db_accessor).await?;
+        let mut res =
+            database_service::create_record(record, db_accessor, T::collection_name()).await?;
+        res.record.after_create_hook(db_accessor).await?;
+        Ok(res)
     }
 
     /// Builds a DatabaseRecord from a arangors crate `DocumentResponse<T>`

@@ -2,6 +2,7 @@ use std::fmt::{self, Display};
 use syn::{Ident, Path};
 
 pub const VALIDATE_ATTR_SYMBOL: Symbol = Symbol("validate");
+pub const HOOK_ATTR_SYMBOL: Symbol = Symbol("hook");
 
 #[derive(Copy, Clone)]
 pub struct Symbol(&'static str);

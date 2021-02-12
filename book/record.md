@@ -70,7 +70,7 @@ Complete Example:
  use serde::{Serialize, Deserialize};
  use tokio;
 
- #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+ #[derive(Serialize, Deserialize, Clone, Record)]
  pub struct User {
      pub username: String,
      pub first_name: String,
@@ -103,6 +103,91 @@ Complete Example:
  }
  ```
 
+### Hooks
+
+The `Record` trait provides the following hooks:
+- `before_create` : executed before document creation (`DatabaseRecord::create`)
+- `before_save` : executed before document save (`Record::save`)
+- `before_all` : executed before both document creation **and** save.
+- `after_create` : executed after the document creation (`DatabaseRecord::create`)
+- `after_save` : executed after the document save (`Record::save`)
+- `after_all` : executed after both documet creation **and** save.
+
+You can register various methods in these hooks with the following syntax:
+```rust
+#[hook(before_create(func = "my_method"))]
+```
+
+The hooked methods can have follow various patterns using the following options:
+- `is_async` the method is async
+- `db_access` the method uses the db access
+
+By default both these options are set to `false`.
+
+You can combine the options to have an `async` hook with db access, allowing to execute document operations automatically.
+If you combine a lot of operations, like creating documents in hooks or chaining operations make sure to:
+- avoid **circular operations**
+- use [Transaction](./transactions.md) for safety
+
+#### Hook Patterns
+
+##### The simple hook with no options
+```rust
+#[hook(before_create(func = "my_method"))]
+```
+*my_method* can be either:
+- ```rust 
+  fn my_method(&self) -> Result<(), aragog::ServiceError>
+  ```
+- ```rust 
+  fn my_method(&mut self) -> Result<(), aragog::ServiceError>
+  ```
+
+##### The async hook
+```rust
+#[hook(before_create(func = "my_method", is_async = true))]
+```
+*my_method* can be either:
+- ```rust 
+  async fn my_method(&self) -> Result<(), aragog::ServiceError>
+  ```
+- ```rust 
+  async fn my_method(&mut self) -> Result<(), aragog::ServiceError>
+  ```
+
+> If you use `aragog` with the `blocking` feature then this option will have no effect.
+
+
+##### The hook with database access
+```rust
+#[hook(before_create(func = "my_method", db_access = true))]
+```
+*my_method* can be either:
+- ```rust 
+  fn my_method<D>(&self, db_access: &D) -> Result<(), aragog::ServiceError> where D: aragog::DatabaseAccess
+  ```
+- ```rust 
+  fn my_method<D>(&mut self, db_access: &D) -> Result<(), aragog::ServiceError> where D: aragog::DatabaseAccess
+  ```
+
+> If you want to use the database access, using also `is_async = true` would be recommended
+
+
+#### The `Validate` derive case
+
+If you derive the [Validate](./validate.md) trait, you may want validations to be launched automatically in hooks.
+
+```rust
+#[derive(Serialize, Deserialize, Clone, Record, Validate)]
+#[hook(before_all(func = "validate"))] // This hook will launch validations before `create` and `save`
+ pub struct User {
+     pub username: String,
+     pub first_name: String,
+     pub last_name: String,
+     pub age: usize
+ }
+```
+
 ## Technical notes
 
 ### Direct implementation
@@ -110,9 +195,10 @@ Complete Example:
 You can implement `Record` directly instead of deriving it.
 
 > We strongly suggest you derive the `Record` trait instead of implementing it, 
-as in the future a lot of features involving procedural macros will be made available for this trait but only if derived.
+as in the future more hooks may be added to this trait without considering it **breaking changes**
 
 You need to specify the `collection_name` method which, when deriving, takes the name of the structure.
+You also need to implement directly the various hooks you need.
 
 Example:
 ```rust
@@ -127,15 +213,31 @@ pub struct User {
 }
 
 impl Record for User {
-    pub fn collection_name() -> &'static str { "User" }
+    fn collection_name() -> &'static str { "User" }
+
+    async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+        D: DatabaseAccess {
+        // Your implementation
+        Ok(())
+    }
+
+    async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+        D: DatabaseAccess {
+        // Your implementation
+        Ok(())
+    }
 }
 ```
 
-### The `Validate` derive cas
+### Unstable hooks state
 
-As seen on the complete example, we derive `Validate` as its required by the `DatabaseReord::save` method.
-This strange requirement will change in the future.
+The hook macros work pretty well but are difficult to test, especially the compilation errors:
+Are the errors messages relevant? correctly spanned? etc.
+
+So please report any bug or strange behaviour as this feature is still in its early stages.
 
 ### TODO list
 
-- [ ] Defining hooks (`before_save`, `before_create`, etc) and the equivalent macros
+- [X] Defining hooks (`before_save`, `before_create`, etc) and the equivalent macros
+- [ ] Adding `before_delete` and `after_delete` hooks
+- [ ] Allowing more modularity in return types and errors

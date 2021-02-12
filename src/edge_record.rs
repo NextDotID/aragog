@@ -25,7 +25,7 @@ use crate::Record;
 /// # use aragog::{DatabaseRecord, EdgeRecord, Record, Validate};
 /// # use serde::{Serialize, Deserialize, de::DeserializeOwned}
 /// #
-/// #[derive(Clone, EdgeRecord, Validate, Serialize, Deserialize)]
+/// #[derive(Clone, EdgeRecord, Record, Validate, Serialize, Deserialize)]
 /// struct Edge {
 ///     _from: String,
 ///     _to: String,
@@ -59,7 +59,7 @@ pub trait EdgeRecord: Record {
     /// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
     /// use aragog::{EdgeRecord, Record, Validate, DatabaseRecord};
     ///
-    /// #[derive(EdgeRecord, Clone, Serialize, Deserialize, Validate)]
+    /// #[derive(EdgeRecord, Record, Clone, Serialize, Deserialize, Validate)]
     /// struct EdgeModel {
     ///     pub _from: String,
     ///     pub _to: String,
@@ -86,7 +86,7 @@ pub trait EdgeRecord: Record {
     /// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
     /// use aragog::{EdgeRecord, Record, Validate, DatabaseRecord};
     ///
-    /// #[derive(EdgeRecord, Clone, Serialize, Deserialize, Validate)]
+    /// #[derive(EdgeRecord, Record, Clone, Serialize, Deserialize, Validate)]
     /// struct EdgeModel {
     ///     pub _from: String,
     ///     pub _to: String,
@@ -113,7 +113,7 @@ pub trait EdgeRecord: Record {
     /// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
     /// use aragog::{EdgeRecord, Record, Validate, DatabaseRecord};
     ///
-    /// #[derive(EdgeRecord, Clone, Serialize, Deserialize, Validate)]
+    /// #[derive(EdgeRecord, Record, Clone, Serialize, Deserialize, Validate)]
     /// struct EdgeModel {
     ///     pub _from: String,
     ///     pub _to: String,
@@ -140,7 +140,7 @@ pub trait EdgeRecord: Record {
     /// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
     /// use aragog::{EdgeRecord, Record, Validate, DatabaseRecord};
     ///
-    /// #[derive(EdgeRecord, Clone, Serialize, Deserialize, Validate)]
+    /// #[derive(EdgeRecord, Record, Clone, Serialize, Deserialize, Validate)]
     /// struct EdgeModel {
     ///     pub _from: String,
     ///     pub _to: String,

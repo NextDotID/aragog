@@ -5,6 +5,8 @@ use crate::derives::validate::command::ValidateCommand;
 use proc_macro::TokenStream;
 use std::borrow::Borrow;
 
+use crate::parse_attribute::ParseAttribute;
+use crate::to_tokenstream::ToTokenStream;
 use syn::{Data, Fields};
 
 pub fn impl_validate_macro(ast: &syn::DeriveInput) -> Result<TokenStream, String> {

@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 use aragog::query::{Comparison, Query, RecordQueryResult};
-use aragog::{DatabaseRecord, ForeignLink, Link, Record, Validate};
+use aragog::{DatabaseRecord, ForeignLink, Link, Record};
 use std::borrow::Borrow;
 
 mod common;
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record, Validate)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record)]
 pub struct Dish {
     pub name: String,
     pub description: String,
@@ -14,7 +14,7 @@ pub struct Dish {
     pub order_id: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record, Validate)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record)]
 pub struct Order {
     pub name: String,
 }

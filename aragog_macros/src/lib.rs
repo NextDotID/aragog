@@ -11,9 +11,13 @@ use syn::{self, Data, DeriveInput, Fields};
 use crate::derives::{impl_edge_record_macro, impl_record_macro, impl_validate_macro};
 
 mod derives;
+mod parse_attribute;
 mod symbol;
+mod to_tokenstream;
+mod toolbox;
 
-#[proc_macro_derive(Record)]
+#[proc_macro_error]
+#[proc_macro_derive(Record, attributes(hook))]
 pub fn record_macro_derive(attr: TokenStream) -> TokenStream {
     // Span for error
     let span = attr.clone().into_iter().next().unwrap().span();
@@ -22,12 +26,14 @@ pub fn record_macro_derive(attr: TokenStream) -> TokenStream {
     // that we can manipulate
     let ast: DeriveInput = syn::parse(attr).unwrap();
 
-    match ast.data.borrow() {
-        Data::Struct(_elem) => {}
-        _ => emit_error!(span, "Only Structs can derive `Record`"),
-    }
     // Build the trait implementation
-    impl_record_macro(&ast)
+    match impl_record_macro(&ast) {
+        Ok(stream) => stream,
+        Err(error) => {
+            emit_error!(span, error);
+            panic!();
+        }
+    }
 }
 
 #[proc_macro_error]
@@ -45,7 +51,7 @@ pub fn validate_macro_derive(attr: TokenStream) -> TokenStream {
         Ok(stream) => stream,
         Err(error) => {
             emit_error!(span, error);
-            TokenStream::new()
+            panic!();
         }
     }
 }

@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 /// this is an Order
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+#[hook(before_all(func = "validate"))]
 #[validate(func = "extra_validations")]
 #[serde(rename_all = "PascalCase")]
 pub struct Order {

@@ -56,6 +56,10 @@ async fn main() {
     let mut order = Order::new();
     // An empty order is not valid
     assert!(!order.is_valid());
+    match DatabaseRecord::create(order.clone(), &db_pool).await {
+        Ok(_) => panic!("Validations should have failed"),
+        Err(_) => (),
+    };
     // Add a dish
     order.add(&dish_record.record);
     // Creates a database record

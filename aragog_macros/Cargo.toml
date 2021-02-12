@@ -14,6 +14,10 @@ repository = "https://gitlab.com/qonfucius/aragog/-/tree/master/aragog_macros"
 [lib]
 proc-macro = true
 
+[features]
+default = []
+blocking = []
+
 [dependencies]
 syn = "1.0"
 quote = "1.0"

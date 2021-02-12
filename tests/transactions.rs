@@ -2,11 +2,11 @@ extern crate aragog;
 
 use serde::{Deserialize, Serialize};
 
-use aragog::{DatabaseRecord, Record, Validate};
+use aragog::{DatabaseRecord, Record};
 
 pub mod common;
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record, Validate)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record)]
 pub struct User {
     pub name: String,
     pub description: String,
