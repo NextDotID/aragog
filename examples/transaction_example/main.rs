@@ -67,12 +67,12 @@ async fn main() {
                 })
                 .unwrap();
             // Add the updated dish to the order
-            order_record.record.add(&dish_record.record);
+            order_record.add(&dish_record.record);
             // Save the order record
             order_record.save(&pool).await?;
 
-            assert_eq!(order_record.record.dishes.len(), 2);
-            assert_eq!(order_record.record.total_price, 17);
+            assert_eq!(order_record.dishes.len(), 2);
+            assert_eq!(order_record.total_price, 17);
             Ok(dish_record)
         })
         .await
@@ -91,7 +91,7 @@ async fn main() {
     let transaction_output = transaction
         .safe_execute(|pool| async move {
             // Making validation fail
-            dish_record.record.price = 0;
+            dish_record.price = 0;
             dish_record.save(&pool).await?;
             Ok(())
         })

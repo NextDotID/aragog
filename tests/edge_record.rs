@@ -85,14 +85,14 @@ async fn edge_can_be_created_with_a_simple_link() -> Result<(), String> {
     })
     .await
     .unwrap();
-    common::expect_assert_eq(&record.record._from, &dish.id)?;
-    common::expect_assert_eq(&record.record._to, &order.id)?;
+    common::expect_assert_eq(&record._from, &dish.id)?;
+    common::expect_assert_eq(&record._to, &order.id)?;
     common::expect_assert_eq(
-        record.record._from_collection_name().as_str(),
+        record._from_collection_name().as_str(),
         Dish::collection_name(),
     )?;
     common::expect_assert_eq(
-        record.record._to_collection_name().as_str(),
+        record._to_collection_name().as_str(),
         Order::collection_name(),
     )?;
     Ok(())

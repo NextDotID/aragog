@@ -7,14 +7,17 @@
 [![Discord](https://img.shields.io/discord/763034131335741440.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Xyx3hUP)
 [![Gitter](https://badges.gitter.im/aragog-rs/community.svg)](https://gitter.im/aragog-rs/community)
 
-`aragog` is a simple lightweight ODM and OGM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
-The main concept is to provide behaviors allowing to synchronize documents and structs as simply an lightly as possible.
+`aragog` is a fully featured ODM and OGM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
 
-The crate provides a powerful AQL querying tool allowing complex graph queries in *Rust*
+The main concept is to provide behaviors allowing to map your structs with ArangoDB documents as simply an lightly as possible.
+Inspired by Rails's [Active Record](https://github.com/rails/rails/tree/main/activerecord) library
+`aragog` aslo provides **hooks** and **validations** for your models.
+
+The crate also provides a powerful [AQL][AQL] querying tool allowing complex and safe ArangoDB queries in *Rust*.
 
 ## Migrations CLI
 
-Schema generation and migrations command line interface: [aragog_cli][CLI] 
+`aragog` provides a safe schema generation and migrations command line interface: [aragog_cli][CLI].
 
 ## Book and Documentation
 
@@ -28,7 +31,7 @@ Schema generation and migrations command line interface: [aragog_cli][CLI]
 
 By default all `aragog` items are asynchronous, you can compile `aragog` in a synchronous build using the `blocking` feature:
 ```toml
-aragog = { version = "0.8", features = ["blocking"], default-features = false }
+aragog = { version = "0.9", features = ["blocking"], default-features = false }
 ```
 
 You need to disable the default features. Don't forget to add the `derive` feature to use the derive macros.
@@ -39,14 +42,14 @@ If you use this crate with the [actix-web][actix] framework, you may want the `a
 To do so you can add to your `cargo.toml` the following `feature`: `actix`. This will add Actix 3 dependency and compatibility
 
 ```toml
-aragog = { version = "0.8", features = ["actix"] }
+aragog = { version = "0.9", features = ["actix"] }
 ```
 
 If you also want to be able to use [paperclip][paperclip], you may want `aragog` elements to be compatible.
 To do so you can add to your `cargo.toml` the following `feature`: `open-api`.
 
 ```toml
-aragog = { version = "0.8", features = ["actix", "open-api"] }
+aragog = { version = "0.9", features = ["actix", "open-api"] }
 ```
 
 ### Password hashing
@@ -55,7 +58,7 @@ You may want `aragog` to provide a more complete `Authenticate` trait allowing t
 To do so you can add to your `cargo.toml` the following `feature`: `password_hashing`.
 
 ```toml
-aragog = { version = "0.8", features = ["password_hashing"] }
+aragog = { version = "0.9", features = ["password_hashing"] }
 ```
 
 It will add two functions in the `Authenticate` trait:
@@ -82,7 +85,7 @@ If you don't need the following traits:
 You can disable them with the `minimal_traits` feature:
 
 ```toml
-aragog = { version = "0.8", features = ["minimal_traits"] }
+aragog = { version = "0.9", features = ["minimal_traits"] }
 ```
 
 ### License
@@ -101,3 +104,4 @@ Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][i
 [CLI]: https://crates.io/crates/aragog_cli
 [fMeow]: https://github.com/fMeow/
 [inzanez]: https://github.com/inzanez/
+[AQL]: https://www.arangodb.com/docs/stable/aql/ "AQL"

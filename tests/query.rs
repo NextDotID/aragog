@@ -656,7 +656,7 @@ mod call {
         let res = res.get_records::<Order>();
         common::expect_assert_eq(res.len(), 2)?;
         common::expect_assert_eq(
-            res.iter().map(|o| o.record.name.as_str()).collect(),
+            res.iter().map(|o| o.name.as_str()).collect(),
             vec!["Menu Pizza", "Menu Pizza 2"],
         )?;
         Ok(())
@@ -677,7 +677,7 @@ mod call {
         let res = res.get_records::<Dish>();
         common::expect_assert_eq(res.len(), 3)?;
         common::expect_assert_eq(
-            res.iter().map(|o| o.record.name.as_str()).collect(),
+            res.iter().map(|o| o.name.as_str()).collect(),
             vec!["Pizza Mozarella", "Wine", "Ice Cream"],
         )?;
         Ok(())
@@ -701,7 +701,7 @@ mod call {
         let res = res.get_records::<Dish>();
         common::expect_assert_eq(res.len(), 5)?;
         common::expect_assert_eq(
-            res.iter().map(|o| o.record.name.as_str()).collect(),
+            res.iter().map(|o| o.name.as_str()).collect(),
             vec![
                 "Pizza Mozarella",
                 "Wine",

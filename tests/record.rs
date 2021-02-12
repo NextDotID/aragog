@@ -40,8 +40,8 @@ impl Dish {
         D: DatabaseAccess,
     {
         let mut menu: DatabaseRecord<Menu> = Menu::find(&self.menu_id, db_access).await?;
-        menu.record.dish_count += 1;
-        menu.record.last_dish_updated = Some(self.clone());
+        menu.dish_count += 1;
+        menu.last_dish_updated = Some(self.clone());
         menu.save(db_access).await?;
         Ok(())
     }
@@ -52,7 +52,7 @@ impl Dish {
         D: DatabaseAccess,
     {
         let mut menu: DatabaseRecord<Menu> = Menu::find(&self.menu_id, db_access).await?;
-        menu.record.last_dish_updated = Some(self.clone());
+        menu.last_dish_updated = Some(self.clone());
         menu.save(db_access).await?;
         Ok(())
     }
@@ -125,14 +125,14 @@ mod write {
         async fn before_create_and_save_hook() -> Result<(), String> {
             let pool = common::setup_db().await;
             let menu = init_menu(&pool).await;
-            assert_eq!(menu.record.dish_count, 0);
+            assert_eq!(menu.dish_count, 0);
             let dish = init_dish(&menu.key);
             let mut res = DatabaseRecord::create(dish, &pool).await.unwrap();
-            res.record.name = String::from("New Name");
+            res.name = String::from("New Name");
             res.save(&pool).await.unwrap();
             let menu = menu.reload(&pool).await.unwrap();
-            assert_eq!(menu.record.dish_count, 1);
-            assert_eq!(menu.record.last_dish_updated.unwrap().name, res.record.name);
+            assert_eq!(menu.dish_count, 1);
+            assert_eq!(menu.last_dish_updated.as_ref().unwrap().name, res.name);
             Ok(())
         }
 
@@ -157,8 +157,8 @@ mod write {
                     Err(_) => (),
                 };
                 menu.reload_mut(&pool).await.unwrap();
-                assert_eq!(menu.record.dish_count, 0);
-                assert!(menu.record.last_dish_updated.is_none());
+                assert_eq!(menu.dish_count, 0);
+                assert!(menu.last_dish_updated.is_none());
                 Ok(())
             }
 
@@ -171,15 +171,15 @@ mod write {
                 let mut menu = init_menu(&pool).await;
                 let dish = init_dish(&menu.key);
                 let mut doc = DatabaseRecord::create(dish, &pool).await.unwrap();
-                doc.record.name = String::from("wrong");
-                doc.record.price = 0;
+                doc.name = String::from("wrong");
+                doc.price = 0;
                 match doc.save(&pool).await {
                     Ok(_) => return Err("Hook should have called validations".to_string()),
                     Err(_) => (),
                 };
                 menu.reload_mut(&pool).await.unwrap();
-                assert_eq!(menu.record.dish_count, 1);
-                assert_ne!(&menu.record.last_dish_updated.unwrap().name, "wrong");
+                assert_eq!(menu.dish_count, 1);
+                assert_ne!(&menu.last_dish_updated.as_ref().unwrap().name, "wrong");
                 Ok(())
             }
         }
@@ -409,12 +409,12 @@ mod read {
         let query = Dish::query().sort("name", None);
         let found_records = Dish::get(query, &pool).await.unwrap().documents;
         for (i, value) in ["Pasta", "Pizza", "Quiche", "Steak"].iter().enumerate() {
-            common::expect_assert_eq(*value, &found_records[i].record.name)?;
+            common::expect_assert_eq(*value, &found_records[i].name)?;
         }
         let query = Dish::query().sort("price", None).sort("name", None);
         let found_records = Dish::get(query, &pool).await.unwrap().documents;
         for (i, value) in ["Pasta", "Quiche", "Pizza", "Steak"].iter().enumerate() {
-            common::expect_assert_eq(*value, &found_records[i].record.name)?;
+            common::expect_assert_eq(*value, &found_records[i].name)?;
         }
         Ok(())
     }

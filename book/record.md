@@ -47,7 +47,7 @@ let document_key = &user_record.key;
 // The key can be used to retrieve documents, returning again a `DatabaseRecord<User>`
 let found_user = User::find(document_key, &database_pool).await.unwrap();
 // We can access the document data from the database record
-assert_eq!(user.username, found_user.record.username);
+assert_eq!(user.username, found_user.username);
  ```
 
 - `key` is the primary identifier of the document, certifying it's written in the database collection
@@ -95,7 +95,7 @@ Complete Example:
      // We create the user
      let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
      // You can access and edit the document
-     user_record.record.username = String::from("LeRevenant1524356");
+     user_record.username = String::from("LeRevenant1524356");
      // And directly save it
      user_record.save(&database_pool).await.unwrap();
      // Or delete it
@@ -198,7 +198,7 @@ You can implement `Record` directly instead of deriving it.
 as in the future more hooks may be added to this trait without considering it **breaking changes**
 
 You need to specify the `collection_name` method which, when deriving, takes the name of the structure.
-You also need to implement directly the various hooks you need.
+You also need to implement directly the various hooks.
 
 Example:
 ```rust
@@ -216,6 +216,18 @@ impl Record for User {
     fn collection_name() -> &'static str { "User" }
 
     async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+        D: DatabaseAccess {
+        // Your implementation
+        Ok(())
+    }
+
+    async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+        D: DatabaseAccess {
+        // Your implementation
+        Ok(())
+    }
+    
+    async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
         D: DatabaseAccess {
         // Your implementation
         Ok(())

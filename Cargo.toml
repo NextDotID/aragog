@@ -41,14 +41,19 @@ serde_yaml = "0.8"
 log = "0.4"
 # Error definitions
 thiserror = "1.0"
-# Numeric types
+# Numeric types for query engine
 num = "0.3"
 # Self depedencies
 maybe-async = "0.2"
 
+# Optional crates
+# The aragog derive macros
 aragog-macros = { path = "aragog_macros", version = "0.3", optional = true }
+# Actix web compatibility
 actix-web = { version = "3.3", optional = true, default-features = false }
+# Argon2 hashing
 argonautica = { version = "0.2", optional = true }
+# Open API V2 Compatibility
 paperclip = { version = "0.5", optional = true, features = ["actix"] }
 
 [dev-dependencies]
