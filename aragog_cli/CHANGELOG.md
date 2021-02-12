@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.10
+
+* `aragog` dependecy with `minimal_traits` feature to avoid useless traits
+
 ## 0.2.9
 
 * `aragog` dependency from 0.8 to 0.9
