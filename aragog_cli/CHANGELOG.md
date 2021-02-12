@@ -4,6 +4,10 @@
 
 * `aragog` dependency from 0.8 to 0.9
 
+Fixes:
+  
+* updated `arangors` dependency requirement to >= `0.4.6` to avoid build issues
+
 ## 0.2.8
 
 * `aragog` dependency from 0.7 to 0.8

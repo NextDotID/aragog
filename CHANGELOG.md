@@ -2,8 +2,9 @@
 
 ## 0.9.0
 
+Features:
+
 * `DatabaseRecord<T>` new methods `reload` and `reload_mut`
-  
 * (**BREAKING**) `DatabaseRecord::save` and `create` no longer require `Validate` implementation and don't automatically launch validations.
   Use hooks instead (see the [book](./book/record.md))
 * `Record` hooks (see [book](./book/record.md)):
@@ -14,6 +15,11 @@
 * `aragog_macros` `0.3` (see [CHANGELOG](./aragog_macros/CHANGELOG.md)):
   - (**BREAKING**)`EdgeRecord` derive macro no longer implements `Record`
   - `Record` derive macro `hook` extension attribute to define hooks
+  
+Fixes:
+    
+- updated `arangors` dependency requirement to >= `0.4.6` to avoid build issues
+    
   
 Note: Two breaking changes from 0.8 to 0.9
 
