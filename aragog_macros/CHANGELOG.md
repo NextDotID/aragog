@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+- Added `Record` derive proc macro attribute `hook` see [book](../book/record.md)
+- Added `blocking` cargo feature for synced hooks
+- (**BREAKING**): `EdgeRecord` derive proc macro no longer implements `Record`
+
 ## 0.2.2
 
 - HOTFIX: (yanking 0.2.1) validate derive macro was crashing compilation on other derive macro attributes.

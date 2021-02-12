@@ -1,8 +1,12 @@
 # Changelog
 
+## 0.2.9
+
+* `aragog` dependency from 0.8 to 0.9
+
 ## 0.2.8
 
-* `aragog` depedency from 0.7 to 0.8
+* `aragog` dependency from 0.7 to 0.8
 
 ## 0.2.7
 

@@ -1,6 +1,6 @@
 [package]
 name = "aragog_cli"
-version = "0.2.8"
+version = "0.2.9"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -20,7 +20,7 @@ doc = false
 
 [dependencies]
 # Aragog
-aragog = { path = "..", version = "0.8", features = ["blocking"], default-features = false }
+aragog = { path = "..", version = "0.9", features = ["blocking"], default-features = false }
 arangors = { version = "~0.4.6", features = ["blocking", "reqwest_blocking", "rocksdb"], default-features = false }
 
 # Serialization
