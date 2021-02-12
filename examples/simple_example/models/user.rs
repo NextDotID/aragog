@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 /// This is a User
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+#[hook(before_create(func("validate")), before_save(func("validate")))]
 pub struct User {
     #[validate(min_length = 5, func("validate_username"))]
     pub username: String,

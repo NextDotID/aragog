@@ -2,18 +2,18 @@
 
 use serde::{Deserialize, Serialize};
 
-use aragog::{AuthorizeAction, DatabaseRecord, Record, Validate};
+use aragog::{AuthorizeAction, DatabaseRecord, Record};
 
 pub mod common;
 
-#[derive(Serialize, Deserialize, Clone, Record, Validate)]
+#[derive(Serialize, Deserialize, Clone, Record)]
 pub struct Dish {
     pub name: String,
     pub price: u16,
     pub is_alcohol: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, Record, Validate)]
+#[derive(Serialize, Deserialize, Clone, Record)]
 pub struct User {
     pub name: String,
     pub age: u8,

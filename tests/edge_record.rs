@@ -4,12 +4,12 @@ use aragog::{DatabaseConnectionPool, DatabaseRecord, EdgeRecord, Record, Validat
 
 mod common;
 
-#[derive(Clone, Serialize, Deserialize, Record, Validate)]
+#[derive(Clone, Serialize, Deserialize, Record)]
 pub struct Dish {
     pub name: String,
 }
 
-#[derive(Clone, Serialize, Deserialize, Record, Validate)]
+#[derive(Clone, Serialize, Deserialize, Record)]
 pub struct Order {
     pub name: String,
 }
@@ -38,8 +38,9 @@ async fn create_order(pool: &DatabaseConnectionPool) -> DatabaseRecord<Order> {
     .unwrap()
 }
 
-#[derive(Clone, EdgeRecord, Serialize, Deserialize, Validate)]
+#[derive(Clone, Record, EdgeRecord, Serialize, Deserialize, Validate)]
 #[validate(func("validate_edge_fields"))]
+#[hook(before_all(func = "validate"))]
 pub struct PartOf {
     _from: String,
     _to: String,

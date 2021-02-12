@@ -30,6 +30,8 @@
 //! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 //! * Transactional operations
 //!
+//! For detailed explanations on theses feature, read the [book](https://gitlab.com/qonfucius/aragog/-/tree/master/book)
+//!
 //! #### Cargo features
 //!
 //! ##### Async and Blocking
@@ -139,8 +141,6 @@
 //! The global architecture is simple, every *model* you define that can be synced with the database must implement `serde::Serialize`, `serde::Deserialize` and `Clone`.
 //! To declare a `struct` as a Model it must derive from `aragog::Record` (the collection name must be the same as the struct) or implement it.
 //!
-//! If you want any of the other behaviors you can implement the associated *trait*:
-//!
 //! The final *model* structure will be an **Exact** representation of the content of a ArangoDB *document*, so without its `_key`, `_id` and `_rev`.
 //! Your project should contain some `models` folder with every `struct` representation of your database documents.
 //!
@@ -149,11 +149,11 @@
 //! **Example:**
 //!
 //! ```rust
-//! use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
+//! use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, AuthMode};
 //! use serde::{Serialize, Deserialize};
 //! use tokio;
 //!
-//! #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+//! #[derive(Serialize, Deserialize, Clone, Record)]
 //! pub struct User {
 //!     pub username: String,
 //!     pub first_name: String,
@@ -193,22 +193,22 @@
 //! **Example:**
 //!
 //! ```rust
-//! # use aragog::{Record, EdgeRecord, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
+//! # use aragog::{Record, EdgeRecord, DatabaseConnectionPool, DatabaseRecord, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use tokio;
 //! #
-//! #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+//! #[derive(Serialize, Deserialize, Clone, Record)]
 //! pub struct Dish {
 //!     pub name: String,
 //!     pub price: usize
 //! }
 //!
-//! #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+//! #[derive(Serialize, Deserialize, Clone, Record)]
 //! pub struct Order {
 //!     pub name: String,
 //! }
 //!
-//! #[derive(Serialize, Deserialize, Clone, EdgeRecord, Validate)]
+//! #[derive(Serialize, Deserialize, Clone, Record, EdgeRecord)]
 //! pub struct PartOf {
 //!     pub _from: String,
 //!     pub _to: String,
@@ -242,11 +242,11 @@
 //! Aragog now supports transactional operations without API changes through the new `Transaction` Object.
 //!
 //! ```rust
-//! # use aragog::{Record, transaction::Transaction, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
+//! # use aragog::{Record, transaction::Transaction, DatabaseConnectionPool, DatabaseRecord, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use tokio;
 //! #
-//! #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+//! #[derive(Serialize, Deserialize, Clone, Record)]
 //! pub struct Dish {
 //!     pub name: String,
 //!     pub price: usize
@@ -295,12 +295,12 @@
 //!
 //! **Example**
 //! ```rust
-//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
+//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use aragog::query::{Comparison, Filter};
 //! # use tokio;
 //! #
-//! # #[derive(Serialize, Deserialize, Clone, Record, Validate)]
+//! # #[derive(Serialize, Deserialize, Clone, Record)]
 //! # pub struct User {
 //! #     pub username: String,
 //! #     pub first_name: String,
@@ -342,7 +342,7 @@
 //! ```rust
 //! #[macro_use]
 //! extern crate aragog;
-//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
+//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use aragog::query::{Query, Comparison, Filter};
 //! # use tokio;
@@ -354,11 +354,6 @@
 //! #     pub last_name: String,
 //! #     pub age: usize
 //! # }
-//!#
-//! # impl Validate for User {
-//! #     fn validations(&self,errors: &mut Vec<String>) { }
-//! # }
-//! #
 //! # #[tokio::main]
 //! # async fn main() {
 //! # let database_pool = DatabaseConnectionPool::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
@@ -563,6 +558,8 @@
 //! [arango_doc]: https://www.arangodb.com/docs/stable/getting-started.html "Arango getting started"
 //!
 #![forbid(missing_docs)]
+
+pub extern crate async_trait;
 
 #[cfg(all(feature = "async", feature = "blocking"))]
 compile_error!(

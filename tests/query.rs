@@ -517,21 +517,21 @@ mod query {
 mod call {
     use serde::{Deserialize, Serialize};
 
-    use aragog::{DatabaseConnectionPool, DatabaseRecord, EdgeRecord, Record, Validate};
+    use aragog::{DatabaseConnectionPool, DatabaseRecord, EdgeRecord, Record};
 
     use super::*;
 
-    #[derive(Clone, Serialize, Deserialize, Record, Validate)]
+    #[derive(Clone, Serialize, Deserialize, Record)]
     pub struct Dish {
         pub name: String,
     }
 
-    #[derive(Clone, Serialize, Deserialize, Record, Validate)]
+    #[derive(Clone, Serialize, Deserialize, Record)]
     pub struct Order {
         pub name: String,
     }
 
-    #[derive(Clone, Serialize, Deserialize, EdgeRecord, Validate)]
+    #[derive(Clone, Serialize, Deserialize, Record, EdgeRecord)]
     pub struct PartOf {
         pub _from: String,
         pub _to: String,

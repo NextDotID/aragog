@@ -106,7 +106,7 @@ async fn main() {
 
     match error {
         ServiceError::ValidationError(msg) => {
-            assert_eq!(msg, String::from("price should be above zero"))
+            assert_eq!(msg, String::from("price '0' must be greater than 0"))
         }
         _ => panic!("Wrong error returned"),
     }

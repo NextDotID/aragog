@@ -21,7 +21,7 @@ doc = false
 [dependencies]
 # Aragog
 aragog = { path = "..", version = "0.8", features = ["blocking"], default-features = false }
-arangors = { version = "0.4", features = ["blocking", "reqwest_blocking", "rocksdb"], default-features = false }
+arangors = { version = "~0.4.6", features = ["blocking", "reqwest_blocking", "rocksdb"], default-features = false }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }

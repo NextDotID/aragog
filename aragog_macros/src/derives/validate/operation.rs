@@ -1,5 +1,8 @@
+use crate::to_tokenstream::ToTokenStream;
+use crate::toolbox::{expect_field_name, expect_int_lit, expect_str_lit, expect_usize_lit};
+use proc_macro2::{Span, TokenStream};
 use std::fmt::{self, Display, Formatter};
-use syn::Lit;
+use syn::{Field, Ident, Lit};
 
 #[derive(Debug, Clone)]
 pub enum Operation {
@@ -15,95 +18,59 @@ pub enum Operation {
 }
 
 impl Operation {
-    pub fn parse(str: &str, lit: &Lit, field: Option<String>) -> Result<Self, String> {
+    pub fn parse(str: &str, lit: &Lit, field: Option<&Field>) -> Result<Self, String> {
         let res = match str {
             "min_length" => {
-                let value = Self::expect_usize_lit(lit)?;
-                let field = Self::expect_field_name(field)?;
+                let value = expect_usize_lit(lit)?;
+                let field = expect_field_name(field)?;
                 Self::MinLength { value, field }
             }
             "max_length" => {
-                let value = Self::expect_usize_lit(lit)?;
-                let field = Self::expect_field_name(field)?;
+                let value = expect_usize_lit(lit)?;
+                let field = expect_field_name(field)?;
                 Self::MaxLength { value, field }
             }
             "length" => {
-                let value = Self::expect_usize_lit(lit)?;
-                let field = Self::expect_field_name(field)?;
+                let value = expect_usize_lit(lit)?;
+                let field = expect_field_name(field)?;
                 Self::Length { value, field }
             }
             "regex" => {
-                let value = Self::expect_str_lit(lit)?;
-                let field = Self::expect_field_name(field)?;
+                let value = expect_str_lit(lit)?;
+                let field = expect_field_name(field)?;
                 Self::Regex { value, field }
             }
             "greater_than" => {
-                let value = Self::expect_int_lit(lit)?;
-                let field = Self::expect_field_name(field)?;
+                let value = expect_int_lit(lit)?;
+                let field = expect_field_name(field)?;
                 Self::GreaterThan { value, field }
             }
             "lesser_than" => {
-                let value = Self::expect_int_lit(lit)?;
-                let field = Self::expect_field_name(field)?;
+                let value = expect_int_lit(lit)?;
+                let field = expect_field_name(field)?;
                 Self::LesserThan { value, field }
             }
             "greater_or_equal" => {
-                let value = Self::expect_int_lit(lit)?;
-                let field = Self::expect_field_name(field)?;
+                let value = expect_int_lit(lit)?;
+                let field = expect_field_name(field)?;
                 Self::GreaterOrEqual { value, field }
             }
             "lesser_or_equal" => {
-                let value = Self::expect_int_lit(lit)?;
-                let field = Self::expect_field_name(field)?;
+                let value = expect_int_lit(lit)?;
+                let field = expect_field_name(field)?;
                 Self::LesserOrEqual { value, field }
             }
             "func" => {
-                let func = Self::expect_str_lit(lit)?;
+                let func = expect_str_lit(lit)?;
+                let field = match field {
+                    Some(f) => Some(f.ident.as_ref().unwrap().to_string()),
+                    None => None,
+                };
                 Self::Function { func, field }
             }
             _ => return Err("Can't find a valid operation for field validation".to_string()),
         };
         Ok(res)
-    }
-
-    fn expect_field_name(field: Option<String>) -> Result<String, String> {
-        match field {
-            Some(v) => Ok(v),
-            None => Err(String::from("This attribute must be placed on a field")),
-        }
-    }
-
-    fn expect_int_lit(lit: &Lit) -> Result<i32, String> {
-        match lit {
-            Lit::Int(val) => Ok(val.base10_parse().unwrap()),
-            _ => {
-                let error = "Expected an integer value".to_string();
-                emit_error!(lit.span(), error);
-                Err(error)
-            }
-        }
-    }
-
-    fn expect_usize_lit(lit: &Lit) -> Result<usize, String> {
-        match lit {
-            Lit::Int(val) => Ok(val.base10_parse().unwrap()),
-            _ => {
-                let error = "Expected an integer value".to_string();
-                emit_error!(lit.span(), error);
-                Err(error)
-            }
-        }
-    }
-
-    fn expect_str_lit(lit: &Lit) -> Result<String, String> {
-        match lit {
-            Lit::Str(val) => Ok(val.value()),
-            _ => {
-                let error = "Expected a string value".to_string();
-                emit_error!(lit.span(), error);
-                Err(error)
-            }
-        }
     }
 }
 
@@ -124,5 +91,75 @@ impl Display for Operation {
                 Operation::Function { .. } => "func",
             }
         )
+    }
+}
+
+impl ToTokenStream for Operation {
+    fn token_stream(self) -> TokenStream {
+        let stream = match self {
+            Self::MinLength { value, field } => {
+                let field_ident = Ident::new(&field, Span::call_site());
+                quote! {
+                    Self::validate_min_len(#field, &self.#field_ident, #value, errors);
+                }
+            }
+            Self::MaxLength { value, field } => {
+                let field_ident = Ident::new(&field, Span::call_site());
+                quote! {
+                    Self::validate_max_len(#field, &self.#field_ident, #value, errors);
+                }
+            }
+            Self::Length { value, field } => {
+                let field_ident = Ident::new(&field, Span::call_site());
+                quote! {
+                    Self::validate_len(#field, &self.#field_ident, #value, errors);
+                }
+            }
+            Self::Regex { value, field } => {
+                let field_ident = Ident::new(&field, Span::call_site());
+                quote! {
+                    Self::validate_regex(#field, &self.#field_ident, #value, errors);
+                }
+            }
+            Self::GreaterThan { value, field } => {
+                let field_ident = Ident::new(&field, Span::call_site());
+                quote! {
+                    Self::validate_greater_than(#field, self.#field_ident as i32, #value, errors);
+                }
+            }
+            Self::LesserThan { value, field } => {
+                let field_ident = Ident::new(&field, Span::call_site());
+                quote! {
+                    Self::validate_lower_than(#field, self.#field_ident as i32, #value, errors);
+                }
+            }
+            Self::GreaterOrEqual { value, field } => {
+                let field_ident = Ident::new(&field, Span::call_site());
+                quote! {
+                    Self::validate_greater_or_equal_to(#field, self.#field_ident as i32, #value, errors);
+                }
+            }
+            Self::LesserOrEqual { value, field } => {
+                let field_ident = Ident::new(&field, Span::call_site());
+                quote! {
+                    Self::validate_lesser_or_equal_to(#field, self.#field_ident as i32, #value, errors);
+                }
+            }
+            Self::Function { func, field } => {
+                let func_ident = Ident::new(&func, Span::call_site());
+                match field {
+                    Some(field) => {
+                        let field_ident = Ident::new(&field, Span::call_site());
+                        quote! {
+                            Self::#func_ident(&#field, &self.#field_ident, errors);
+                        }
+                    }
+                    None => quote! {
+                        self.#func_ident(errors);
+                    },
+                }
+            }
+        };
+        stream
     }
 }
