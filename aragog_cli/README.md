@@ -8,6 +8,10 @@ Migration and schema generation tool for [aragog][aragog] (Version > `0.7`).
 
 > Note: Currently, transactional operations are not supported, a failing migrations will not automatically rollback and you may need to handle some errors manually
 
+## Installation
+
+run with cargo: `cargo install aragog_cli`
+
 ## Options
 
 - `--db-host <DB_HOST>` Sets the ArangoDB host (by default env var `DB_HOST` is used)

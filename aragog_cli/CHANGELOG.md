@@ -2,7 +2,7 @@
 
 ## 0.2.10
 
-* `aragog` dependecy with `minimal_traits` feature to avoid useless traits
+* `aragog` dependency with `minimal_traits` feature to avoid useless traits
 
 ## 0.2.9
 
