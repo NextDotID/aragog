@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1
+
+* `DatabaseRecord<T>` implements `Deref` and `DerefMut` for `T`
+* Removed `DatabaseRecord::authenticate` method, it doesn't break current code with the new `Deref` implementation
+* Updated documentation and Readme
+
 ## 0.9.0
 
 Features:
