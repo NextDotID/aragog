@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.11
+
+* Fixed `desribe` command always giving 0 document count.
+
 ## 0.2.10
 
 * `aragog` dependency with `minimal_traits` feature to avoid useless traits

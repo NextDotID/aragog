@@ -25,7 +25,7 @@ pub fn describe_db(config: &Config) -> Result<(), AragogCliError> {
             continue;
         }
         let collection = db.collection(&info.name)?;
-        let properties: Properties = collection.properties()?;
+        let properties: Properties = collection.document_count()?;
         let synced = db
             .schema
             .collections
