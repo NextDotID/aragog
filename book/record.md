@@ -43,7 +43,7 @@ let user = User {
 // We create the document on the database collection "User", returning a `DatabaseRecord<User>`
 let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
 // We can now access the unique `_key` of the document
-let document_key = &user_record.key;
+let document_key = user_record.key();
 // The key can be used to retrieve documents, returning again a `DatabaseRecord<User>`
 let found_user = User::find(document_key, &database_pool).await.unwrap();
 // We can access the document data from the database record
@@ -106,12 +106,18 @@ Complete Example:
 ### Hooks
 
 The `Record` trait provides the following hooks:
-- `before_create` : executed before document creation (`DatabaseRecord::create`)
-- `before_save` : executed before document save (`Record::save`)
-- `before_all` : executed before both document creation **and** save.
-- `after_create` : executed after the document creation (`DatabaseRecord::create`)
-- `after_save` : executed after the document save (`Record::save`)
-- `after_all` : executed after both documet creation **and** save.
+- **before** hooks:
+    - `before_create` : executed before document creation (`DatabaseRecord::create`)
+    - `before_save` : executed before document save (`DatabaseRecord::save`)
+    - `before_delete` : executed before document deletion (`DatabaseRecord::delete`)
+    - `before_write` : executed before both document creation **and** save.
+    - `before_all` : executed before document creation, save and deletion.
+- **after** hooks:  
+    - `after_create` : executed after the document creation (`DatabaseRecord::create`)
+    - `after_save` : executed after the document save (`DatabaseRecord::save`)
+    - `after_delete` : executed after the document deletion (`DatabaseRecord::delete`)
+    - `after_write` : executed after both document creation **and** save.
+    - `after_all` : executed after both document creation, save and deletion.
 
 You can register various methods in these hooks with the following syntax:
 ```rust
@@ -227,6 +233,12 @@ impl Record for User {
         Ok(())
     }
     
+    async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+        D: DatabaseAccess {
+        // Your implementation
+        Ok(())
+    }
+    
     async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
         D: DatabaseAccess {
         // Your implementation
@@ -234,6 +246,12 @@ impl Record for User {
     }
 
     async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+        D: DatabaseAccess {
+        // Your implementation
+        Ok(())
+    }
+
+    async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
         D: DatabaseAccess {
         // Your implementation
         Ok(())
@@ -251,5 +269,6 @@ So please report any bug or strange behaviour as this feature is still in its ea
 ### TODO list
 
 - [X] Defining hooks (`before_save`, `before_create`, etc) and the equivalent macros
-- [ ] Adding `before_delete` and `after_delete` hooks
+- [X] Adding `before_delete` and `after_delete` hooks
 - [ ] Allowing more modularity in return types and errors
+- [ ] Use the `_rev` check (**CRITICAL**)

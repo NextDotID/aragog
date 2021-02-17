@@ -1,8 +1,10 @@
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
+use crate::db::transaction::Transaction;
 use crate::query::{Query, RecordQueryResult};
-use crate::{DatabaseAccess, DatabaseRecord, ServiceError};
+use crate::transaction::TransactionBuilder;
+use crate::{DatabaseAccess, DatabaseConnectionPool, DatabaseRecord, ServiceError};
 
 /// The main trait of the Aragog library.
 /// Trait for structures that can be stored in Database.
@@ -92,6 +94,17 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     where
         D: DatabaseAccess;
 
+    /// method called by [`DatabaseRecord`]::[`delete`]
+    /// before the database operation.
+    ///
+    /// Define hooks manually or with macros (see the book)
+    ///
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`delete`]: struct.DatabaseRecored.html#method.delete
+    async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess;
+
     /// method called automatically by [`DatabaseRecord`]::[`create`]
     /// after the database operation.
     ///
@@ -113,4 +126,32 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
         D: DatabaseAccess;
+
+    /// method called automatically by [`DatabaseRecord`]::[`delete`]
+    /// after the database operation.
+    ///
+    /// Define hooks manually or with macros (see the book)
+    ///
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`delete`]: struct.DatabaseRecored.html#method.delete
+    async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess;
+
+    /// Returns a transaction builder on this collection only.
+    fn transaction_builder() -> TransactionBuilder {
+        TransactionBuilder::new().collections(vec![Self::collection_name().to_string()])
+    }
+
+    /// Builds a transaction for this collection only.
+    ///
+    /// # Arguments
+    ///
+    /// * `db_pool` - The current database connection pool
+    async fn transaction(
+        &self,
+        db_pool: &DatabaseConnectionPool,
+    ) -> Result<Transaction, ServiceError> {
+        Self::transaction_builder().build(db_pool).await
+    }
 }

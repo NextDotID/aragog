@@ -224,9 +224,9 @@ async fn main() {
         children
             .documents
             .iter()
-            .map(|r| r.id.as_str())
+            .map(|r| r.id().as_str())
             .collect::<Vec<&str>>(),
-        vec![&robb.id, &sansa.id, &arya.id, &bran.id]
+        vec![robb.id(), sansa.id(), arya.id(), bran.id()]
     );
     // Find ned children
     let children = DatabaseRecord::<Character>::get(ned.inbound_query(1, 1, "ChildOf"), &db_pool)
@@ -236,9 +236,9 @@ async fn main() {
         children
             .documents
             .iter()
-            .map(|r| r.id.as_str())
+            .map(|r| r.id().as_str())
             .collect::<Vec<&str>>(),
-        vec![&robb.id, &sansa.id, &arya.id, &bran.id, &john.id]
+        vec![robb.id(), sansa.id(), arya.id(), bran.id(), john.id()]
     );
 
     // Find joffrey ancestors
@@ -252,9 +252,9 @@ async fn main() {
         ancestors
             .documents
             .iter()
-            .map(|r| r.id.as_str())
+            .map(|r| r.id().as_str())
             .collect::<Vec<&str>>(),
-        vec![&cersei.id, &tywin.id, &jaime.id]
+        vec![cersei.id(), tywin.id(), jaime.id()]
     );
 
     // Find all brothers and nephews, returns self
@@ -273,9 +273,9 @@ async fn main() {
         relatives
             .documents
             .iter()
-            .map(|r| r.id.as_str())
+            .map(|r| r.id().as_str())
             .collect::<Vec<&str>>(),
-        vec![&jaime.id, &joffrey.id, &cersei.id, &tyrion.id]
+        vec![jaime.id(), joffrey.id(), cersei.id(), tyrion.id()]
     );
 
     println!("Done !");

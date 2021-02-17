@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+* Adapted `EdgeRecord` implementation to aragog 0.10
+* `Record` derive attributes:
+    - new `before_delete` and `after_delete` attributes
+    - `before_all` and `after_all` include deletion
+    - new `before_write` and `after_write` for create and save only
+
 ## 0.3.0
 
 - Added `Record` derive proc macro attribute `hook` see [book](../book/record.md)

@@ -237,10 +237,10 @@
 //!     let edge = DatabaseRecord::link(&dish, &order, &database_pool, |_from, _to| {
 //!         PartOf { _from, _to }
 //!     }).await.unwrap();
-//!     assert_eq!(&edge._from(), &dish.id);
-//!     assert_eq!(&edge._to(), &order.id);
-//!     assert_eq!(&edge._from_key(), &dish.key);
-//!     assert_eq!(&edge._to_key(), &order.key);
+//!     assert_eq!(edge._from(), dish.id());
+//!     assert_eq!(edge._to(), order.id());
+//!     assert_eq!(&edge._from_key(), dish.key());
+//!     assert_eq!(&edge._to_key(), order.key());
 //! }
 //! ```
 //!
@@ -329,7 +329,7 @@
 //! let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
 //!
 //! // Find with the primary key or..
-//! let user_record = User::find(&record.key, &database_pool).await.unwrap();
+//! let user_record = User::find(record.key(), &database_pool).await.unwrap();
 //! // .. Generate a query and..
 //! let query = User::query().filter(Filter::new(Comparison::field("last_name").equals_str("Surcouf")).and(Comparison::field("age").greater_than(15)));
 //! // get the only record (fails if no or multiple records)

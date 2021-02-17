@@ -58,8 +58,8 @@ async fn edge_can_be_created() -> Result<(), String> {
 
     DatabaseRecord::create(
         PartOf {
-            _from: dish.id.clone(),
-            _to: order.id.clone(),
+            _from: dish.id().clone(),
+            _to: order.id().clone(),
             description: "part of".to_string(),
         },
         &pool,
@@ -85,8 +85,8 @@ async fn edge_can_be_created_with_a_simple_link() -> Result<(), String> {
     })
     .await
     .unwrap();
-    common::expect_assert_eq(&record._from, &dish.id)?;
-    common::expect_assert_eq(&record._to, &order.id)?;
+    common::expect_assert_eq(&record._from, dish.id())?;
+    common::expect_assert_eq(&record._to, order.id())?;
     common::expect_assert_eq(
         record._from_collection_name().as_str(),
         Dish::collection_name(),

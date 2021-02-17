@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.10.0
+
+* `DatabaseRecord`:
+  - (**BREAKING**) `key`,`id` and `rev` fields are now private
+  - Added getters for now private fields
+  - (**BREAKING**) dropped legacy `get_id` method
+  - (**BREAKING**) `create` method requires a mutable record
+  - Added `force_create`, `force_save` and `force_delete` to skip hooks
+  - Updated and fixed some obsolete doc comments
+  - (**FIX**) `link` method correctly launches creation hooks
+  
+* Transactions
+  - (**BREAKING**) Dropped `new_with_option` function
+  - New `TransactionBuilder` object for custom transactions
+  - `Record` now implements restricted transaction creation methods:
+    - `transaction`
+    - `transaction_builder`
+  
+* book update
+
 ## 0.9.1
 
 * `DatabaseRecord<T>` implements `Deref` and `DerefMut` for `T`
@@ -25,8 +45,7 @@ Features:
 Fixes:
     
 - updated `arangors` dependency requirement to >= `0.4.6` to avoid build issues
-    
-  
+
 Note: Two breaking changes from 0.8 to 0.9
 
 ## 0.8.0

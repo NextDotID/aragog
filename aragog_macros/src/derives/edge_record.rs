@@ -5,9 +5,9 @@ pub fn impl_edge_record_macro(ast: &syn::DeriveInput) -> TokenStream {
 
     let gen = quote! {
         impl EdgeRecord for #target_name {
-            fn _from(&self) -> String { self._from.clone() }
+            fn _from(&self) -> &String { &self._from }
 
-            fn _to(&self) -> String { self._to.clone() }
+            fn _to(&self) -> &String { &self._to }
         }
     };
     gen.into()

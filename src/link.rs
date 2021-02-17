@@ -23,7 +23,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 ///
 /// impl Link<Order> for DatabaseRecord<User> {
 ///     fn link_query(&self) -> Query {
-///         Order::query().filter(Comparison::field("user_id").equals_str(&self.key).into())
+///         Order::query().filter(Comparison::field("user_id").equals_str(self.key()).into())
 ///     }
 /// }
 ///
@@ -45,11 +45,11 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 /// let order = DatabaseRecord::create(
 ///     Order {
 ///         content: "content".to_string(),
-///         user_id: user.key.clone()
+///         user_id: user.key().clone()
 ///     },
 ///     &database_pool).await.unwrap();
 /// let orders = user.linked_models(&database_pool).await.unwrap();
-/// assert_eq!(&user.key, &orders.first().unwrap().user_id);
+/// assert_eq!(user.key(), &orders.first().unwrap().user_id);
 /// # }
 /// ```
 #[maybe_async::must_be_async]
@@ -75,7 +75,7 @@ pub trait Link<T: Record>: Sized {
     ///
     /// impl Link<Order> for DatabaseRecord<User> {
     ///     fn link_query(&self) -> Query {
-    ///         Order::query().filter(Comparison::field("user_id").equals_str(&self.key).into())
+    ///         Order::query().filter(Comparison::field("user_id").equals_str(self.key()).into())
     ///     }
     /// }
     ///```

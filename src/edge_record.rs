@@ -21,32 +21,39 @@ use crate::Record;
 ///
 /// To create a edge between two existing [`DatabaseRecord`] you can use the following process:
 ///
-/// ```rust ignore
-/// # use aragog::{DatabaseRecord, EdgeRecord, Record, Validate};
-/// # use serde::{Serialize, Deserialize, de::DeserializeOwned}
+/// ```rust no_run
+/// # use aragog::{DatabaseRecord, EdgeRecord, Record, DatabaseConnectionPool};
+/// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
 /// #
-/// #[derive(Clone, EdgeRecord, Record, Validate, Serialize, Deserialize)]
+/// #[derive(Clone, Record, Serialize, Deserialize)]
+/// struct Character {}
+///
+/// #[derive(Clone, EdgeRecord, Record, Serialize, Deserialize)]
 /// struct Edge {
 ///     _from: String,
 ///     _to: String,
 ///     description: String,
 /// }
+/// # #[tokio::main]
+/// # async fn main() {
+/// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
 ///
-/// let record_a = Character::find("123", &database_connection_pool).await.unwrap();
-/// let record_b = Character::find("234", &database_connection_pool).await.unwrap();
+/// let record_a = Character::find("123", &db_accessor).await.unwrap();
+/// let record_b = Character::find("234", &db_accessor).await.unwrap();
 ///
-/// let edge_record = DatabaseRecord::link(&record_a, &record_b, &database_connection_pool, |_from, _to| {
+/// let edge_record = DatabaseRecord::link(&record_a, &record_b, &db_accessor, |_from, _to| {
 ///     Edge { _from, _to, description: "description".to_string() }
 /// }).await.unwrap();
+/// # }
 /// ```
 ///
 /// [`DatabaseRecord`]: struct.DatabaseRecord.html
 pub trait EdgeRecord: Record {
     /// Retrieves the struct `_from` field
-    fn _from(&self) -> String;
+    fn _from(&self) -> &String;
 
     /// Retrieves the struct `_to` field
-    fn _to(&self) -> String;
+    fn _to(&self) -> &String;
 
     /// Parses the `_from()` returned `id` and returns the document `key`
     ///

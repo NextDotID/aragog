@@ -175,7 +175,7 @@ So please report any bug or strange behaviour as this feature is still in its ea
 
 ### Todo list
 
-- [ ] make the validate trait implementation implicit and handled through `Record` hooks
+- [X] make the validate trait easily compatible with `Record` hooks
 - [ ] Add more field validation attributes
     - [ ] Array validations
     - [ ] `Option` validations

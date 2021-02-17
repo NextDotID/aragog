@@ -1,6 +1,6 @@
 [package]
 name = "aragog"
-version = "0.9.1"
+version = "0.10.0"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -48,7 +48,7 @@ maybe-async = "0.2"
 
 # Optional crates
 # The aragog derive macros
-aragog-macros = { path = "aragog_macros", version = "0.3", optional = true }
+aragog-macros = { path = "aragog_macros", version = "0.4", optional = true }
 # Actix web compatibility
 actix-web = { version = "3.3", optional = true, default-features = false }
 # Argon2 hashing
