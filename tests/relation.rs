@@ -60,7 +60,7 @@ async fn relation_work() -> Result<(), String> {
             name: "DishTest".to_string(),
             description: "relation Test".to_string(),
             price: 10,
-            order_id: order.key.clone(),
+            order_id: order.key().clone(),
         },
         &pool,
     )
@@ -68,7 +68,7 @@ async fn relation_work() -> Result<(), String> {
     .unwrap();
 
     let relation: RecordQueryResult<Order> = dish.linked_models(&pool).await.unwrap();
-    common::expect_assert_eq(&relation.uniq().unwrap().key, &order.key)?;
+    common::expect_assert_eq(relation.uniq().unwrap().key(), order.key())?;
     Ok(())
 }
 
@@ -91,7 +91,7 @@ async fn foreign_key_relation_work() -> Result<(), String> {
             name: "DishTest".to_string(),
             description: "relation Test".to_string(),
             price: 10,
-            order_id: order.key.clone(),
+            order_id: order.key().clone(),
         },
         &pool,
     )
@@ -99,6 +99,6 @@ async fn foreign_key_relation_work() -> Result<(), String> {
     .unwrap();
 
     let relation: DatabaseRecord<Order> = dish.linked_model(&pool).await.unwrap();
-    common::expect_assert_eq(&relation.key, &order.key)?;
+    common::expect_assert_eq(relation.key(), order.key())?;
     Ok(())
 }

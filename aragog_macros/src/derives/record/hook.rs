@@ -7,11 +7,15 @@ use syn::{spanned::Spanned, Field, Meta, NestedMeta};
 #[derive(Clone, Debug)]
 pub enum Hook {
     BeforeAll(HookData),
+    BeforeWrite(HookData),
     BeforeSave(HookData),
     BeforeCreate(HookData),
+    BeforeDelete(HookData),
     AfterAll(HookData),
+    AfterWrite(HookData),
     AfterSave(HookData),
     AfterCreate(HookData),
+    AfterDelete(HookData),
 }
 
 impl ParseAttribute for Hook {
@@ -43,15 +47,21 @@ impl ParseAttribute for Hook {
                 // We check the hook operation
                 let res = match ident.as_str() {
                     "before_all" => Self::BeforeAll(data),
+                    "before_write" => Self::BeforeWrite(data),
                     "before_save" => Self::BeforeSave(data),
                     "before_create" => Self::BeforeCreate(data),
+                    "before_delete" => Self::BeforeDelete(data),
                     "after_save" => Self::AfterSave(data),
                     "after_create" => Self::AfterCreate(data),
+                    "after_delete" => Self::AfterDelete(data),
                     "after_all" => Self::AfterAll(data),
-                    _ => return Err(String::from(
-                        "Wrong identifier, expected one of:\
-                         `before_all`,`before_create`, `before_save`, `after_all`, `after_create` or `after_save`"
-                    ))
+                    "after_write" => Self::AfterWrite(data),
+                    _ => {
+                        return Err(String::from(
+                            "Wrong identifier, specify a correct `before` or `after` hook.\
+                        (`before_create` for example)",
+                        ))
+                    }
                 };
                 Ok(res)
             }

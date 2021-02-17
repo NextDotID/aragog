@@ -120,7 +120,7 @@ async fn main() {
     let record = DatabaseRecord::create(user, &db_pool).await.unwrap();
 
     // Find with the primary key
-    let _user_record = User::find(&record.key, &db_pool).await.unwrap();
+    let _user_record = User::find(record.key(), &db_pool).await.unwrap();
 
     // Build a query
     let query = User::query().filter(

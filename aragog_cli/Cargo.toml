@@ -20,7 +20,7 @@ doc = false
 
 [dependencies]
 # Aragog
-aragog = { path = "..", version = "0.9", features = ["blocking", "minimal_traits"], default-features = false }
+aragog = { path = "..", version = ">=0.9", features = ["blocking", "minimal_traits"], default-features = false }
 arangors = { version = "~0.4.6", features = ["blocking", "reqwest_blocking", "rocksdb"], default-features = false }
 
 # Serialization

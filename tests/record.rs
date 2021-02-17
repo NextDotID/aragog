@@ -95,9 +95,9 @@ mod write {
     async fn can_be_recorded_and_retrieved() -> Result<(), String> {
         let pool = common::setup_db().await;
         let menu = init_menu(&pool).await;
-        let dish = init_dish(&menu.key);
+        let dish = init_dish(menu.key());
         let dish_record = DatabaseRecord::create(dish, &pool).await.unwrap();
-        let found_record = Dish::find(&dish_record.key, &pool).await.unwrap();
+        let found_record = Dish::find(dish_record.key(), &pool).await.unwrap();
         common::expect_assert_eq(dish_record.record, found_record.record)?;
         Ok(())
     }
@@ -110,7 +110,7 @@ mod write {
     async fn can_fail() {
         let pool = common::setup_db().await;
         let menu = init_menu(&pool).await;
-        let dish = init_dish(&menu.key);
+        let dish = init_dish(menu.key());
         DatabaseRecord::create(dish.clone(), &pool).await.unwrap();
         DatabaseRecord::create(dish, &pool).await.unwrap();
     }
@@ -126,7 +126,7 @@ mod write {
             let pool = common::setup_db().await;
             let menu = init_menu(&pool).await;
             assert_eq!(menu.dish_count, 0);
-            let dish = init_dish(&menu.key);
+            let dish = init_dish(menu.key());
             let mut res = DatabaseRecord::create(dish, &pool).await.unwrap();
             res.name = String::from("New Name");
             res.save(&pool).await.unwrap();
@@ -150,7 +150,7 @@ mod write {
                     name: "dish".to_string(),
                     description: "description".to_string(),
                     price: 0,
-                    menu_id: menu.key.clone(),
+                    menu_id: menu.key().clone(),
                 };
                 match DatabaseRecord::create(dish, &pool).await {
                     Ok(_) => return Err("Hook should have called validations".to_string()),
@@ -169,7 +169,7 @@ mod write {
             async fn before_save_hook() -> Result<(), String> {
                 let pool = common::setup_db().await;
                 let mut menu = init_menu(&pool).await;
-                let dish = init_dish(&menu.key);
+                let dish = init_dish(menu.key());
                 let mut doc = DatabaseRecord::create(dish, &pool).await.unwrap();
                 doc.name = String::from("wrong");
                 doc.price = 0;
@@ -201,7 +201,7 @@ mod fmt {
                 name: "Pizza".to_string(),
                 description: "Tomato and Mozarella".to_string(),
                 price: 10,
-                menu_id: menu.key.clone(),
+                menu_id: menu.key().clone(),
             },
             &pool,
         )
@@ -209,7 +209,7 @@ mod fmt {
         .unwrap();
         assert_eq!(
             format!("{}", db_record),
-            format!("Dish {} Database Record", db_record.key)
+            format!("Dish {} Database Record", db_record.key())
         );
     }
 }
@@ -228,7 +228,7 @@ mod read {
                 name: "Pizza".to_string(),
                 description: "Tomato and Mozarella".to_string(),
                 price: 10,
-                menu_id: menu.key.clone(),
+                menu_id: menu.key().clone(),
             },
             pool,
         )
@@ -239,7 +239,7 @@ mod read {
                 name: "Pasta".to_string(),
                 description: "Ham and cheese".to_string(),
                 price: 6,
-                menu_id: menu.key.clone(),
+                menu_id: menu.key().clone(),
             },
             pool,
         )
@@ -250,13 +250,13 @@ mod read {
                 name: "Steak".to_string(),
                 description: "Served with fries".to_string(),
                 price: 10,
-                menu_id: menu.key.clone(),
+                menu_id: menu.key().clone(),
             },
             pool,
         )
         .await
         .unwrap();
-        DatabaseRecord::create(init_dish(&menu.key), pool)
+        DatabaseRecord::create(init_dish(menu.key()), pool)
             .await
             .unwrap()
     }
@@ -269,7 +269,7 @@ mod read {
         let pool = common::setup_db().await;
         let dish_record = create_dishes(&pool).await;
 
-        let found_record = Dish::find(&dish_record.key, &pool).await.unwrap();
+        let found_record = Dish::find(dish_record.key(), &pool).await.unwrap();
         common::expect_assert_eq(dish_record.record, found_record.record)?;
         Ok(())
     }
@@ -459,7 +459,7 @@ mod read {
                         FOR a in 2..5 OUTBOUND \'{}\' edges \
                         return a\
                                 ",
-                        &dish.id
+                        dish.id()
                     ),
                 )?;
                 Ok(())
@@ -472,7 +472,7 @@ mod read {
             async fn explicit() -> Result<(), String> {
                 let pool = common::setup_db().await;
                 let dish = create_dishes(&pool).await;
-                let query = Query::outbound(2, 5, "edges", &dish.id);
+                let query = Query::outbound(2, 5, "edges", dish.id());
                 common::expect_assert_eq(
                     query.to_aql(),
                     format!(
@@ -480,7 +480,7 @@ mod read {
                         FOR a in 2..5 OUTBOUND \'{}\' edges \
                         return a\
                                 ",
-                        &dish.id
+                        dish.id()
                     ),
                 )?;
                 Ok(())
@@ -506,7 +506,7 @@ mod read {
                             SORT a._id ASC \
                             return a\
                                 ",
-                        &dish.id
+                        dish.id()
                     ),
                 )?;
                 Ok(())

@@ -4,17 +4,17 @@ use std::ops::Deref;
 
 use arangors::client::reqwest::ReqwestClient;
 use arangors::transaction::Transaction as TransactionLayer;
-use arangors::transaction::{TransactionCollections, TransactionSettings};
 
-pub use {transaction_output::TransactionOutput, transaction_pool::TransactionPool};
+pub use {
+    transaction_builder::TransactionBuilder, transaction_output::TransactionOutput,
+    transaction_pool::TransactionPool,
+};
 
 use crate::{DatabaseConnectionPool, ServiceError};
-use std::collections::HashMap;
 
+mod transaction_builder;
 mod transaction_output;
 mod transaction_pool;
-
-const LOCK_TIMEOUT: usize = 60000;
 
 /// Struct representing a ArangoDB transaction.
 ///
@@ -82,7 +82,7 @@ pub struct Transaction {
 }
 
 impl Transaction {
-    /// Instantiates a new `Transaction` from a [`DatabaseConnectionPool`]
+    /// Instantiates a new `Transaction` from a [`DatabaseConnectionPool`] on all collections
     ///
     /// # Arguments
     ///
@@ -90,62 +90,16 @@ impl Transaction {
     ///
     /// The transaction will be initialized with default settings:
     /// - No disk writing wait (waitForSync)
-    /// - A lock timeout of  60 000
+    /// - A lock timeout of 60 000
+    /// - No collection restriction
+    ///
+    /// For more options use [`TransactionBuilder`]
     ///
     /// [`DatabaseConnectionPool`]: ../struct.DatabaseConnectionPool.html
+    /// [`TransactionBuilder`]: struct.TransactionBuilder.html
     #[maybe_async::maybe_async]
     pub async fn new(db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
-        Self::new_with_options(db_pool, false, LOCK_TIMEOUT).await
-    }
-
-    /// Instantiates a new `Transaction` from a [`DatabaseConnectionPool`]
-    ///
-    /// # Arguments
-    ///
-    /// * `db_pool` - The current database pool
-    /// * `wait_for_sync` - should the commit response wait for operations to be written on disk?
-    /// * `lock_timeout` - The Transaction lock timeout
-    ///
-    /// [`DatabaseConnectionPool`]: ../struct.DatabaseConnectionPool.html
-    #[maybe_async::maybe_async]
-    pub async fn new_with_options(
-        db_pool: &DatabaseConnectionPool,
-        wait_for_sync: bool,
-        lock_timeout: usize,
-    ) -> Result<Self, ServiceError> {
-        let collections_names = db_pool.collections_names();
-        let accessor = db_pool
-            .database
-            .begin_transaction(
-                TransactionSettings::builder()
-                    .lock_timeout(lock_timeout)
-                    .wait_for_sync(wait_for_sync)
-                    .collections(
-                        TransactionCollections::builder()
-                            .write(collections_names.clone())
-                            .build(),
-                    )
-                    .build(),
-            )
-            .await?;
-        log::trace!("Initialized ArangoDB transaction {}", accessor.id());
-        // TODO: Change this for direct Collection<> transition when `arangors` supports it
-        let mut collections = HashMap::new();
-        for collections_name in collections_names.iter() {
-            let collection = accessor.collection(collections_name).await?;
-            collections.insert(collections_name.clone(), collection);
-        }
-        //
-
-        log::trace!("Initialized Aragog transaction pool");
-        let database = db_pool.database.clone();
-        Ok(Self {
-            accessor,
-            pool: TransactionPool {
-                collections,
-                database,
-            },
-        })
+        TransactionBuilder::new().build(db_pool).await
     }
 
     /// Tries to commit all operations from the transaction

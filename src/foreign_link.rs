@@ -42,10 +42,10 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 /// let user = DatabaseRecord::create(User {}, &database_pool).await.unwrap();
 /// let order = Order {
 ///     content: "content".to_string(),
-///     user_id: user.key.clone()
+///     user_id: user.key().clone()
 /// };
 /// let linked_user = order.linked_model(&database_pool).await.unwrap();
-/// assert_eq!(&user.id, &linked_user.id);
+/// assert_eq!(user.id(), linked_user.id());
 /// # }
 /// ```
 #[maybe_async::maybe_async]

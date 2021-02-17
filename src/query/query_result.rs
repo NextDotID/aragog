@@ -95,13 +95,25 @@ impl JsonQueryResult {
     ///
     /// # Example
     /// If you want to do a graph query that can return different models you can use this method to retrieve the serialized record:
-    /// ```rust ignore
-    /// # use aragog::query::Query;
-    /// let json_results = Query::outbound("ChildOf", "User/123", 1, 5).call(&database_connection_pool).await.unwrap();
+    /// ```rust no_run
+    /// # use aragog::{query::Query, Record, DatabaseConnectionPool};
+    /// # use serde::{Serialize, Deserialize};
+    /// #
+    /// # #[derive(Record, Clone, Serialize, Deserialize)]
+    /// # struct User {}
+    /// # #[derive(Record, Clone, Serialize, Deserialize)]
+    /// # struct Topic {}
+    /// # #[derive(Record, Clone, Serialize, Deserialize)]
+    /// # struct Role {}
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+    /// let json_results = Query::outbound(1, 5, "ChildOf", "User/123").call(&db_accessor).await.unwrap();
     ///
     /// let user_results = json_results.get_records::<User>();
     /// let topic_results = json_results.get_records::<Topic>();
     /// let role_results = json_results.get_records::<Role>();
+    /// # }
     /// ```
     pub fn get_records<T: Record>(&self) -> Vec<DatabaseRecord<T>> {
         let mut res = Vec::new();

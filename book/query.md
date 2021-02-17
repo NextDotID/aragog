@@ -14,7 +14,7 @@ The example below show different ways to retrieve records, look at each function
  let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
 
  // Find with the primary key or..
- let user_record = User::find(&record.key, &database_pool).await.unwrap();
+ let user_record = User::find(record.key(), &database_pool).await.unwrap();
  // .. Generate a query and..
  let query = User::query().filter(Filter::new(Comparison::field("last_name").equals_str("Surcouf")).and(Comparison::field("age").greater_than(15)));
  // get the only record (fails if no or multiple records)
