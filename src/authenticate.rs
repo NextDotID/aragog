@@ -52,7 +52,10 @@ pub trait Authenticate {
             .hash();
         match res {
             Ok(value) => Ok(value),
-            Err(_error) => Err(ServiceError::UnprocessableEntity),
+            // TODO: Use UnprocessableEntity when argonautica supports Error
+            Err(error) => Err(ServiceError::InternalError {
+                message: Some(error.to_string()),
+            }),
         }
     }
 
@@ -96,7 +99,10 @@ pub trait Authenticate {
                     Err(ServiceError::Unauthorized)
                 }
             }
-            Err(_error) => Err(ServiceError::UnprocessableEntity),
+            // TODO: Use UnprocessableEntity when argonautica supports Error
+            Err(error) => Err(ServiceError::InternalError {
+                message: Some(error.to_string()),
+            }),
         }
     }
 }

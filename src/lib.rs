@@ -599,7 +599,6 @@ mod authenticate;
 mod authorize_action;
 mod db;
 mod edge_record;
-mod error;
 mod foreign_link;
 mod link;
 #[cfg(not(feature = "minimal_traits"))]
@@ -609,6 +608,8 @@ mod record;
 mod update;
 mod validate;
 
+/// Error handling
+pub mod error;
 /// contains querying struct and functions.
 pub mod query;
 /// Database schema construction utility, available for advanced development.

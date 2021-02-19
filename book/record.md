@@ -185,7 +185,7 @@ If you derive the [Validate](./validate.md) trait, you may want validations to b
 
 ```rust
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
-#[hook(before_all(func = "validate"))] // This hook will launch validations before `create` and `save`
+#[hook(before_write(func = "validate"))] // This hook will launch validations before `create` and `save`
  pub struct User {
      pub username: String,
      pub first_name: String,

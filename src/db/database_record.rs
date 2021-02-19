@@ -642,24 +642,27 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     pub(crate) fn from_response(doc_response: DocumentResponse<T>) -> Result<Self, ServiceError> {
-        let header = match doc_response.header() {
-            Some(value) => value,
-            None => {
-                return Err(ServiceError::UnprocessableEntity);
+        match doc_response {
+            DocumentResponse::Silent => Err(ServiceError::InternalError {
+                message: Some(String::from("Received unexpected silent document response")),
+            }),
+            DocumentResponse::Response { header, new, .. } => {
+                let doc: T = match new {
+                    Some(value) => value,
+                    None => {
+                        return Err(ServiceError::InternalError {
+                            message: Some(String::from("Expected ArangoDB to return new document")),
+                        });
+                    }
+                };
+                Ok(DatabaseRecord {
+                    key: header._key.clone(),
+                    id: header._id.clone(),
+                    rev: header._rev.clone(),
+                    record: doc,
+                })
             }
-        };
-        let doc: T = match doc_response.new_doc() {
-            Some(value) => (*value).clone(),
-            None => {
-                return Err(ServiceError::UnprocessableEntity);
-            }
-        };
-        Ok(DatabaseRecord {
-            key: header._key.clone(),
-            id: header._id.clone(),
-            rev: header._rev.clone(),
-            record: doc,
-        })
+        }
     }
 
     /// Getter for the Document `_id` built as `$collection_name/$_key

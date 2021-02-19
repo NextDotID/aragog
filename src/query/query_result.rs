@@ -45,10 +45,11 @@ impl<T: Record> RecordQueryResult<T> {
                 T::collection_name(),
                 self.doc_count
             );
-            return Err(ServiceError::NotFound(format!(
-                "{} document not found",
-                T::collection_name()
-            )));
+            return Err(ServiceError::NotFound {
+                item: T::collection_name().to_string(),
+                id: "queried".to_string(),
+                source: None,
+            });
         }
         Ok(self.documents.into_iter().next().unwrap())
     }
