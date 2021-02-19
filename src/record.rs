@@ -148,10 +148,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// # Arguments
     ///
     /// * `db_pool` - The current database connection pool
-    async fn transaction(
-        &self,
-        db_pool: &DatabaseConnectionPool,
-    ) -> Result<Transaction, ServiceError> {
+    async fn transaction(db_pool: &DatabaseConnectionPool) -> Result<Transaction, ServiceError> {
         Self::transaction_builder().build(db_pool).await
     }
 }

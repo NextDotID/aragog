@@ -2,6 +2,11 @@
 
 ## 0.10.0
 
+* Error System
+  - Complete mapping of ArangoDB error codes
+  - Complete mapping of ArangoDB Http error codes
+  - (**BREAKING**) Changed some `ServiceError` variants
+
 * `DatabaseRecord`:
   - (**BREAKING**) `key`,`id` and `rev` fields are now private
   - Added getters for now private fields
@@ -19,6 +24,7 @@
     - `transaction_builder`
   
 * book update
+* examples update
 
 ## 0.9.1
 

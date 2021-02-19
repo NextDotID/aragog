@@ -8,14 +8,14 @@ use aragog::{DatabaseRecord, Record, Validate};
 
 pub mod common;
 
-#[derive(Serialize, Deserialize, Clone, Record)]
+#[derive(Serialize, Deserialize, Clone, Record, Debug)]
 pub struct Menu {
     pub dish_count: u16,
     pub last_dish_updated: Option<Dish>,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record, Validate)]
-#[hook(before_all(func("validate")))]
+#[hook(before_write(func("validate")))]
 #[hook(before_create(func("increment_menu"), is_async = true, db_access = true))]
 #[hook(before_save(func("last_dish_update"), is_async = true, db_access = true))]
 #[hook(after_all(func("after_all")))]
@@ -166,6 +166,30 @@ mod write {
                 feature = "blocking",
                 async(all(not(feature = "blocking")), tokio::test)
             )]
+            async fn succeeds_without_hook() -> Result<(), String> {
+                let pool = common::setup_db().await;
+                let mut menu = init_menu(&pool).await;
+                let dish = Dish {
+                    name: "dish".to_string(),
+                    description: "description".to_string(),
+                    price: 0,
+                    menu_id: menu.key().clone(),
+                };
+                match DatabaseRecord::force_create(dish, &pool).await {
+                    Ok(_) => (),
+                    Err(_) => return Err("Hook should not have been called".to_string()),
+                };
+                menu.reload_mut(&pool).await.unwrap();
+                // Hooks were not called
+                assert_eq!(menu.dish_count, 0);
+                assert!(menu.last_dish_updated.is_none());
+                Ok(())
+            }
+
+            #[maybe_async::test(
+                feature = "blocking",
+                async(all(not(feature = "blocking")), tokio::test)
+            )]
             async fn before_save_hook() -> Result<(), String> {
                 let pool = common::setup_db().await;
                 let mut menu = init_menu(&pool).await;
@@ -219,6 +243,7 @@ mod read {
     use aragog::ServiceError;
 
     use super::*;
+    use aragog::error::{ArangoError, ArangoHttpError};
 
     #[maybe_async::maybe_async]
     async fn create_dishes(pool: &DatabaseConnectionPool) -> DatabaseRecord<Dish> {
@@ -294,8 +319,14 @@ mod read {
         create_dishes(&pool).await;
         let res = Dish::find("wrong_key", &pool).await;
         if let Err(error) = res {
-            if let ServiceError::NotFound(message) = error {
-                assert_eq!(message, "Dish document not found".to_string());
+            assert_eq!(error.to_string(), "Dish wrong_key not found".to_string());
+            if let ServiceError::NotFound { item, id, source } = error {
+                assert_eq!(&item, "Dish");
+                assert_eq!(&id, "wrong_key");
+                assert!(source.is_some());
+                let source = source.unwrap();
+                assert_eq!(source.http_error, ArangoHttpError::NotFound);
+                assert_eq!(source.arango_error, ArangoError::ArangoDocumentNotFound);
                 Ok(())
             } else {
                 Err(format!("The find should return a NotFound"))

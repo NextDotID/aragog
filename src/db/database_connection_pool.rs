@@ -160,14 +160,15 @@ impl DatabaseConnectionPool {
 }
 
 impl DatabaseAccess for DatabaseConnectionPool {
-    fn get_collection(&self, collection: &str) -> &Collection<ReqwestClient> {
-        if !self.collections.contains_key(collection) {
-            panic!(
-                "Undefined collection {}, check your schema.yaml file",
-                collection
-            )
+    fn get_collection(&self, collection: &str) -> Result<&Collection<ReqwestClient>, ServiceError> {
+        match self.collections.get(collection) {
+            Some(c) => Ok(&c.collection),
+            None => Err(ServiceError::NotFound {
+                item: "Collection".to_string(),
+                id: collection.to_string(),
+                source: None,
+            }),
         }
-        &self.collections[collection].collection
     }
 
     fn database(&self) -> &Database<ReqwestClient> {

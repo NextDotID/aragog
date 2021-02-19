@@ -1,6 +1,7 @@
 use arangors::document::options::{InsertOptions, RemoveOptions, UpdateOptions};
 use arangors::{Collection, Document};
 
+use crate::error::ArangoHttpError;
 use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 use arangors::client::reqwest::ReqwestClient;
 
@@ -16,7 +17,7 @@ where
     U: DatabaseAccess,
 {
     log::debug!("Updating document {} {}", collection_name, key);
-    let collection = db_accessor.get_collection(collection_name);
+    let collection = db_accessor.get_collection(collection_name)?;
     let response = match collection
         .update_document(key, obj, UpdateOptions::builder().return_new(true).build())
         .await
@@ -62,7 +63,7 @@ where
     T: Record,
     U: DatabaseAccess,
 {
-    let collection = db_accessor.get_collection(collection_name);
+    let collection = db_accessor.get_collection(collection_name)?;
     create_document(obj, collection).await
 }
 
@@ -77,17 +78,20 @@ where
     U: DatabaseAccess,
 {
     log::debug!("Retrieving {} {} from database", collection_name, key);
-    let collection = db_accessor.get_collection(collection_name);
+    let collection = db_accessor.get_collection(collection_name)?;
     let record: Document<T> = match collection.document(key).await {
         Ok(doc) => doc,
         Err(error) => {
             log::error!("{}", error);
             let err = ServiceError::from(error);
-            if let ServiceError::NotFound(_str) = err {
-                return Err(ServiceError::NotFound(format!(
-                    "{} document not found",
-                    collection_name
-                )));
+            if let ServiceError::ArangoError(ref db_error) = err {
+                if let ArangoHttpError::NotFound = db_error.http_error {
+                    return Err(ServiceError::NotFound {
+                        item: collection_name.to_string(),
+                        id: key.to_string(),
+                        source: Some(db_error.clone()),
+                    });
+                }
             }
             return Err(err);
         }
@@ -106,7 +110,7 @@ where
     U: DatabaseAccess,
 {
     log::debug!("Removing {} {} from database", collection_name, key);
-    let collection = db_accessor.get_collection(collection_name);
+    let collection = db_accessor.get_collection(collection_name)?;
     match collection
         .remove_document::<T>(key, RemoveOptions::builder().build(), None)
         .await

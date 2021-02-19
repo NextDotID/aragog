@@ -4,52 +4,54 @@ use aragog::ServiceError;
 fn error_default() {
     assert_eq!(
         ServiceError::default().http_code(),
-        ServiceError::InternalError.http_code()
+        ServiceError::InternalError { message: None }.http_code()
     );
 }
 
 #[cfg(feature = "actix")]
 mod actix_http_errors {
     use actix_web::ResponseError;
+
     use aragog::ServiceError;
 
     #[test]
     fn actix_web_status_codes() {
         assert_eq!(
-            ServiceError::InternalError.status_code().as_str(),
-            &ServiceError::InternalError.http_code()
+            ServiceError::InternalError { message: None }
+                .status_code()
+                .as_str(),
+            ServiceError::InternalError { message: None }.http_code()
         );
         assert_eq!(
-            ServiceError::UnprocessableEntity.status_code().as_str(),
-            &ServiceError::UnprocessableEntity.http_code()
+            ServiceError::UnprocessableEntity {
+                source: Box::new(ServiceError::default())
+            }
+            .status_code()
+            .as_str(),
+            ServiceError::UnprocessableEntity {
+                source: Box::new(ServiceError::default())
+            }
+            .http_code()
         );
         assert_eq!(
             ServiceError::Unauthorized.status_code().as_str(),
-            &ServiceError::Unauthorized.http_code()
+            ServiceError::Unauthorized.http_code()
         );
         assert_eq!(
             ServiceError::Forbidden.status_code().as_str(),
-            &ServiceError::Forbidden.http_code()
+            ServiceError::Forbidden.http_code()
         );
-        assert_eq!(
-            ServiceError::NotFound(String::default())
-                .status_code()
-                .as_str(),
-            &ServiceError::NotFound(String::default()).http_code()
-        );
+        let err = ServiceError::NotFound {
+            id: "".to_string(),
+            item: "".to_string(),
+            source: None,
+        };
+        assert_eq!(err.status_code().as_str(), err.http_code());
         assert_eq!(
             ServiceError::ValidationError(String::default())
                 .status_code()
                 .as_str(),
-            &ServiceError::ValidationError(String::default()).http_code()
-        );
-        assert_eq!(
-            ServiceError::Timeout.status_code().as_str(),
-            &ServiceError::Timeout.http_code()
-        );
-        assert_eq!(
-            ServiceError::Conflict.status_code().as_str(),
-            &ServiceError::Conflict.http_code()
+            ServiceError::ValidationError(String::default()).http_code()
         );
     }
 }

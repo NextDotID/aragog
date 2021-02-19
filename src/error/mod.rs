@@ -1,9 +1,19 @@
+use std::error::Error;
+
 #[cfg(feature = "actix")]
 use actix_web::{error, http::StatusCode};
 use arangors::ClientError;
 #[cfg(feature = "open-api")]
 use paperclip::actix::api_v2_errors;
-use thiserror::Error;
+use thiserror::Error as ErrorDerive;
+
+pub use {
+    arango_error::ArangoError, arango_http_error::ArangoHttpError, database_error::DatabaseError,
+};
+
+mod arango_error;
+mod arango_http_error;
+mod database_error;
 
 /// Error enum used for the Arango ORM mapped as potential Http errors
 ///
@@ -12,33 +22,49 @@ use thiserror::Error;
 /// If the cargo feature `actix` is enabled, `ServiceError` will implement the actix-web error system.
 /// Allowing `ServiceError` to be used in actix-web http endpoints.
 #[cfg_attr(feature = "open-api", api_v2_errors())]
-#[derive(Error, Debug)]
+#[derive(ErrorDerive, Debug)]
 pub enum ServiceError {
     /// Unhandled error.
     /// Can be interpreted as a HTTP code `500` internal error.
     #[error("Internal error")]
-    InternalError,
+    InternalError {
+        /// Optional message (will not be displayed)
+        message: Option<String>,
+    },
     /// Validations failed (see model validation as implemented in [`Validate`].
     /// Can be interpreted as a HTTP code `400` bad request.
     ///
     /// [`Validate`]: trait.Validate.html
     #[error("Validations failed: `{0}`")]
     ValidationError(String),
-    /// A query/request timed out.
-    /// Can be interpreted as a HTTP code `408` Request timeout.
-    #[error("Timeout")]
-    Timeout,
-    /// A record could not be found (see record query as implemented in [`Record`]).
+    /// An Item (document or collection) could not be found.
     /// Can be interpreted as a HTTP code `404` not found.
+    #[error("{item} {id} not found")]
+    NotFound {
+        /// The missing item
+        item: String,
+        /// The missing item identifier
+        id: String,
+        /// Optional database source error
+        #[source]
+        source: Option<DatabaseError>,
+    },
+    /// An operation failed due to format or data issue.
     ///
-    /// [`Record`]: trait.Record.html
-    #[error("{0}")]
-    NotFound(String),
-    /// An operation on a document failed due to format or data issue.
-    /// Can be interpreted as a HTTP code `422` unprocessable entity.
-    #[error("Unprocessable entity")]
-    UnprocessableEntity,
+    /// Can be interpreted as a HTTP code `422` Unprocessable Entity.
+    #[error("Unprocessable Entity")]
+    UnprocessableEntity {
+        /// The source error
+        #[source]
+        source: Box<dyn Error>,
+    },
+    /// The ArangoDb Error as returned by the database host
+    ///
+    /// Can be interpreted as a HTTP code `500` Internal Error.
+    #[error("Internal Error")]
+    ArangoError(#[source] DatabaseError),
     /// Failed to load config or initialize the app.
+    ///
     /// Can be interpreted as a HTTP code `500` Internal Error.
     #[error("Failed to initialize `{item}`: `{message}`")]
     InitError {
@@ -55,13 +81,6 @@ pub enum ServiceError {
     /// Can be interpreted as a HTTP code `403` forbidden.
     #[error("Forbidden")]
     Forbidden,
-    /// The operation fails due to a conflict, for example a unique index was not respected.
-    /// Can be interpreted as a HTTP code `409` conflict.
-    #[error("Conflict")]
-    Conflict,
-    /// A transaction failed to commit or abort
-    #[error("TransactionError: `{0}`")]
-    TransactionError(String),
 }
 
 #[cfg(feature = "actix")]
@@ -72,29 +91,24 @@ impl error::ResponseError for ServiceError {
     fn status_code(&self) -> StatusCode {
         match self {
             Self::ValidationError(_str) => StatusCode::BAD_REQUEST,
-            Self::Timeout => StatusCode::REQUEST_TIMEOUT,
-            Self::NotFound(_str) => StatusCode::NOT_FOUND,
-            Self::UnprocessableEntity => StatusCode::UNPROCESSABLE_ENTITY,
-            Self::Unauthorized => StatusCode::UNAUTHORIZED,
-            Self::Forbidden => StatusCode::FORBIDDEN,
-            Self::Conflict => StatusCode::CONFLICT,
+            Self::UnprocessableEntity { .. } => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::NotFound { .. } => StatusCode::NOT_FOUND,
+            Self::ArangoError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
 
 impl ServiceError {
-    /// Retrieves the matching HTTP code as a string.
-    pub fn http_code(&self) -> String {
+    /// get the matching http code
+    #[allow(dead_code)]
+    pub fn http_code(&self) -> &str {
         match self {
-            ServiceError::NotFound(_str) => "404".to_string(),
-            ServiceError::ValidationError(_str) => "400".to_string(),
-            ServiceError::UnprocessableEntity => "422".to_string(),
-            ServiceError::Conflict => "409".to_string(),
-            ServiceError::Unauthorized => "401".to_string(),
-            ServiceError::Forbidden => "403".to_string(),
-            ServiceError::Timeout => "408".to_string(),
-            _ => "500".to_string(),
+            Self::ValidationError(_str) => "400",
+            Self::UnprocessableEntity { .. } => "422",
+            Self::NotFound { .. } => "404",
+            Self::ArangoError(_) => "500",
+            _ => "500",
         }
     }
 }
@@ -103,30 +117,36 @@ impl From<ClientError> for ServiceError {
     fn from(error: ClientError) -> Self {
         log::debug!("Client Error: {}", error);
         match error {
-            ClientError::Arango(arango_error) => match arango_error.code() {
-                404 => Self::NotFound(arango_error.message().to_string()),
-                409 => Self::Conflict,
-                403 => Self::Forbidden,
-                401 => Self::Unauthorized,
-                408 => Self::Timeout,
-                _ => Self::UnprocessableEntity,
+            ClientError::Arango(arango_error) => {
+                Self::ArangoError(DatabaseError::from(arango_error))
+            }
+            ClientError::Serde(serde_error) => Self::UnprocessableEntity {
+                source: Box::new(serde_error),
             },
-            ClientError::Serde(_serde_error) => Self::UnprocessableEntity,
-            ClientError::InsufficientPermission {
-                permission: _permission,
-                operation: _operation,
-            } => Self::Unauthorized,
             ClientError::InvalidServer(server) => Self::InitError {
                 item: server,
                 message: String::from("Is not ArangoDB"),
             },
-            ClientError::HttpClient(_client) => Self::UnprocessableEntity,
+            ClientError::InsufficientPermission {
+                permission,
+                operation,
+            } => Self::InitError {
+                item: operation.clone(),
+                message: format!(
+                    "Insufficent permission for {} : {:?}",
+                    operation, permission
+                ),
+            },
+            ClientError::HttpClient(error) => Self::InitError {
+                item: "Http Client".to_string(),
+                message: error,
+            },
         }
     }
 }
 
 impl Default for ServiceError {
     fn default() -> Self {
-        ServiceError::InternalError
+        Self::InternalError { message: None }
     }
 }

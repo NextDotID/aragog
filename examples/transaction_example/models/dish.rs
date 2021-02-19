@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use aragog::{New, Record, ServiceError, Update, Validate};
 
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
-#[hook(before_all(func = "validate"))]
+#[hook(before_write(func = "validate"))]
 pub struct Dish {
     #[validate(min_length = 5)]
     pub name: String,

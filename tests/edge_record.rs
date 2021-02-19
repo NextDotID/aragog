@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use aragog::{DatabaseConnectionPool, DatabaseRecord, EdgeRecord, Record, Validate};
+use aragog::{DatabaseConnectionPool, DatabaseRecord, EdgeRecord, Record, ServiceError, Validate};
 
 mod common;
 
@@ -40,7 +40,7 @@ async fn create_order(pool: &DatabaseConnectionPool) -> DatabaseRecord<Order> {
 
 #[derive(Clone, Record, EdgeRecord, Serialize, Deserialize, Validate)]
 #[validate(func("validate_edge_fields"))]
-#[hook(before_all(func = "validate"))]
+#[hook(before_write(func = "validate"))]
 pub struct PartOf {
     _from: String,
     _to: String,
@@ -96,6 +96,32 @@ async fn edge_can_be_created_with_a_simple_link() -> Result<(), String> {
         Order::collection_name(),
     )?;
     Ok(())
+}
+
+#[maybe_async::test(
+    any(feature = "blocking"),
+    async(all(not(feature = "blocking")), tokio::test)
+)]
+async fn link_launches_hooks() -> Result<(), String> {
+    let pool = common::setup_db().await;
+    let dish = create_dish(&pool).await;
+    let order = create_order(&pool).await;
+
+    let res = DatabaseRecord::link(&dish, &order, &pool, |_from, _to| PartOf {
+        _from: "123".to_string(),
+        _to,
+        description: "Test".to_string(),
+    })
+    .await;
+    match res {
+        Ok(_) => Err(String::from("Validations should have failed")),
+        Err(error) => match error {
+            ServiceError::ValidationError(msg) => {
+                common::expect_assert_eq(msg, r#"_from "123" has wrong format"#.to_string())
+            }
+            _ => Err(String::from("Wrong error returned")),
+        },
+    }
 }
 
 #[test]

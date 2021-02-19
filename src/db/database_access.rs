@@ -22,7 +22,7 @@ use crate::ServiceError;
 #[maybe_async::maybe_async]
 pub trait DatabaseAccess: Sync {
     /// Retrieves a Collection from the database accessor.
-    fn get_collection(&self, collection: &str) -> &Collection<ReqwestClient>;
+    fn get_collection(&self, collection: &str) -> Result<&Collection<ReqwestClient>, ServiceError>;
 
     /// Retrieves the database object
     fn database(&self) -> &Database<ReqwestClient>;
