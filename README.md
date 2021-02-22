@@ -31,7 +31,7 @@ The crate also provides a powerful [AQL][AQL] querying tool allowing complex and
 
 By default all `aragog` items are asynchronous, you can compile `aragog` in a synchronous build using the `blocking` feature:
 ```toml
-aragog = { version = "0.9", features = ["blocking"], default-features = false }
+aragog = { version = "0.10", features = ["blocking"], default-features = false }
 ```
 
 You need to disable the default features. Don't forget to add the `derive` feature to use the derive macros.
@@ -42,14 +42,14 @@ If you use this crate with the [actix-web][actix] framework, you may want the `a
 To do so you can add to your `cargo.toml` the following `feature`: `actix`. This will add Actix 3 dependency and compatibility
 
 ```toml
-aragog = { version = "0.9", features = ["actix"] }
+aragog = { version = "0.10", features = ["actix"] }
 ```
 
 If you also want to be able to use [paperclip][paperclip], you may want `aragog` elements to be compatible.
 To do so you can add to your `cargo.toml` the following `feature`: `open-api`.
 
 ```toml
-aragog = { version = "0.9", features = ["actix", "open-api"] }
+aragog = { version = "0.10", features = ["actix", "open-api"] }
 ```
 
 ### Password hashing
@@ -58,7 +58,7 @@ You may want `aragog` to provide a more complete `Authenticate` trait allowing t
 To do so you can add to your `cargo.toml` the following `feature`: `password_hashing`.
 
 ```toml
-aragog = { version = "0.9", features = ["password_hashing"] }
+aragog = { version = "0.10", features = ["password_hashing"] }
 ```
 
 It will add two functions in the `Authenticate` trait:
@@ -85,7 +85,7 @@ If you don't need the following traits:
 You can disable them with the `minimal_traits` feature:
 
 ```toml
-aragog = { version = "0.9", features = ["minimal_traits"] }
+aragog = { version = "0.10", features = ["minimal_traits"] }
 ```
 
 ### License

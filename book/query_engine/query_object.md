@@ -80,4 +80,4 @@ or
     );
 ```
 
-[ComparisonBuilder]: https://docs.rs/aragog/0.9.1/aragog/query/struct.ComparisonBuilder.html "Comparison Builder"
+[ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html "Comparison Builder"
