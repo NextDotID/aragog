@@ -1,4 +1,4 @@
-# Introducton
+# Introduction
 
 This book is destined to cover every major feature of the `aragog` library.
 

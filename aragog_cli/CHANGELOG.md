@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.12
+
+* `aragog` dependency from 0.9 to 0.10
+
 ## 0.2.11
 
 * Fixed `desribe` command always giving 0 document count.
