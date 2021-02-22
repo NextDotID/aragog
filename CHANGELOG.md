@@ -23,7 +23,7 @@
     - `transaction`
     - `transaction_builder`
   
-* book update
+* Book `mdbook` support, every 
 * examples update
 
 ## 0.9.1

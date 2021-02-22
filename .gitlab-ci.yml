@@ -108,20 +108,31 @@ test::rustfmt:
     - rustup component add rustfmt
     - cargo fmt --all -- --check
 
-pages:
-  <<: *cache_pull_template
+rustdoc:
   <<: *clang_template
+  <<: *cache_pull_template
   image: rust:latest
   stage: documentation
   variables:
     PKG_NAME: aragog
-    PKG_NAME_DIR: aragog
   script:
     - cargo --version
-    - cargo rustdoc -p $PKG_NAME --features "actix password_hashing"
     - rm -rf public
+    - cargo rustdoc -p $PKG_NAME --features "actix password_hashing"
     - mv target/doc public
-    - echo "<meta http-equiv=\"refresh\" content=\"0; url=$PKG_NAME_DIR\">" > public/index.html
+  artifacts:
+    paths:
+      - public
+
+pages:
+  image: registry.gitlab.com/qonfucius/infrastructure/docker-images/mdbook-alpine
+  stage: documentation
+  variables:
+    MDBOOK_OUTPUT__HTML__SITE_URL: $CI_PAGES_URL/book
+  script:
+    - cargo --version
+    - rm -rf public
+    - mdbook build -d public
   artifacts:
     paths:
       - public
