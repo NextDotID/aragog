@@ -93,7 +93,14 @@ impl error::ResponseError for ServiceError {
             Self::ValidationError(_str) => StatusCode::BAD_REQUEST,
             Self::UnprocessableEntity { .. } => StatusCode::UNPROCESSABLE_ENTITY,
             Self::NotFound { .. } => StatusCode::NOT_FOUND,
-            Self::ArangoError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Forbidden => StatusCode::FORBIDDEN,
+            Self::Unauthorized => StatusCode::UNAUTHORIZED,
+            Self::ArangoError(db_error) => match db_error.http_error {
+                // All Arango Error should be considered as an Internal error except for conflict.
+                // The not found error should render a 404 only on a query, and is handled by ServiceError
+                ArangoHttpError::Conflict => StatusCode::CONFLICT,
+                _ => StatusCode::INTERNAL_SERVER_ERROR,
+            },
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
@@ -107,7 +114,14 @@ impl ServiceError {
             Self::ValidationError(_str) => "400",
             Self::UnprocessableEntity { .. } => "422",
             Self::NotFound { .. } => "404",
-            Self::ArangoError(_) => "500",
+            Self::Forbidden => "403",
+            Self::Unauthorized => "401",
+            Self::ArangoError(db_error) => match db_error.http_error {
+                // All Arango Error should be considered as an Internal error except for conflict.
+                // The not found error should render a 404 only on a query, and is handled by ServiceError
+                ArangoHttpError::Conflict => "409",
+                _ => "500",
+            },
             _ => "500",
         }
     }
