@@ -1,6 +1,6 @@
 # The `Validate` trait
 
-As `aragog` is trying to be a complete ODM, being able to add validations to **models** is a useful feature
+As `aragog` is trying to be a complete ODM, being able to add validations to **models** is a useful feature.
 
 ## Macro validations
 
@@ -116,9 +116,9 @@ fn my_method(&self, errors: &mut Vec<String>) {}
 ```rust
 fn my_method(field_name: &str, field_value: &T, errors: &mut Vec<String>) {}
 ```
-`T` being the type of your field
+`T` being your field type
 
 > Note: The method can have any visibility and can return whatever you want 
 
-the `errors` argument is the mutable array of error messages it contains all the current errors and you can push your own errors in it.
+the `errors` argument is a mutable array of error messages it contains all current errors and you can push your own errors in it.
 When the `validate()` method is called, this `errors` vector is used to build the error message.

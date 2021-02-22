@@ -11,11 +11,11 @@ All structs deriving `Record`, here *User*, have access to:
 - `User::transaction` building a transaction on this collection only.
 - `User::transaction_builder` returning a builder for a transaction on this collection only.
 
-Restricted transaction will fail if you try to **Write** on an other collection.
+Restricted transaction will fail if you try to **Write** on another collection.
 
 ## Transaction options
 
 The `TransactionBuilder` allows optional parameters:
 - `wait_for_sync`, forcing the transaction to be synced to the database on **commit**.
-- `lock_timeout`, specifying the transaction lock timeout set to **60000** by default
-- `collections`, specifying the allowed collections (by default all collections are allowed)
+- `lock_timeout`, specifying the transaction lock timeout (set to **60000** by default)
+- `collections`, specifying the allowed collections (all collections are allowed by default)

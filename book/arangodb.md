@@ -14,7 +14,7 @@
  arangosh> users.grantDatabase("DB_USER", "DB_NAME");
  ```
 > It is a good practice to create a test db and a development db.
-* you can connect to the new created db with
+* you can connect to the newly created db with
  ```bash
  $> arangosh --server.username $DB_USER --server.database $DB_NAME
  ```
