@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.1
+
+* (**FIX**) Errors have a correct http code (actix compatibility fixed)
+
 ## 0.10.0
 
 * Error System
