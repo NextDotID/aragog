@@ -23,7 +23,7 @@ You can implement `Record` directly instead of deriving it.
 as in the future more hooks may be added to this trait without considering it **breaking changes**
 
 You need to specify the `collection_name` method which, when deriving, takes the name of the structure.
-You also need to implement directly the various hooks.
+You also need to implement directly the different hooks.
 
 Example:
 ```rust
@@ -80,7 +80,7 @@ impl Record for User {
 
 ## Unstable hooks state
 
-The hook macros work pretty well but are difficult to test, especially the compilation errors:
+The hook macros work pretty well but are difficult to test, especially compilation errors:
 Are the errors messages relevant? correctly spanned? etc.
 
 So please report any bug or strange behaviour as this feature is still in its early stages.

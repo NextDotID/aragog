@@ -23,10 +23,10 @@ Will rollback 1 migration in `SCHEMA_PATH/migrations/` and update the schema acc
 
 Command: `aragog rollback COUNT`
 
-Will rollback `COUNT` migrations in `$CHEMA_PATH/migrations/` and update the schema according to its current version.
+Will rollback `COUNT` migration in `$CHEMA_PATH/migrations/` and update the schema according to its current version.
 
 > The schema is generated twice:
->   - one on the file system (`schema.yaml`)
->   - one in the database, the snapshot (synchronized version)
+>   - once on the file system (`schema.yaml`)
+>   - once in the database, the snapshot (synchronized version)
 > 
 > This allows seamless deployment, as the migrations launch will check the current snapshot

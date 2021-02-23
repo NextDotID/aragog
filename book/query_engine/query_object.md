@@ -16,7 +16,7 @@ You can customize the query with the following methods:
 * `distinct()` you can skip duplicate documents
 > The order of operations will be respected in the rendered AQL query (except for `distinct`)
 
-you can then call a query in the following ways:
+Then you can call a query in the following ways:
 * `query.call::<Object>(&database_connection_pool)`
 * `Object::get(query, &database_connection_pool`
 
@@ -55,7 +55,7 @@ compare!(none "some_field_array").some_comparison("compared_value");
  ```
 All the currently implemented comparison methods are listed under [ComparisonBuilder][ComparisonBuilder] documentation page.
 
-Filters can be defined explicitely like this:
+Filters can be defined explicitly like this:
 
  ```rust
  let filter = Filter::new(Comparison::field("name").equals_str("felix"));

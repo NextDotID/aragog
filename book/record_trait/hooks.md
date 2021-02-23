@@ -19,20 +19,20 @@ You can register various methods in these hooks with the following syntax:
 #[hook(before_create(func = "my_method"))]
 ```
 
-The hooked methods can have follow various patterns using the following options:
+The hooked methods can follow various patterns using the following options:
 - `is_async` the method is async
 - `db_access` the method uses the db access
 
-By default both these options are set to `false`.
+By default both options are set to `false`.
 
-You can combine the options to have an `async` hook with db access, allowing to execute document operations automatically.
+You can combine options to have an `async` hook with db access to execute document operations automatically.
 If you combine a lot of operations, like creating documents in hooks or chaining operations make sure to:
 - avoid **circular operations**
 - use [Transaction](./transactions.md) for safety
 
 ## Hook Patterns
 
-### The simple hook with no options
+### Simple hook with no options
 ```rust
 #[hook(before_create(func = "my_method"))]
 ```
@@ -44,7 +44,7 @@ If you combine a lot of operations, like creating documents in hooks or chaining
   fn my_method(&mut self) -> Result<(), aragog::ServiceError>
   ```
 
-### The async hook
+### Async hook
 ```rust
 #[hook(before_create(func = "my_method", is_async = true))]
 ```
@@ -59,7 +59,7 @@ If you combine a lot of operations, like creating documents in hooks or chaining
 > If you use `aragog` with the `blocking` feature then this option will have no effect.
 
 
-### The hook with database access
+### Hook with database access
 ```rust
 #[hook(before_create(func = "my_method", db_access = true))]
 ```

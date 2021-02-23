@@ -1,7 +1,7 @@
 # The `Record` trait
 
-This trait defines the ODM (Object-Document mapper) of `aragog`.
-Every structure implementing this trait becomes a **Model** that can be mapped to a ArangoDB [collection document](https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#document).
+This trait defines `aragog` ODM (Object-Document mapper).
+Every structure implementing this trait becomes a **Model** that can be mapped to an ArangoDB [collection document](https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#document).
 
 When declaring a model like the following:
 
@@ -50,7 +50,7 @@ let found_user = User::find(document_key, &database_pool).await.unwrap();
 assert_eq!(user.username, found_user.username);
  ```
 
-- `key` is the primary identifier of the document, certifying it's written in the database collection
+- `key` is the document primary identifier, certifying write action in the database collection
 - `record` is the document data, a generic containing your struct implementing the `Record` trait
 
 ### Document operations

@@ -56,11 +56,11 @@ fn hash_password(password: &str, secret_key: &str) -> Result<String, ServiceErro
 fn verify_password(password: &str, password_hash: &str, secret_key: &str) -> Result<(), ServiceError>;
 ```
 
-* `hash_password` will return a Argon2 encrypted password hash you can safely store to your database
+* `hash_password` will return an Argon2 encrypted password hash you can safely store to your database
 * `verify_password` will check if the provided `password` matches the Argon2 encrypted hash you stored.
 
-The Argon2 encryption is based on the [argonautica][argonautica] crate.
-That crate requires the `clang` lib, so if you deploy on docker you will need to install it or define a custom image.
+Argon2 encryption is based on the [argonautica][argonautica] crate.
+That crate requires the `clang` lib, if you deploy on docker you will need to install it or define a custom image.
 
 #### Minimal Traits
 
