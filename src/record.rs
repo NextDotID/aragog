@@ -49,6 +49,44 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
         DatabaseRecord::<Self>::exists(query, db_accessor).await
     }
 
+    /// Creates a new document in database.
+    /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`create`]
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::{Record, DatabaseConnectionPool};
+    /// # use serde::{Deserialize, Serialize};
+    /// #
+    /// #[derive(Clone, Serialize, Deserialize, Record)]
+    /// pub struct User {
+    ///     pub name: String,
+    /// }
+    /// #
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// # let db_pool = DatabaseConnectionPool::builder()
+    ///     # .with_schema_path("tests/schema.yaml")
+    ///     # .apply_schema()
+    ///     # .build()
+    ///     # .await
+    ///     # .unwrap();
+    ///
+    /// let user = User { name: "Patrick".to_owned() };
+    /// let created_user = User::create(user, &db_pool).await.unwrap();
+    ///
+    /// assert_eq!(created_user.name, "Patrick".to_owned());
+    /// # }
+    /// ```
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`create`]: struct.DatabaseRecord.html#method.create
+    async fn create<D>(record: Self, db_accessor: &D) -> Result<DatabaseRecord<Self>, ServiceError>
+    where
+        D: DatabaseAccess,
+    {
+        DatabaseRecord::create(record, db_accessor).await
+    }
+
     /// Creates a new `Query` instance for `Self`.
     ///
     /// # Example
