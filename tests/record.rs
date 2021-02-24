@@ -248,7 +248,7 @@ mod read {
     #[maybe_async::maybe_async]
     async fn create_dishes(pool: &DatabaseConnectionPool) -> DatabaseRecord<Dish> {
         let menu = init_menu(pool).await;
-        DatabaseRecord::create(
+        Dish::create(
             Dish {
                 name: "Pizza".to_string(),
                 description: "Tomato and Mozarella".to_string(),
@@ -259,7 +259,7 @@ mod read {
         )
         .await
         .unwrap();
-        DatabaseRecord::create(
+        Dish::create(
             Dish {
                 name: "Pasta".to_string(),
                 description: "Ham and cheese".to_string(),

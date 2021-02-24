@@ -1,7 +1,5 @@
 use arangors::document::response::DocumentResponse;
 use arangors::{AqlQuery, Document};
-use serde::de::DeserializeOwned;
-use serde::Serialize;
 use serde_json::Value;
 use std::fmt::{self, Display, Formatter};
 
@@ -272,8 +270,8 @@ impl<T: Record> DatabaseRecord<T> {
         edge_record: E,
     ) -> Result<DatabaseRecord<T>, ServiceError>
     where
-        A: Serialize + DeserializeOwned + Clone + Record,
-        B: Serialize + DeserializeOwned + Clone + Record,
+        A: Record,
+        B: Record,
         D: DatabaseAccess,
         E: FnOnce(String, String) -> T,
         T: EdgeRecord,
