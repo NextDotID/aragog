@@ -75,3 +75,7 @@ You can disable them with the `minimal_traits` feature:
 ```toml
 aragog = { version = "0.10", features = ["minimal_traits"] }
 ```
+
+[actix]: https://actix.rs/ "Actix Homepage"
+[argonautica]: https://github.com/bcmyers/argonautica
+[paperclip]: https://github.com/wafflespeanut/paperclip "Paperclip Github"
