@@ -19,7 +19,7 @@
 //!
 //! `aragog` provides a safe schema generation and migrations command line interface: [aragog_cli][CLI].
 //!
-//! ### Features
+//! ## Features
 //!
 //! By now the available features are:
 //! * Creating a database connection pool from a defined `schema.yaml` (See [aragog_cli][CLI])
@@ -37,75 +37,15 @@
 //! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
 //! * Transactional operations
 //!
-//! For detailed explanations on theses feature, read the [book](https://gitlab.com/qonfucius/aragog/-/tree/master/book)
+//! For detailed explanations on theses feature, read the [book](https://gitlab.com/qonfucius/aragog/-/tree/master/book) ([published version](https://qonfucius.gitlab.io/aragog/))
 //!
-//! #### Cargo features
-//!
-//! ##### Async and Blocking
-//!
-//! By default all `aragog` items are asynchronous, you can compile `aragog` in a synchronous build using the `blocking` feature:
-//! ```toml
-//! aragog = { version = "0.10", features = ["blocking"], default-features = false }
-//! ```
-//! You need to disable the default features. Don't forget to add the `derive` feature to use the derive macros.
-//!
-//! ##### Actix and Open API
-//!
-//! If you use this crate with the [actix-web][actix] framework, you may want the `aragog` errors to be usable as http errors.
-//! To do so you can add to your `cargo.toml` the following `feature`: `actix`. This will add Actix 3 dependency and compatibility
-//!
-//! ```toml
-//! aragog = { version = "0.10", features = ["actix"] }
-//! ```
-//!
-//! If you also want to be able to use [paperclip][paperclip], you may want `aragog` elements to be compatible.
-//! To do so you can add to your `cargo.toml` the following `feature`: `open-api`.
-//!
-//! ```toml
-//! aragog = { version = "0.10", features = ["actix", "open-api"] }
-//! ```
-//!
-//! ##### Password hashing
-//!
-//! You may want `aragog` to provide a more complete `Authenticate` trait allowing to hash and verify passwords.
-//! To do so you can add to your `cargo.toml` the following `feature`: `password_hashing`.
-//!
-//! ```toml
-//! aragog = { version = "0.10", features = ["password_hashing"] }
-//! ```
-//!
-//! It will add two functions in the `Authenticate` trait:
-//!
-//! ```rust ignore
-//! fn hash_password(password: &str, secret_key: &str) -> Result<String, ServiceError>;
-//! fn verify_password(password: &str, password_hash: &str, secret_key: &str) -> Result<(), ServiceError>;
-//! ```
-//!
-//! * `hash_password` will return a Argon2 encrypted password hash you can safely store to your database
-//! * `verify_password` will check if the provided `password` matches the Argon2 encrypted hash you stored.
-//!
-//! The Argon2 encryption is based on the [argonautica][argonautica] crate.
-//! That crate requires the `clang` lib, so if you deploy on docker you will need to install it or define a custom image.
-//!
-//! ##### Minimal Traits
-//!
-//! If you don't need the following traits:
-//! * `Authenticate`
-//! * `AuthorizeAction`
-//! * `New`
-//! * `Update`
-//!
-//! You can disable them with the `minimal_traits` feature:
-//!
-//! ```toml
-//! aragog = { version = "0.10", features = ["minimal_traits"] }
-//! ```
+//! ## Quick Reference
 //!
 //! ### Schema and collections
 //!
 //! In order for everything to work you need a `schema.yaml` file. Use [aragog_cli][CLI] to create migrations and generate the file.
 //!
-//! #### Creating a pool
+//! ### Creating a pool
 //!
 //! To connect to the database and initialize a connection pool you may use the following builder pattern options:
 //!
@@ -143,7 +83,7 @@
 //! ```
 //! None of these options are mandatory.
 //!
-//! #### Record
+//! ### Record
 //!
 //! The global architecture is simple, every *model* you define that can be synced with the database must implement `serde::Serialize`, `serde::Deserialize` and `Clone`.
 //! To declare a `struct` as a Model it must derive from `aragog::Record` (the collection name must be the same as the struct) or implement it.
@@ -192,7 +132,7 @@
 //!     user_record.save(&database_pool).await.unwrap();
 //! }
 //! ```
-//! #### Edge Record
+//! ### Edge Record
 //!
 //! You can declare Edge collection models by deriving from `aragog::EdgeRecord`, the structure requires two string fields: `_from` and `_to`.
 //! When deriving from `EdgeRecord` the struct will also automatically derive from `Record` so you'll need to implement `Validate` as well.
@@ -244,7 +184,7 @@
 //! }
 //! ```
 //!
-//! #### Transactions
+//! ### Transactions
 //!
 //! Aragog now supports transactional operations without API changes through the new `Transaction` Object.
 //!
@@ -295,7 +235,7 @@
 //!
 //!> Note: All the `DatabaseRecord` operation (create, save, link, etc) work as transactional, simply use the the provded transaction `pool` instead of the classic pool
 //!
-//! #### Querying
+//! ### Querying
 //!
 //! You can retrieve a document from the database as simply as it gets, from the unique ArangoDB `_key` or from multiple conditions.
 //! The example below show different ways to retrieve records, look at each function documentation for more exhaustive exaplanations.
@@ -389,7 +329,7 @@
 //! let user_records = clone_query.call(&database_pool).await.unwrap().get_records::<User>();
 //! # }
 //! ```
-//! ##### Query Object
+//! #### Query Object
 //!
 //! You can intialize a query in the following ways:
 //! * `Query::new("CollectionName")`
@@ -411,7 +351,7 @@
 //! Which will return a `JsonQueryResult` containing a `Vec` of `serde_json::Value`.
 //! `JsonQueryResult` can return deserialized models as `DatabaseRecord` by calling `.get_records::<T>()`
 //!
-//! ###### Filter
+//! ##### Filter
 //!
 //! You can initialize a `Filter` with `Filter::new(comparison)`
 //!
@@ -457,11 +397,11 @@
 //! let filter :Filter = Comparison::field("name").equals_str("felix").into();
 //! ```
 //!
-//! ##### Traversal Querying
+//! #### Traversal Querying
 //!
 //! You can use graph features with sub-queries with different ways:
 //!
-//! ###### Straightforward Traversal query
+//! ##### Straightforward Traversal query
 //!
 //! * Explicit way
 //! ```rust
@@ -486,7 +426,7 @@
 //! let query = user_record.inbound_graph(1, 2, "NamedGraph");
 //! ```
 //!
-//! ###### Sub queries
+//! ##### Sub queries
 //!
 //! Queries can be joined together through
 //! * Edge traversal:
@@ -522,33 +462,6 @@
 //!     );
 //! ```
 //!
-//! ### Arango db setup
-//!
-//! **Installation** (See official documentation [Here][arango_doc])
-//!
-//! * [Download Link][arango_download]
-//! * Run it with `/usr/local/sbin/arangod` The default installation contains one database `_system` and a user named `root`
-//! * Create a user and database for the project with the `arangosh` shell
-//!
-//! ```bash
-//! arangosh> db._createDatabase("DB_NAME");
-//! arangosh> var users = require("@arangodb/users");
-//! arangosh> users.save("DB_USER", "DB_PASSWORD");
-//! arangosh> users.grantDatabase("DB_USER", "DB_NAME");
-//! ```
-//! > It is a good practice to create a test db and a development db.
-//! * you can connect to the new created db with
-//! ```bash
-//! $> arangosh --server.username $DB_USER --server.database $DB_NAME
-//! ```
-//!
-//! ### License
-//!
-//! `aragog` is provided under the MIT license. See [LICENSE](./LICENSE).
-//! An simple lightweight ODM for [ArangoDB][ArangoDB] based on [arangors][arangors].
-//!
-//! Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][inzanez]
-//!
 //! [arangors]: https://docs.rs/arangors
 //! [argonautica]: https://github.com/bcmyers/argonautica
 //! [ArangoDB]: https://www.arangodb.com/
@@ -559,8 +472,6 @@
 //! [CLI]: https://crates.io/crates/aragog_cli
 //! [edge_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#edges
 //! [collection_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#document
-//! [fMeow]: https://github.com/fMeow/
-//! [inzanez]: https://github.com/inzanez/
 //! [arango_download]: https://www.arangodb.com/download "Download Arango"
 //! [arango_doc]: https://www.arangodb.com/docs/stable/getting-started.html "Arango getting started"
 //! [AQL]: https://www.arangodb.com/docs/stable/aql/ "AQL"
