@@ -10,7 +10,7 @@ pub struct User {
     pub username: String,
     pub first_name: String,
     pub last_name: String,
-    #[validate(greater_than(13))]
+    #[validate(greater_than(13), lesser_than(99))]
     pub age: usize,
     pub is_cook: bool,
     #[validate(func("validate_money"))]

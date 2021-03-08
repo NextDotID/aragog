@@ -27,7 +27,7 @@ pub trait ParseAttribute: Sized {
                                 container.push(operation);
                             }
                             NestedMeta::Lit(_) => {
-                                emit_error!(nest.span(), "Expected meta, not lit")
+                                emit_error!(nest.span(), "Expected meta item, not a Rust Literal")
                             }
                         }
                     }

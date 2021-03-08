@@ -25,6 +25,12 @@ The crate also provides a powerful [AQL][AQL] querying tool allowing complex and
 - See The offical [book](./book) ([published version](https://qonfucius.gitlab.io/aragog))
 - See the [examples](./examples)
 
+## Project Layout
+
+- [`aragog`](https://crates.io/crates/aragog): The main ODM/OGM library
+- [`aragog_macros`](https://crates.io/crates/aragog_macros): The derive proc macros for `aragog`
+- [`aragog_cli`](https://crates.io/crates/aragog_cli): The migration and schema generation Command line interface
+
 ## Cargo features
 
 ### Async and Blocking
@@ -88,7 +94,7 @@ You can disable them with the `minimal_traits` feature:
 aragog = { version = "0.10", features = ["minimal_traits"] }
 ```
 
-### License
+## License
 
 `aragog` is provided under the MIT license. See [LICENSE](./LICENSE).
 

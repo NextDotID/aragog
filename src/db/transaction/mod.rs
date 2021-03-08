@@ -318,7 +318,12 @@ impl Transaction {
     where
         O: FnOnce(TransactionPool) -> Result<T, ServiceError>,
     {
+        log::trace!("Safely executing transactional operations..");
         let res = operations(self.pool.clone());
+        log::trace!(
+            "Safely executing transactional operations.. Done. Success: {}",
+            res.is_ok()
+        );
         self.handle_safe_execute(res)
     }
 

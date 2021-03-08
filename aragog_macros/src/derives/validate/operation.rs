@@ -130,7 +130,7 @@ impl ToTokenStream for Operation {
             Self::LesserThan { value, field } => {
                 let field_ident = Ident::new(&field, Span::call_site());
                 quote! {
-                    Self::validate_lower_than(#field, self.#field_ident as i32, #value, errors);
+                    Self::validate_lesser_than(#field, self.#field_ident as i32, #value, errors);
                 }
             }
             Self::GreaterOrEqual { value, field } => {
