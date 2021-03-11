@@ -4,7 +4,8 @@ extern crate env_logger;
 
 use aragog::query::{Comparison, Filter};
 use aragog::{
-    AuthMode, DatabaseConnectionPool, DatabaseRecord, New, Record, ServiceError, Update, Validate,
+    AuthMode, DatabaseAccess, DatabaseConnectionPool, DatabaseRecord, New, Record, ServiceError,
+    Update, Validate,
 };
 
 use crate::models::dish::{Dish, DishDTO};
@@ -82,7 +83,15 @@ async fn main() {
     // Checking
     assert_eq!(order_record.dishes.len(), 2);
     assert_eq!(order_record.total_price, 17);
-    assert_eq!(db_pool.collections["Dish"].record_count().await.unwrap(), 1);
+    assert_eq!(
+        db_pool
+            .get_collection("Dish")
+            .unwrap()
+            .record_count()
+            .await
+            .unwrap(),
+        1
+    );
 
     // Making validation fail
     dish_record.price = 0;

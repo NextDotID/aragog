@@ -1,5 +1,6 @@
+use crate::db::database_collection::DatabaseCollection;
 use crate::transaction::{Transaction, TransactionPool};
-use crate::{DatabaseConnectionPool, ServiceError};
+use crate::{DatabaseAccess, DatabaseConnectionPool, ServiceError};
 use arangors::transaction::{TransactionCollections, TransactionSettings};
 use std::collections::HashMap;
 
@@ -48,7 +49,7 @@ impl TransactionBuilder {
     ) -> Result<Transaction, ServiceError> {
         let collection_names = self.collections.unwrap_or(db_pool.collections_names());
         let accessor = db_pool
-            .database
+            .database()
             .begin_transaction(
                 TransactionSettings::builder()
                     .lock_timeout(self.lock_timeout.unwrap_or(LOCK_TIMEOUT))
@@ -66,11 +67,14 @@ impl TransactionBuilder {
         let mut collections = HashMap::new();
         for collections_name in db_pool.collections_names().iter() {
             let collection = accessor.collection(collections_name).await?;
-            collections.insert(collections_name.clone(), collection);
+            collections.insert(
+                collections_name.clone(),
+                DatabaseCollection::from(collection),
+            );
         }
         //
         log::trace!("Initialized Aragog transaction pool");
-        let database = db_pool.database.clone();
+        let database = db_pool.database().clone();
         Ok(Transaction {
             accessor,
             pool: TransactionPool {

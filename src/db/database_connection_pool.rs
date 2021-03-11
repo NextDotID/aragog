@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use arangors::client::reqwest::ReqwestClient;
-use arangors::{Collection, Connection, Database};
+use arangors::{Connection, Database};
 
 use crate::db::database_collection::DatabaseCollection;
 use crate::db::database_connection_pool_builder::{
@@ -14,9 +14,9 @@ use crate::{DatabaseAccess, ServiceError};
 #[derive(Clone)]
 pub struct DatabaseConnectionPool {
     /// Map between a collection name and a `DatabaseCollection` instance
-    pub collections: HashMap<String, DatabaseCollection>,
+    collections: HashMap<String, DatabaseCollection>,
     /// The database accessor
-    pub database: Database<ReqwestClient>,
+    database: Database<ReqwestClient>,
 }
 
 /// Defines which ArangoDB authentication mode will be used
@@ -129,7 +129,7 @@ impl DatabaseConnectionPool {
     #[maybe_async::maybe_async]
     pub async fn truncate(&self) {
         for collection in self.collections.iter() {
-            collection.1.collection.truncate().await.unwrap();
+            collection.1.truncate().await.unwrap();
         }
     }
 
@@ -146,10 +146,7 @@ impl DatabaseConnectionPool {
         for collection in schema.collections.iter() {
             collections.insert(
                 collection.name.clone(),
-                DatabaseCollection {
-                    collection_name: collection.name.clone(),
-                    collection: collection.get(&database).await?,
-                },
+                DatabaseCollection::from(collection.get(&database).await?),
             );
         }
         Ok(DatabaseConnectionPool {
@@ -160,15 +157,8 @@ impl DatabaseConnectionPool {
 }
 
 impl DatabaseAccess for DatabaseConnectionPool {
-    fn get_collection(&self, collection: &str) -> Result<&Collection<ReqwestClient>, ServiceError> {
-        match self.collections.get(collection) {
-            Some(c) => Ok(&c.collection),
-            None => Err(ServiceError::NotFound {
-                item: "Collection".to_string(),
-                id: collection.to_string(),
-                source: None,
-            }),
-        }
+    fn collection(&self, collection: &str) -> Option<&DatabaseCollection> {
+        self.collections.get(collection)
     }
 
     fn database(&self) -> &Database<ReqwestClient> {

@@ -3,7 +3,7 @@ extern crate aragog;
 use serde::{Deserialize, Serialize};
 
 use aragog::transaction::{Transaction, TransactionOutput};
-use aragog::{DatabaseRecord, Record};
+use aragog::{DatabaseAccess, DatabaseRecord, Record};
 
 pub mod common;
 
@@ -82,17 +82,37 @@ mod safe_execute {
                 name: "Pizza".to_string(),
                 price: 10,
             };
-            let count = pool.collections["User"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("User")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 0);
-            let count = pool.collections["Dish"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("Dish")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 0);
             let transaction = Transaction::new(&pool).await.unwrap();
             let result = get_correct_result(&transaction, &user_doc, &dish_doc).await;
             assert!(result.is_committed());
             assert_eq!(result.unwrap().len(), 3);
-            let count = pool.collections["User"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("User")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 3);
-            let count = pool.collections["Dish"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("Dish")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 1);
         }
 
@@ -111,9 +131,19 @@ mod safe_execute {
                 name: "Pizza".to_string(),
                 price: 10,
             };
-            let count = pool.collections["User"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("User")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 0);
-            let count = pool.collections["Dish"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("Dish")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 0);
             let transaction = User::transaction(&pool).await.unwrap();
             let result = get_correct_result(&transaction, &user_doc, &dish_doc).await;
@@ -128,9 +158,19 @@ mod safe_execute {
                 }
                 _ => panic!("Wrong error retured"),
             }
-            let count = pool.collections["User"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("User")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 0);
-            let count = pool.collections["Dish"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("Dish")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 0);
         }
     }
@@ -182,7 +222,12 @@ mod safe_execute {
                 description: "LM".to_string(),
                 email: "felix.maneville@qonfucius.team".to_string(),
             };
-            let count = pool.collections["User"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("User")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 0);
             let transaction = Transaction::new(&pool).await.unwrap();
             let result = get_failing_result(&transaction, &doc).await;
@@ -191,7 +236,12 @@ mod safe_execute {
                 ServiceError::InternalError { .. } => true,
                 _ => false,
             });
-            let count = pool.collections["User"].record_count().await.unwrap();
+            let count = pool
+                .get_collection("User")
+                .unwrap()
+                .record_count()
+                .await
+                .unwrap();
             assert_eq!(count, 0);
         }
     }

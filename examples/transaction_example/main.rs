@@ -1,7 +1,9 @@
 extern crate env_logger;
 
 use aragog::transaction::Transaction;
-use aragog::{AuthMode, DatabaseConnectionPool, DatabaseRecord, New, ServiceError, Update};
+use aragog::{
+    AuthMode, DatabaseAccess, DatabaseConnectionPool, DatabaseRecord, New, ServiceError, Update,
+};
 
 use crate::models::dish::{Dish, DishDTO};
 use crate::models::order::Order;
@@ -83,7 +85,15 @@ async fn main() {
     println!("Transaction committed");
 
     // Checking
-    assert_eq!(db_pool.collections["Dish"].record_count().await.unwrap(), 1);
+    assert_eq!(
+        db_pool
+            .collection("Dish")
+            .unwrap()
+            .record_count()
+            .await
+            .unwrap(),
+        1
+    );
 
     let mut dish_record = transaction_output.unwrap();
 

@@ -82,6 +82,11 @@ pub struct Transaction {
 }
 
 impl Transaction {
+    /// Transaction unique identifier
+    pub fn id(&self) -> &str {
+        self.accessor.id()
+    }
+
     /// Instantiates a new `Transaction` from a [`DatabaseConnectionPool`] on all collections
     ///
     /// # Arguments
@@ -360,6 +365,6 @@ impl Deref for Transaction {
     type Target = TransactionPool;
 
     fn deref(&self) -> &Self::Target {
-        &self.pool
+        self.pool()
     }
 }
