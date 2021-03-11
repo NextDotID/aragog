@@ -1,7 +1,8 @@
 use arangors::client::reqwest::ReqwestClient;
-use arangors::{Collection, Database};
+use arangors::Database;
 use serde_json::Value;
 
+use crate::db::database_collection::DatabaseCollection;
 use crate::query::JsonQueryResult;
 use crate::ServiceError;
 
@@ -22,7 +23,16 @@ use crate::ServiceError;
 #[maybe_async::maybe_async]
 pub trait DatabaseAccess: Sync {
     /// Retrieves a Collection from the database accessor.
-    fn get_collection(&self, collection: &str) -> Result<&Collection<ReqwestClient>, ServiceError>;
+    fn collection(&self, collection: &str) -> Option<&DatabaseCollection>;
+
+    /// Retrieves a Collection from the database accessor.
+    fn get_collection(&self, collection: &str) -> Result<&DatabaseCollection, ServiceError> {
+        self.collection(collection).ok_or(ServiceError::NotFound {
+            item: "Collection".to_string(),
+            id: collection.to_string(),
+            source: None,
+        })
+    }
 
     /// Retrieves the database object
     fn database(&self) -> &Database<ReqwestClient>;

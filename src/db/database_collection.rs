@@ -1,17 +1,21 @@
 use crate::ServiceError;
 use arangors::client::reqwest::ReqwestClient;
 use arangors::Collection;
+use std::ops::Deref;
 
 /// Struct containing the connection information on a ArangoDB collection
 #[derive(Debug, Clone)]
 pub struct DatabaseCollection {
-    /// String name of the collection, exactly as defined in database
-    pub collection_name: String,
     /// The collection wrapper accessor of `arangors` crate driver
-    pub collection: Collection<ReqwestClient>,
+    collection: Collection<ReqwestClient>,
 }
 
 impl DatabaseCollection {
+    /// Name of the collection, exactly as defined in database
+    pub fn name(&self) -> &str {
+        self.collection.name()
+    }
+
     /// Retrieves the total document count of this collection.
     ///
     /// # Returns
@@ -28,5 +32,19 @@ impl DatabaseCollection {
             Some(value) => Ok(value),
             None => Ok(0),
         }
+    }
+}
+
+impl From<Collection<ReqwestClient>> for DatabaseCollection {
+    fn from(collection: Collection<ReqwestClient>) -> Self {
+        Self { collection }
+    }
+}
+
+impl Deref for DatabaseCollection {
+    type Target = Collection<ReqwestClient>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.collection
     }
 }

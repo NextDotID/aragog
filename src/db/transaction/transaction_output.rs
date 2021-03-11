@@ -27,15 +27,21 @@ impl<T> TransactionOutput<T> {
         !self.is_committed()
     }
 
-    /// Unwraps the output, returning the result
+    /// Returns the contained [Committed] value, consuming the self value.
     ///
     /// # Panics
     ///
-    /// The method panics if the transaction was aborted
+    /// Panics if the self value equals [Aborted].
+    ///
+    /// [Committed]: enum.TransactionOutput.html#variant.Committed
+    /// [Aborted]: enum.TransactionOutput.html#variant.Aborted
     pub fn unwrap(self) -> T {
         match self {
             TransactionOutput::Committed(v) => v,
-            TransactionOutput::Aborted(err) => panic!("Transaction was aborted: {}", err),
+            TransactionOutput::Aborted(err) => panic!(
+                "called `TransactionOuput::unwrap()` on an `Aborted` value {}",
+                err
+            ),
         }
     }
 
@@ -52,6 +58,21 @@ impl<T> TransactionOutput<T> {
         match self {
             TransactionOutput::Committed(_) => None,
             TransactionOutput::Aborted(err) => Some(err),
+        }
+    }
+
+    /// Returns the contained [Committed] value, consuming the self value.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the value is a [Aborted] with a custom panic message provided by msg
+    ///
+    /// [Committed]: enum.TransactionOutput.html#variant.Committed
+    /// [Aborted]: enum.TransactionOutput.html#variant.Aborted
+    pub fn expect(self, msg: &str) -> T {
+        match self {
+            TransactionOutput::Committed(v) => v,
+            TransactionOutput::Aborted(e) => panic!("{}: {:?}", msg, e),
         }
     }
 }
