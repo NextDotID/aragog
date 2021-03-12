@@ -17,7 +17,6 @@
 - [The query engine](./query_engine/index.md)
   - [The query object](./query_engine/query_object.md)
   - [Traversal queries](./query_engine/traversal_query.md)
-  - [Technical notes](./query_engine/technical_notes.md)
 - [The transactions](./transactions/index.md)
   - [Safe execution](./transactions/safe_execute.md)
   - [Custom transactions](./transactions/custom_transactions.md)

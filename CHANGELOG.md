@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.11.0
+
+* Book improvements:
+  - Syntax
+  - Fixed external links
+  - Removed todo lists in favor of [gitlab issues](https://gitlab.com/qonfucius/aragog/-/issues)
+* Added a `create` method for `Record` trait (wraps `DatabaseRecord::create`)
+* `DatabaseCollection` improved:  
+  - (**BREAKING**) removed `collection_name` field
+  - Added `name()` method
+  - Implemented `Deref` with `arangors::Collection<ReqwestClient>` target
+* `DatabaseAccess` refactoring:
+  - (**BREAKING**) The `get_collection` method now returns a `DatabaseCollection` instead of the `arangors` `Collection`
+  - Added a `collection` method
+  - (**BREAKING**) `TransactionPool` and `DatabaseConnectionPool` fields are private.
+* Added `TransactionResult::expect` method
+
 ## 0.10.1
 
 * (**FIX**) Errors have a correct http code (actix compatibility fixed)

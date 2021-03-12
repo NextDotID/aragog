@@ -14,9 +14,3 @@ so you can implement it on your own struct.
 
 The `DatabaseConnectionPool` provides a `truncate_database` method but you should use it only for testing purposes,
 it is highly destructive as it will drop every collections known to the pool.
-
-## Todo list
-
-- [ ] Add `with_host` builder option to remove the host from `with_credentials`
-- [ ] Add `with_database` builder option to remove the database name from `with_credentials`
-- [ ] Optional implementation of the `r2d2` pool pattern

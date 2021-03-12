@@ -27,7 +27,3 @@ impl EdgeRecord for ChildOf {
     fn _to(&self) -> String { self._to.clone() }
 }
 ```
-
-## Todo list
-
-Nothing here for the moment.

@@ -47,14 +47,3 @@ The validation macros work pretty well but are difficult to test, especially the
 Are the errors messages relevant? correctly spanned? etc.
 
 So please report any bug or strange behaviour as this feature is still in its early stages
-
-## Todo list
-
-- [X] make the validate trait easily compatible with `Record` hooks
-- [ ] Add more field validation attributes
-    - [ ] Array validations
-    - [ ] `Option` validations
-    - [ ] Boolean validations
-    - [X] function validations of fields
-- [ ] Interrupt compilation after a derive macro error
-- [ ] Be able to propagate validations

@@ -84,10 +84,3 @@ The hook macros work pretty well but are difficult to test, especially compilati
 Are the errors messages relevant? correctly spanned? etc.
 
 So please report any bug or strange behaviour as this feature is still in its early stages.
-
-## TODO list
-
-- [X] Defining hooks (`before_save`, `before_create`, etc) and the equivalent macros
-- [X] Adding `before_delete` and `after_delete` hooks
-- [ ] Allowing more modularity in return types and errors
-- [ ] Use the `_rev` check (**CRITICAL**)
