@@ -16,6 +16,7 @@
   - Added a `collection` method
   - (**BREAKING**) `TransactionPool` and `DatabaseConnectionPool` fields are private.
 * Added `TransactionResult::expect` method
+* Support for `DatabaseAccess` used as a trait object throughout the complete API. (see [boxed_example](examples/boxed_example))
 
 ## 0.10.1
 
