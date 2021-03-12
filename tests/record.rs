@@ -37,7 +37,7 @@ impl Dish {
     #[maybe_async::maybe_async]
     async fn increment_menu<D>(&self, db_access: &D) -> Result<(), ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         let mut menu: DatabaseRecord<Menu> = Menu::find(&self.menu_id, db_access).await?;
         menu.dish_count += 1;
@@ -49,7 +49,7 @@ impl Dish {
     #[maybe_async::maybe_async]
     async fn last_dish_update<D>(&self, db_access: &D) -> Result<(), ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         let mut menu: DatabaseRecord<Menu> = Menu::find(&self.menu_id, db_access).await?;
         menu.last_dish_updated = Some(self.clone());

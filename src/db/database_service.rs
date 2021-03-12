@@ -6,15 +6,15 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 use arangors::client::reqwest::ReqwestClient;
 
 #[maybe_async::maybe_async]
-pub async fn update_record<T, U>(
+pub async fn update_record<T, D>(
     obj: T,
     key: &str,
-    db_accessor: &U,
+    db_accessor: &D,
     collection_name: &str,
 ) -> Result<DatabaseRecord<T>, ServiceError>
 where
     T: Record,
-    U: DatabaseAccess,
+    D: DatabaseAccess + ?Sized,
 {
     log::debug!("Updating document {} {}", collection_name, key);
     let collection = db_accessor.get_collection(collection_name)?;
@@ -54,28 +54,28 @@ where
 }
 
 #[maybe_async::maybe_async]
-pub async fn create_record<T, U>(
+pub async fn create_record<T, D>(
     obj: T,
-    db_accessor: &U,
+    db_accessor: &D,
     collection_name: &str,
 ) -> Result<DatabaseRecord<T>, ServiceError>
 where
     T: Record,
-    U: DatabaseAccess,
+    D: DatabaseAccess + ?Sized,
 {
     let collection = db_accessor.get_collection(collection_name)?;
     create_document(obj, collection).await
 }
 
 #[maybe_async::maybe_async]
-pub async fn retrieve_record<T, U>(
+pub async fn retrieve_record<T, D>(
     key: &str,
-    db_accessor: &U,
+    db_accessor: &D,
     collection_name: &str,
 ) -> Result<DatabaseRecord<T>, ServiceError>
 where
     T: Record,
-    U: DatabaseAccess,
+    D: DatabaseAccess + ?Sized,
 {
     log::debug!("Retrieving {} {} from database", collection_name, key);
     let collection = db_accessor.get_collection(collection_name)?;
@@ -100,14 +100,14 @@ where
 }
 
 #[maybe_async::maybe_async]
-pub async fn remove_record<T, U>(
+pub async fn remove_record<T, D>(
     key: &str,
-    db_accessor: &U,
+    db_accessor: &D,
     collection_name: &str,
 ) -> Result<(), ServiceError>
 where
     T: Record,
-    U: DatabaseAccess,
+    D: DatabaseAccess + ?Sized,
 {
     log::debug!("Removing {} {} from database", collection_name, key);
     let collection = db_accessor.get_collection(collection_name)?;

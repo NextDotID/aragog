@@ -56,7 +56,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn create<D>(mut record: T, db_accessor: &D) -> Result<Self, ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         record.before_create_hook(db_accessor).await?;
         let mut res =
@@ -89,7 +89,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn force_create<D>(record: T, db_accessor: &D) -> Result<Self, ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         database_service::create_record(record, db_accessor, T::collection_name()).await
     }
@@ -118,7 +118,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn save<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         self.record.before_save_hook(db_accessor).await?;
         let new_record = database_service::update_record(
@@ -156,7 +156,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn force_save<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         let new_record = database_service::update_record(
             self.record.clone(),
@@ -194,7 +194,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn delete<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         self.record.before_delete_hook(db_accessor).await?;
         database_service::remove_record::<T, D>(&self.key, db_accessor, T::collection_name())
@@ -227,7 +227,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn force_delete<D>(&self, db_accessor: &D) -> Result<(), ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         database_service::remove_record::<T, D>(&self.key, db_accessor, T::collection_name()).await
     }
@@ -272,7 +272,7 @@ impl<T: Record> DatabaseRecord<T> {
     where
         A: Record,
         B: Record,
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
         E: FnOnce(String, String) -> T,
         T: EdgeRecord,
     {
@@ -300,7 +300,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn find<D>(key: &str, db_accessor: &D) -> Result<Self, ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         database_service::retrieve_record(key, db_accessor, T::collection_name()).await
     }
@@ -324,7 +324,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn reload<D>(self, db_accessor: &D) -> Result<Self, ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
         T: Send,
     {
         T::find(&self.key, db_accessor).await
@@ -345,7 +345,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn reload_mut<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
         T: Send,
     {
         *self = T::find(&self.key, db_accessor).await?;
@@ -398,7 +398,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn get<D>(query: Query, db_accessor: &D) -> Result<RecordQueryResult<T>, ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         Self::aql_get(&query.to_aql(), db_accessor).await
     }
@@ -448,7 +448,7 @@ impl<T: Record> DatabaseRecord<T> {
         db_accessor: &D,
     ) -> Result<RecordQueryResult<T>, ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         let result = db_accessor.aql_get(query).await?;
         Ok(result.into())
@@ -612,7 +612,7 @@ impl<T: Record> DatabaseRecord<T> {
     #[maybe_async::maybe_async]
     pub async fn exists<D>(query: Query, db_accessor: &D) -> bool
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         let aql_string = query.to_aql();
         let aql_query = AqlQuery::builder()

@@ -87,42 +87,42 @@ impl ToTokenStream for HooksContainer {
         let gen = quote! {
             fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #before_create_quote
                 Ok(())
             }
 
             fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #before_save_quote
                 Ok(())
             }
 
             fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #before_delete_quote
                 Ok(())
             }
 
             fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #after_create_quote
                 Ok(())
             }
 
             fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #after_save_quote
                 Ok(())
             }
 
             fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #after_delete_quote
                 Ok(())
             }
@@ -131,42 +131,42 @@ impl ToTokenStream for HooksContainer {
         let gen = quote! {
             async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #before_create_quote
                 Ok(())
             }
 
             async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #before_save_quote
                 Ok(())
             }
 
             async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #before_delete_quote
                 Ok(())
             }
 
             async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #after_create_quote
                 Ok(())
             }
 
             async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #after_save_quote
                 Ok(())
             }
 
             async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), aragog::ServiceError>
             where
-                D: aragog::DatabaseAccess {
+                D: aragog::DatabaseAccess + ?Sized {
                 #after_delete_quote
                 Ok(())
             }
