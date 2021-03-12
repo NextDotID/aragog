@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+* (**FIXED**) Validate macro attribute `lesser_than` was not working
+
 ## 0.4.0
 
 * Adapted `EdgeRecord` implementation to aragog 0.10
