@@ -86,7 +86,7 @@ pub trait Link<T: Record>: Sized {
     async fn linked_models<D>(&self, db_pool: &D) -> Result<RecordQueryResult<T>, ServiceError>
     where
         Self: Sized,
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
         T: 'async_trait,
     {
         DatabaseRecord::get(self.link_query(), db_pool).await
@@ -96,7 +96,7 @@ pub trait Link<T: Record>: Sized {
     #[cfg(not(feature = "async"))]
     fn linked_models<D>(&self, db_pool: &D) -> Result<RecordQueryResult<T>, ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         DatabaseRecord::get(self.link_query(), db_pool)
     }

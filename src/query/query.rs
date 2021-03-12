@@ -592,7 +592,7 @@ impl Query {
     #[maybe_async::maybe_async]
     pub async fn call<D>(self, db_pool: &D) -> Result<JsonQueryResult, ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         db_pool.aql_get(&self.to_aql()).await
     }

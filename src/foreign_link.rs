@@ -81,7 +81,7 @@ pub trait ForeignLink<T: Record>: Sized {
     where
         Self: Sized,
         T: 'async_trait,
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         DatabaseRecord::find(self.foreign_key(), db_pool).await
     }
@@ -90,7 +90,7 @@ pub trait ForeignLink<T: Record>: Sized {
     #[cfg(not(feature = "async"))]
     fn linked_model<D>(&self, db_pool: &D) -> Result<DatabaseRecord<T>, ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         DatabaseRecord::find(self.foreign_key(), db_pool)
     }

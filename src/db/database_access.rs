@@ -12,7 +12,7 @@ use crate::ServiceError;
 ///
 /// # Usage
 ///
-/// Instead of direcly calling [`DatabaseConnectionPool`],
+/// Instead of directly calling [`DatabaseConnectionPool`],
 /// which is the main database accessor, this allow for a more abstract and modular system.
 /// This way, the `Transaction` system can work with all the current methods.
 ///

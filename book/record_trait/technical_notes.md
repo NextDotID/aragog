@@ -41,37 +41,37 @@ impl Record for User {
     fn collection_name() -> &'static str { "User" }
 
     async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
-        D: DatabaseAccess {
+        D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
 
     async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
-        D: DatabaseAccess {
+        D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
     
     async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
-        D: DatabaseAccess {
+        D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
     
     async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
-        D: DatabaseAccess {
+        D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
 
     async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
-        D: DatabaseAccess {
+        D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
 
     async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
-        D: DatabaseAccess {
+        D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }

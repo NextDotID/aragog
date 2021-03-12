@@ -24,7 +24,7 @@ pub struct Dish {
 impl Dish {
     async fn hook_before_create<D>(&mut self, _db_accessor: &D) -> Result<(), ServiceError>
     where
-        D: DatabaseAccess,
+        D: DatabaseAccess + ?Sized,
     {
         self.created_at = Utc::now().timestamp() as u64;
         self.updated_at = Utc::now().timestamp() as u64;

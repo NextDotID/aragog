@@ -7,6 +7,7 @@
 - [Initialization](./init/index.md)
   - [Schema generation](./init/schema_generation.md)
   - [The database connection pool](./init/db_pool.md)
+  - [Technical notes](./init/technical_notes.md)
 - [The `Record` trait](./record_trait/index.md)
   - [Hooks](./record_trait/hooks.md)
   - [Technical notes](./record_trait/technical_notes.md)

@@ -1,0 +1,3 @@
+collections:
+    - name: User
+      is_edge_collection: false
