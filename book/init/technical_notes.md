@@ -12,7 +12,7 @@ so you can implement it on your own struct.
 
 ### Trait object
 
-All `aragog` API using a `DatabaseAccess` type also use `?Sized` (`Sized` [restrinction relaxation](https://doc.rust-lang.org/book/ch19-04-advanced-types.html#dynamically-sized-types-and-the-sized-trait))
+All `aragog` API using a `DatabaseAccess` type also use `?Sized` (`Sized` [restriction relaxation](https://doc.rust-lang.org/book/ch19-04-advanced-types.html#dynamically-sized-types-and-the-sized-trait))
 
 This means you can use dynamically typed [trait objects](https://doc.rust-lang.org/book/ch17-02-trait-objects.html).
 

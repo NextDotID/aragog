@@ -8,14 +8,14 @@ Command: `aragog create_migration MIGRATION_NAME`
 
 Creates a new migration file in `SCHEMA_PATH/migrations/`. If the `db` folder is missing it will be created automatically.
 
-## Launching migrations
+## Launch migrations
 
 Command: `aragog migrate`
 
 Will launch every migration in `SCHEMA_PATH/migrations/` and update the schema according to its current version.
 If there is no schema it will be generated.
 
-## Rollbacking migrations
+## Rollback migrations
 
 Command: `aragog rollback`
 

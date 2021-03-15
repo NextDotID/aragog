@@ -1,3 +1,4 @@
+[![Logo](https://gitlab.com/qonfucius/aragog/-/snippets/2090578/raw/master/logo.svg)]()
 # Aragog
 
 [![pipeline status](https://gitlab.com/qonfucius/aragog/badges/master/pipeline.svg)](https://gitlab.com/qonfucius/aragog/commits/master)
@@ -11,7 +12,7 @@
 
 The main concept is to provide behaviors allowing to map your structs with ArangoDB documents as simply an lightly as possible.
 Inspired by Rails's [Active Record](https://github.com/rails/rails/tree/main/activerecord) library
-`aragog` aslo provides **hooks** and **validations** for your models.
+`aragog` also provides **hooks** and **validations** for your models.
 
 The crate also provides a powerful [AQL][AQL] querying tool allowing complex and safe ArangoDB queries in *Rust*.
 
@@ -21,8 +22,8 @@ The crate also provides a powerful [AQL][AQL] querying tool allowing complex and
 
 ## Book and Documentation
 
-- See the offical documentation [here]((https://docs.rs/aragog))
-- See The offical [book](./book) ([published version](https://qonfucius.gitlab.io/aragog))
+- See the official documentation [here]((https://docs.rs/aragog))
+- See The official [book](./book) ([published version](https://qonfucius.gitlab.io/aragog))
 - See the [examples](./examples)
 
 ## Project Layout

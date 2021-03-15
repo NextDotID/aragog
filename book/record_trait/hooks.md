@@ -28,7 +28,7 @@ By default both options are set to `false`.
 You can combine options to have an `async` hook with db access to execute document operations automatically.
 If you combine a lot of operations, like creating documents in hooks or chaining operations make sure to:
 - avoid **circular operations**
-- use [Transaction](./transactions.md) for safety
+- use [Transaction](../transactions/index.md) for safety
 
 ## Hook Patterns
 

@@ -1,7 +1,7 @@
 # The Query system
 
 You can retrieve document from the database two ways:
-- from the unique ArangoDB `_key` (see the [record](./record.md) section)
+- from the unique ArangoDB `_key` (see the [record](../record_trait/index.md) section)
 - from an [AQL](https://www.arangodb.com/docs/stable/aql/index.html) query
 
 `aragog` provides an AQL query builder system, allowing safer queries than direct string literals.
