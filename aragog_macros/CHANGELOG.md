@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0
+
+* `Record` hooks implementation matches the new `?Sized` requirements of aragog 0.11.0
+
 ## 0.4.1
 
 * (**FIXED**) Validate macro attribute `lesser_than` was not working
