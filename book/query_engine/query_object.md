@@ -1,7 +1,7 @@
 
 # Query Object
 
-You can intialize a query in the following ways:
+You can initialize a query in the following ways:
 - The recommended way:
     * `Object::query()` (only works if `Object` implements `Record`)
 - Unsafe ways:

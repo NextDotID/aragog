@@ -23,7 +23,7 @@ pub struct ChildOf {
 ```
 
 To derive `EdgeRecord` your structure needs to derive or implement `Serialize`, `Deserialize` and  `Clone`
-to store the document data and `Record` (see [previous section](./record.md))
+to store the document data and `Record` (see [previous section](../record_trait/index.md))
 
 An `EdgeRecord` is also a `Record` thus implementing all its behavior, and a few more.
 

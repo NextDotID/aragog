@@ -359,12 +359,3 @@ impl Transaction {
         &self.pool
     }
 }
-
-// TODO: check if this implementation is useful
-impl Deref for Transaction {
-    type Target = TransactionPool;
-
-    fn deref(&self) -> &Self::Target {
-        self.pool()
-    }
-}

@@ -9,7 +9,7 @@ You can implement `EdgeRecord` directly instead of deriving it.
 > you would loose the compiler presence check on the required fields.
 
 You need to specify the `_from()` and `_to()` methods which, when deriving, are automatically filled.
-You also need to implement or derive `Record` (see [previous section](./record.md))
+You also need to implement or derive `Record` (see [previous section](../record_trait/index.md))
 
 Example:
 ```rust

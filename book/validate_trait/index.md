@@ -4,7 +4,7 @@ As `aragog` is trying to be a complete ODM, being able to add validations to **m
 
 ## Macro validations
 
-Let's take the [record](./record.md) example model:
+Let's take the [record](../record_trait/index.md) example model:
 
 ```rust
 use aragog::{Record, Validate};
