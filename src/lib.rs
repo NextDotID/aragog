@@ -477,6 +477,7 @@
 //! [AQL]: https://www.arangodb.com/docs/stable/aql/ "AQL"
 //!
 #![forbid(missing_docs)]
+#![forbid(unsafe_code)]
 
 pub extern crate async_trait;
 

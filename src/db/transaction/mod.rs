@@ -1,6 +1,5 @@
 #[cfg(feature = "async")]
 use std::future::Future;
-use std::ops::Deref;
 
 use arangors::client::reqwest::ReqwestClient;
 use arangors::transaction::Transaction as TransactionLayer;
