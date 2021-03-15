@@ -99,6 +99,7 @@ test:examples:
     - cargo run --example simple_example
     - cargo run --example graph_example
     - cargo run --example transaction_example
+    - cargo run --example boxed_example
 
 test::rustfmt:
   <<: *cache_pull_template
