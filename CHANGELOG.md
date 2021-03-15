@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.1
+
+* bumped `aragog_macro` dependency to 0.5.0
+
 ## 0.11.0
 
 * Book improvements:
