@@ -102,3 +102,27 @@ Complete Example:
      user_record.delete(&database_pool).await.unwrap();
  }
  ```
+
+#### Operation options
+
+All the **write** operations (create, save and delete) provide a variant `_with_option`:
+- `create_with_options`
+- `save_with_options`
+- `delete_with_options`
+
+These methods allow to customize some aspects of the operation:
+- `wait_for_sync`: Should aragog wait for the operations to be written on disk? (by default the collection behavior is kept)
+- `ignore_revs`: Should ArangoDB ignore the revision conflict (`true` by default)
+- `ignore_hooks`: Should the operation skip the related *Hooks* ?
+
+These options are available but you should use them sparingly. Prefer defining a global option settings directly
+in the [DatabaseConnectionPool](../init/db_pool.md) if you find yourself in a situation where you want:
+- To **always** or **never** wait for sync
+- To **always** or **never** ignore the revision system
+- To **always** skip the hooks
+
+Keep in mind that all **write** operations also have `force_` variants which:
+- explicitly ignore the revision system
+- explicitly ignore the hooks
+
+No matter what the global options are.

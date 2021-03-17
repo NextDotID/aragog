@@ -1,6 +1,6 @@
 use crate::db::database_collection::DatabaseCollection;
 use crate::transaction::{Transaction, TransactionPool};
-use crate::{DatabaseAccess, DatabaseConnectionPool, ServiceError};
+use crate::{DatabaseAccess, DatabaseConnectionPool, OperationOptions, ServiceError};
 use arangors::transaction::{TransactionCollections, TransactionSettings};
 use std::collections::HashMap;
 
@@ -13,6 +13,7 @@ pub struct TransactionBuilder {
     collections: Option<Vec<String>>,
     wait_for_sync: Option<bool>,
     lock_timeout: Option<usize>,
+    operation_options: Option<OperationOptions>,
 }
 
 impl TransactionBuilder {
@@ -38,6 +39,15 @@ impl TransactionBuilder {
     /// Defines the transaction lock timeout (default value: 60 000)
     pub fn lock_timeout(mut self, lock_timeout: usize) -> Self {
         self.lock_timeout = Some(lock_timeout);
+        self
+    }
+
+    /// Defines custom `write` operation options for this transaction.
+    /// By default the options set in the [`DatabaseConnectionPool`] are used.
+    ///
+    /// [`DatabaseConnectionPool`]: struct.DatabaseConnectionPool.html
+    pub fn operation_options(mut self, options: OperationOptions) -> Self {
+        self.operation_options = Some(options);
         self
     }
 
@@ -75,11 +85,15 @@ impl TransactionBuilder {
         //
         log::trace!("Initialized Aragog transaction pool");
         let database = db_pool.database().clone();
+        let operation_options = self
+            .operation_options
+            .unwrap_or(db_pool.operation_options());
         Ok(Transaction {
             accessor,
             pool: TransactionPool {
                 collections,
                 database,
+                operation_options,
             },
         })
     }
@@ -91,6 +105,7 @@ impl Default for TransactionBuilder {
             collections: None,
             wait_for_sync: None,
             lock_timeout: None,
+            operation_options: None,
         }
     }
 }

@@ -445,7 +445,7 @@ impl ComparisonBuilder {
             is_field: self.is_field,
             left_value: self.statement,
             comparator: "IN".to_string(),
-            right_value: format!(r#"{}"#, string_array_from_array(array)),
+            right_value: string_array_from_array(array),
         }
     }
 
@@ -469,7 +469,7 @@ impl ComparisonBuilder {
             is_field: self.is_field,
             left_value: self.statement,
             comparator: "NOT IN".to_string(),
-            right_value: format!(r#"{}"#, string_array_from_array(array)),
+            right_value: string_array_from_array(array),
         }
     }
 
@@ -493,7 +493,7 @@ impl ComparisonBuilder {
             is_field: self.is_field,
             left_value: self.statement,
             comparator: "IN".to_string(),
-            right_value: format!(r#"{}"#, string_array_from_array_str(array)),
+            right_value: string_array_from_array_str(array),
         }
     }
 
@@ -517,7 +517,7 @@ impl ComparisonBuilder {
             is_field: self.is_field,
             left_value: self.statement,
             comparator: "NOT IN".to_string(),
-            right_value: format!(r#"{}"#, string_array_from_array_str(array)),
+            right_value: string_array_from_array_str(array),
         }
     }
 
@@ -619,7 +619,7 @@ impl Comparison {
     pub fn field(field_name: &str) -> ComparisonBuilder {
         ComparisonBuilder {
             is_field: true,
-            statement: format!("{}", field_name.to_string()),
+            statement: field_name.to_string(),
         }
     }
 

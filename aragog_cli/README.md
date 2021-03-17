@@ -216,7 +216,7 @@ minLength: 3600
 ## Todo list
 
 - [ ] Migration commands:
-  - [ ] `rename_collection`
+  - [ ] `edit_collection`
   - [ ] check on graph creation the existence of the orphan collections
 - [ ] Transaction Support
   - [ ] Wrap migration files on transactions

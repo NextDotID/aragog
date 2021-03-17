@@ -20,6 +20,9 @@ To connect to the database and initialize a connection pool you may use the foll
      // You can specify a authentication mode between `Basic` and `Jwt`
      // Otherwise the default value will be used (`Basic`).
      .with_auth_mode(AuthMode::Basic)
+     // You can specify some operations options that will be used for every `write` operations like
+     // `create`, `save` and `delete`.
+     .with_operation_options(OperationOptions::default())
      // You can specify a schema path to initialize the database pool
      // Otherwise the env var `SCHEMA_PATH` or the default value `config/db/schema.yaml` will be used.
      .with_schema_path("config/db/schema.yaml")

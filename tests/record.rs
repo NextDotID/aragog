@@ -3,8 +3,9 @@ extern crate aragog;
 
 use serde::{Deserialize, Serialize};
 
-use aragog::{DatabaseAccess, DatabaseConnectionPool, ServiceError};
-use aragog::{DatabaseRecord, Record, Validate};
+use aragog::{
+    DatabaseAccess, DatabaseConnectionPool, DatabaseRecord, Record, ServiceError, Validate,
+};
 
 pub mod common;
 

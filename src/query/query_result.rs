@@ -119,22 +119,12 @@ impl JsonQueryResult {
     pub fn get_records<T: Record>(&self) -> Vec<DatabaseRecord<T>> {
         let mut res = Vec::new();
         for value in self.documents.iter() {
-            let key = value["_key"].as_str();
-            let id = value["_id"].as_str();
-            let rev = value["_rev"].as_str();
-            if key.is_none() || id.is_none() || rev.is_none() {
+            let record = serde_json::from_value(value.clone());
+            if let Ok(db_record) = record {
+                res.push(db_record);
+            } else {
                 continue;
             }
-            let record = serde_json::from_value(value.clone().take());
-            if record.is_err() {
-                continue;
-            }
-            res.push(DatabaseRecord {
-                key: key.unwrap().to_string(),
-                id: id.unwrap().to_string(),
-                rev: rev.unwrap().to_string(),
-                record: record.unwrap(),
-            })
         }
         res
     }
