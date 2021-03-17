@@ -440,9 +440,9 @@ pub trait Validate {
             if split.len() != 2 {
                 errors.push(format!(r#"{} "{}" has wrong format"#, name, field));
             }
-            let left_part = &split.first().unwrap();
+            let left_part = split.first().unwrap();
             Self::validate_min_len(name, left_part, 2, errors);
-            let right_part = &split.last().unwrap();
+            let right_part = split.last().unwrap();
             Self::validate_min_len(name, right_part, 2, errors);
             Self::validate_numeric_string(name, right_part, errors);
         }

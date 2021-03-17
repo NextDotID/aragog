@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate aragog;
 
 use serde::{Deserialize, Serialize};
@@ -243,6 +244,39 @@ mod safe_execute {
                 .await
                 .unwrap();
             assert_eq!(count, 0);
+        }
+    }
+
+    mod query {
+        use super::*;
+
+        #[maybe_async::test(
+            feature = "blocking",
+            async(all(not(feature = "blocking")), tokio::test)
+        )]
+        async fn query_transaction_elements() -> Result<(), String> {
+            let db_pool = common::setup_db().await;
+            let transaction = Transaction::new(&db_pool).await.unwrap();
+
+            DatabaseRecord::create(
+                User {
+                    name: "Robert Surcouf".to_string(),
+                    description: "Corsaire Français".to_string(),
+                    email: "lerevenantmalouin@qonfucius.team".to_string(),
+                },
+                transaction.pool(),
+            )
+            .await
+            .unwrap();
+
+            let query =
+                User::query().filter(compare!(field "name").equals_str("Robert Surcouf").into());
+            let res = User::get(query.clone(), transaction.pool()).await.unwrap();
+            assert_eq!(res.len(), 0);
+            transaction.commit().await.unwrap();
+            let res = User::get(query.clone(), &db_pool).await.unwrap();
+            assert_eq!(res.len(), 1);
+            Ok(())
         }
     }
 }

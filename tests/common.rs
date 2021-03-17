@@ -2,10 +2,10 @@ use std::fmt::Debug;
 
 use aragog::DatabaseConnectionPool;
 
-const DEFAULT_DB_HOST: &str = "http://localhost:8529";
-const DEFAULT_DB_NAME: &str = "aragog_test";
-const DEFAULT_DB_USER: &str = "test";
-const DEFAULT_DB_PWD: &str = "test";
+pub const DEFAULT_DB_HOST: &str = "http://localhost:8529";
+pub const DEFAULT_DB_NAME: &str = "aragog_test";
+pub const DEFAULT_DB_USER: &str = "test";
+pub const DEFAULT_DB_PWD: &str = "test";
 
 #[maybe_async::maybe_async]
 pub async fn setup_db() -> DatabaseConnectionPool {

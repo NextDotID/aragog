@@ -15,7 +15,7 @@ pub struct CollectionSchema {
     pub name: String,
     /// Defines if the collection a edge collection
     pub is_edge_collection: bool,
-    /// Defins if the collection requests wait for the operations to be written on disk
+    /// Defines if the collection requests wait for the operations to be written on disk
     ///
     /// If set on `true` the requests might be slower. By default, `false` is used
     #[serde(skip_serializing_if = "Option::is_none")]

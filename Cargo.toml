@@ -42,7 +42,7 @@ log = "0.4"
 # Error definitions
 thiserror = "1.0"
 # Numeric types for query engine
-num = "0.3"
+num = "0.4"
 # Self depedencies
 maybe-async = "0.2"
 
@@ -58,8 +58,8 @@ paperclip = { version = "0.5", optional = true, features = ["actix"] }
 
 [dev-dependencies]
 # We add the "feature" option to avoid serde version conflict somehow
+# TODO: remove this dependency
 chrono = { version = "0.4", features = ["serde"] }
-
 # Used by examples:
 env_logger = "0.8"
 
@@ -67,8 +67,8 @@ env_logger = "0.8"
 version = "0.2"
 features = [ "macros", "rt-core" ]
 
-[badges]
-maintenance = { status = "actively-developed" }
+[badges.maintenance]
+status = "actively-developed"
 
 [workspace]
 members = [

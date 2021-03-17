@@ -75,6 +75,7 @@ mod transaction_pool;
 /// On the other hand all `READ` operations as `find`, `get`, etc should all work even with `AQL` queries.
 ///
 /// [`DatabaseConnectionPool`]: ../struct.DatabaseConnectionPool.html
+// TODO: Add #[derive(Debug)] when arangors supports it
 pub struct Transaction {
     accessor: TransactionLayer<ReqwestClient>,
     pool: TransactionPool,

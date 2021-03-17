@@ -15,11 +15,7 @@ pub enum TransactionOutput<T> {
 impl<T> TransactionOutput<T> {
     /// Was the transaction committed
     pub fn is_committed(&self) -> bool {
-        if let TransactionOutput::Committed(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, TransactionOutput::Committed(_))
     }
 
     /// Was the transaction aborted

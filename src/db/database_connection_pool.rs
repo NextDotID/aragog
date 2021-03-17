@@ -8,15 +8,17 @@ use crate::db::database_connection_pool_builder::{
     DatabaseConnectionPoolBuilder, DatabaseSchemaOption, PoolCredentialsOption,
 };
 use crate::schema::{DatabaseSchema, SchemaDatabaseOperation};
-use crate::{DatabaseAccess, ServiceError};
+use crate::{DatabaseAccess, OperationOptions, ServiceError};
 
 /// Struct containing ArangoDB connections and information to access the database, collections and documents
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DatabaseConnectionPool {
     /// Map between a collection name and a `DatabaseCollection` instance
     collections: HashMap<String, DatabaseCollection>,
     /// The database accessor
     database: Database<ReqwestClient>,
+    /// The default options for all `write` operations
+    operation_options: OperationOptions,
 }
 
 /// Defines which ArangoDB authentication mode will be used
@@ -84,19 +86,35 @@ impl DatabaseConnectionPool {
             auth_mode: AuthMode::default(),
             credentials: PoolCredentialsOption::Auto,
             schema: DatabaseSchemaOption::Auto,
+            operation_options: OperationOptions::default(),
         }
     }
 
     #[maybe_async::maybe_async]
     pub(crate) async fn new(
+        database: Database<ReqwestClient>,
+        schema: DatabaseSchema,
+        apply_schema: bool,
+        operation_options: OperationOptions,
+    ) -> Result<Self, ServiceError> {
+        if apply_schema {
+            schema.apply_to_database(&database, true).await?;
+        }
+        Ok(Self {
+            collections: Self::load_schema(&database, schema).await?,
+            database,
+            operation_options,
+        })
+    }
+
+    #[maybe_async::maybe_async]
+    pub(crate) async fn connect(
         db_host: &str,
         db_name: &str,
         db_user: &str,
         db_password: &str,
         auth_mode: AuthMode,
-        schema: DatabaseSchema,
-        apply_schema: bool,
-    ) -> Result<Self, ServiceError> {
+    ) -> Result<Database<ReqwestClient>, ServiceError> {
         log::info!("Connecting to database server on {} ...", db_host);
         let db_connection = match auth_mode {
             AuthMode::Basic => {
@@ -105,11 +123,7 @@ impl DatabaseConnectionPool {
             AuthMode::Jwt => Connection::establish_jwt(db_host, db_user, db_password).await?,
         };
         log::info!("Connecting to database {} ...", db_name);
-        let database = db_connection.db(&db_name).await.unwrap();
-        if apply_schema {
-            schema.apply_to_database(&database, true).await?;
-        }
-        DatabaseConnectionPool::load_schema(database, schema).await
+        Ok(db_connection.db(&db_name).await?)
     }
 
     /// retrieves a vector of all collection names from the pool
@@ -135,9 +149,9 @@ impl DatabaseConnectionPool {
 
     #[maybe_async::maybe_async]
     async fn load_schema(
-        database: Database<ReqwestClient>,
+        database: &Database<ReqwestClient>,
         schema: DatabaseSchema,
-    ) -> Result<DatabaseConnectionPool, ServiceError> {
+    ) -> Result<HashMap<String, DatabaseCollection>, ServiceError> {
         log::info!(
             "Loading Schema with version {}",
             schema.version.unwrap_or(0)
@@ -149,14 +163,22 @@ impl DatabaseConnectionPool {
                 DatabaseCollection::from(collection.get(&database).await?),
             );
         }
-        Ok(DatabaseConnectionPool {
-            collections,
-            database,
-        })
+        Ok(collections)
+    }
+
+    /// Returns the number of currently running server-side transactions
+    #[maybe_async::maybe_async]
+    pub async fn transactions_count(&self) -> Result<usize, ServiceError> {
+        let vec = self.database().list_transactions().await?;
+        Ok(vec.len())
     }
 }
 
 impl DatabaseAccess for DatabaseConnectionPool {
+    fn operation_options(&self) -> OperationOptions {
+        self.operation_options.clone()
+    }
+
     fn collection(&self, collection: &str) -> Option<&DatabaseCollection> {
         self.collections.get(collection)
     }

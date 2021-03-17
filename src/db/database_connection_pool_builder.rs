@@ -1,6 +1,7 @@
-use crate::schema::{DatabaseSchema, SCHEMA_DEFAULT_FILE_NAME, SCHEMA_DEFAULT_PATH};
-use crate::{AuthMode, DatabaseConnectionPool, ServiceError};
 use std::convert::TryInto;
+
+use crate::schema::{DatabaseSchema, SCHEMA_DEFAULT_FILE_NAME, SCHEMA_DEFAULT_PATH};
+use crate::{AuthMode, DatabaseConnectionPool, OperationOptions, ServiceError};
 
 #[derive(Debug, Clone)]
 pub(crate) struct PoolCredentials {
@@ -68,6 +69,7 @@ pub struct DatabaseConnectionPoolBuilder {
     pub(crate) auth_mode: AuthMode,
     pub(crate) credentials: PoolCredentialsOption,
     pub(crate) schema: DatabaseSchemaOption,
+    pub(crate) operation_options: OperationOptions,
 }
 
 impl DatabaseConnectionPoolBuilder {
@@ -104,17 +106,17 @@ impl DatabaseConnectionPoolBuilder {
         let credentials = self.credentials();
         let auth_mode = self.auth_mode();
         let apply_schema = self.apply_schema;
+        let operation_options = self.operation_options.clone();
         let schema = self.schema()?;
-        DatabaseConnectionPool::new(
+        let database = DatabaseConnectionPool::connect(
             &credentials.db_host,
             &credentials.db_name,
             &credentials.db_user,
             &credentials.db_password,
             auth_mode,
-            schema,
-            apply_schema,
         )
-        .await
+        .await?;
+        DatabaseConnectionPool::new(database, schema, apply_schema, operation_options).await
     }
 
     /// Specifies a custom authentication mode for ArangoDB connection.
@@ -179,6 +181,25 @@ impl DatabaseConnectionPoolBuilder {
     pub fn with_schema_path(mut self, path: &str) -> Self {
         log::debug!("[Pool builder] Schema from {} will be used", path);
         self.schema = DatabaseSchemaOption::Path(String::from(path));
+        self
+    }
+
+    /// Specifies custom options for `write` operations (`create`, `save`, `delete`)
+    ///
+    /// # Note
+    ///
+    /// These options will be used globally as a default value, meaning you don't need to specify
+    /// duplicate options when using the [`DatabaseRecord`] API.
+    ///
+    /// If you set `ignore_hooks` here, every [`DatabaseRecord`] operation will skip hooks.
+    ///
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    pub fn with_operation_options(mut self, options: OperationOptions) -> Self {
+        log::debug!(
+            "[Pool builder] custom operation options will be used: {:?}",
+            options
+        );
+        self.operation_options = options;
         self
     }
 

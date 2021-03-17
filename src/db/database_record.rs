@@ -1,11 +1,13 @@
 use arangors::document::response::DocumentResponse;
 use arangors::{AqlQuery, Document};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::{self, Display, Formatter};
 
 use crate::db::database_service;
 use crate::query::{Query, RecordQueryResult};
-use crate::{DatabaseAccess, EdgeRecord, Record, ServiceError};
+use crate::{DatabaseAccess, EdgeRecord, OperationOptions, Record, ServiceError};
+use std::convert::TryFrom;
 use std::ops::{Deref, DerefMut};
 
 /// Struct representing database stored documents.
@@ -17,15 +19,19 @@ use std::ops::{Deref, DerefMut};
 /// `DatabaseRecord` implements `Deref` and `DerefMut` into `T`
 ///
 /// [`Record`]: trait.Record.html
-#[derive(Debug, Clone)]
-pub struct DatabaseRecord<T: Record> {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DatabaseRecord<T> {
     /// The Document unique and indexed `_key`
-    pub(crate) key: String,
+    #[serde(rename(serialize = "_key", deserialize = "_key"))]
+    key: String,
     /// The Document unique and indexed `_id`
-    pub(crate) id: String,
+    #[serde(rename(serialize = "_id", deserialize = "_id"))]
+    id: String,
     /// The Document revision `_rev`
-    pub(crate) rev: String,
+    #[serde(rename(serialize = "_rev", deserialize = "_rev"))]
+    rev: String,
     /// The deserialized stored document
+    #[serde(flatten)]
     pub record: T,
 }
 
@@ -34,9 +40,61 @@ impl<T: Record> DatabaseRecord<T> {
     /// Creates a document in database.
     /// The function will write a new document and return a database record containing the newly created key
     ///
+    /// # Note
+    ///
+    /// This method should be used for very specific cases, prefer using `delete` instead.
+    /// If you want global operation options (always wait for sync, always ignore hooks, etc)
+    /// configure your [`DatabaseConnectionPool`] with `with_operation_options` to have a customs set
+    /// of default options.
+    ///
     /// # Hooks
     ///
-    /// This function will launch `T` hooks `before_create` and `after_create`.
+    /// This function will launch `T` hooks `before_create` and `after_create` unless the `options`
+    /// argument disables hooks.
+    ///
+    /// # Arguments
+    ///
+    /// * `record` - The document to create, it will be returned exactly as the `DatabaseRecord<T>` record
+    /// * `db_accessor` - database connection pool reference
+    /// * `options` - Operation options to apply
+    ///
+    /// # Returns
+    ///
+    /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
+    /// argument value
+    /// A [`ServiceError`] is returned if the operation or the hooks failed.
+    ///
+    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`DatabaseConnectionPool`]: struct.DatabaseConnectionPool.html
+    #[maybe_async::maybe_async]
+    pub async fn create_with_options<D>(
+        mut record: T,
+        db_accessor: &D,
+        options: OperationOptions,
+    ) -> Result<Self, ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        let launch_hooks = !options.ignore_hooks;
+        if launch_hooks {
+            record.before_create_hook(db_accessor).await?;
+        }
+        let mut res =
+            database_service::create_record(record, db_accessor, T::collection_name(), options)
+                .await?;
+        if launch_hooks {
+            res.record.after_create_hook(db_accessor).await?;
+        }
+        Ok(res)
+    }
+
+    /// Creates a document in database.
+    /// The function will write a new document and return a database record containing the newly created key
+    ///
+    /// # Hooks
+    ///
+    /// This function will launch `T` hooks `before_create` and `after_create` unless the `db_accessor`
+    /// operations options specifically disable hooks.
     ///
     /// # Arguments
     ///
@@ -47,26 +105,26 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
     /// argument value
-    /// On failure a [`ServiceError`] is returned:
-    /// * [`UnprocessableEntity`] on data corruption
-    /// * Any error returned by hooks
+    /// A [`ServiceError`] is returned if the operation or the hooks failed.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn create<D>(mut record: T, db_accessor: &D) -> Result<Self, ServiceError>
+    pub async fn create<D>(record: T, db_accessor: &D) -> Result<Self, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        record.before_create_hook(db_accessor).await?;
-        let mut res =
-            database_service::create_record(record, db_accessor, T::collection_name()).await?;
-        res.record.after_create_hook(db_accessor).await?;
-        Ok(res)
+        Self::create_with_options(record, db_accessor, db_accessor.operation_options()).await
     }
 
-    /// Creates a document in database skipping hooks.
+    /// Creates a document in database.
     /// The function will write a new document and return a database record containing the newly created key.
+    ///
+    /// # Note
+    ///
+    /// This function will **override** the default operations options:
+    /// - Revision will be ignored
+    /// - Hooks will be skipped
+    /// and should be used sparingly.
     ///
     /// # Hooks
     ///
@@ -81,24 +139,85 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
     /// argument value
-    /// On failure a [`ServiceError`] is returned:
-    /// * [`UnprocessableEntity`] on data corruption
+    /// On failure a [`ServiceError`] is returned.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn force_create<D>(record: T, db_accessor: &D) -> Result<Self, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        database_service::create_record(record, db_accessor, T::collection_name()).await
+        Self::create_with_options(
+            record,
+            db_accessor,
+            db_accessor
+                .operation_options()
+                .ignore_revs(true)
+                .ignore_hooks(true),
+        )
+        .await
+    }
+
+    /// Writes in the database the new state of the record, "saving it".
+    ///
+    /// # Note
+    ///
+    /// This method should be used for very specific cases, prefer using `save` instead.
+    /// If you want global operation options (always wait for sync, always ignore hooks, etc)
+    /// configure your [`DatabaseConnectionPool`] with `with_operation_options` to have a customs set
+    /// of default options.
+    ///
+    /// # Hooks
+    ///
+    /// This function will launch `T` hooks `before_save` and `after_save` unless the `options`
+    /// argument disables hooks.
+    ///
+    /// # Arguments:
+    ///
+    /// * `db_accessor` - database connection pool reference
+    /// * `options` - Operation options to apply
+    ///
+    /// # Returns
+    ///
+    /// On success `()` is returned, meaning that the current instance is up to date with the database state.
+    /// A [`ServiceError`] is returned if the operation or the hooks failed.
+    ///
+    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`DatabaseConnectionPool`]: struct.DatabaseConnectionPool.html
+    #[maybe_async::maybe_async]
+    pub async fn save_with_options<D>(
+        &mut self,
+        db_accessor: &D,
+        options: OperationOptions,
+    ) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        let launch_hooks = !options.ignore_hooks;
+        if launch_hooks {
+            self.record.before_save_hook(db_accessor).await?;
+        }
+        let mut new_record = database_service::update_record(
+            self.clone(),
+            self.key(),
+            db_accessor,
+            T::collection_name(),
+            options,
+        )
+        .await?;
+        if launch_hooks {
+            new_record.record.after_save_hook(db_accessor).await?;
+        }
+        *self = new_record;
+        Ok(())
     }
 
     /// Writes in the database the new state of the record, "saving it".
     ///
     /// # Hooks
     ///
-    /// This function will launch `T` hooks `before_save` and `after_save`.
+    /// This function will launch `T` hooks `before_save` and `after_save` unless the `db_accessor`
+    /// operations options specifically disable hooks.
     ///
     /// # Arguments:
     ///
@@ -107,33 +226,26 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the current instance is up to date with the database state.
-    /// On failure a [`ServiceError`] is returned:
-    /// * [`Conflict`] on index uniqueness conflict
-    /// * [`UnprocessableEntity`] on data corruption
-    /// * Any error returned by hooks
+    /// A [`ServiceError`] is returned if the operation or the hooks failed.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
-    /// [`Conflict`]: enum.ServiceError.html#variant.Conflict
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn save<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        self.record.before_save_hook(db_accessor).await?;
-        let new_record = database_service::update_record(
-            self.record.clone(),
-            &self.key,
-            db_accessor,
-            T::collection_name(),
-        )
-        .await?;
-        self.record.after_save_hook(db_accessor).await?;
-        self.record = new_record.record;
-        Ok(())
+        self.save_with_options(db_accessor, db_accessor.operation_options())
+            .await
     }
 
-    /// Writes in the database the new state of the record, skipping hooks.
+    /// Writes in the database the new state of the record.
+    ///
+    /// # Note
+    ///
+    /// This function will **override** the default operations options:
+    /// - Revision will be ignored
+    /// - Hooks will be skipped
+    /// and should be used sparingly.
     ///
     /// # Hooks
     ///
@@ -146,26 +258,73 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the current instance is up to date with the database state.
-    /// On failure a [`ServiceError`] is returned:
-    /// * [`Conflict`] on index uniqueness conflict
-    /// * [`UnprocessableEntity`] on data corruption
+    /// On failure a [`ServiceError`] is returned.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
-    /// [`Conflict`]: enum.ServiceError.html#variant.Conflict
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn force_save<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        let new_record = database_service::update_record(
-            self.record.clone(),
-            &self.key,
+        self.save_with_options(
+            db_accessor,
+            db_accessor
+                .operation_options()
+                .ignore_hooks(true)
+                .ignore_revs(true),
+        )
+        .await
+    }
+
+    /// Removes the record from the database.
+    /// The structure won't be freed or emptied but the document won't exist in the global state
+    ///
+    /// # Note
+    ///
+    /// This method should be used for very specific cases, prefer using `delete` instead.
+    /// If you want global operation options (always wait for sync, always ignore hooks, etc)
+    /// configure your [`DatabaseConnectionPool`] with `with_operation_options` to have a customs set
+    /// of default options
+    ///
+    /// # Hooks
+    ///
+    /// This function will launch `T` hooks  `before_delete` and `after_delete` unless the `options`
+    /// argument disables hooks.
+    ///
+    /// # Arguments:
+    ///
+    /// * `db_accessor` - database connection pool reference
+    ///
+    /// # Returns
+    ///
+    /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
+    /// A [`ServiceError`] is returned if the operation or the hooks failed.
+    ///
+    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`DatabaseConnectionPool`]: struct.DatabaseConnectionPool.html
+    #[maybe_async::maybe_async]
+    pub async fn delete_with_options<D>(
+        &mut self,
+        db_accessor: &D,
+        options: OperationOptions,
+    ) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        let launch_hooks = !options.ignore_hooks;
+        if launch_hooks {
+            self.record.before_delete_hook(db_accessor).await?;
+        }
+        database_service::remove_record::<T, D>(
+            self.key(),
             db_accessor,
             T::collection_name(),
+            options,
         )
         .await?;
-        self.record = new_record.record;
+        if launch_hooks {
+            self.record.after_delete_hook(db_accessor).await?;
+        }
         Ok(())
     }
 
@@ -174,7 +333,8 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Hooks
     ///
-    /// This function will launch `T` hooks  `before_delete` and `after_delete`.
+    /// This function will launch `T` hooks  `before_delete` and `after_delete` unless the `db_accessor`
+    /// operations options specifically disable hooks.
     ///
     /// # Arguments:
     ///
@@ -183,28 +343,27 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
-    /// On failure a [`ServiceError`] is returned:
-    /// * [`NotFound`] on invalid document key
-    /// * [`UnprocessableEntity`] on data corruption
-    /// * Any error returned by hooks
+    /// A [`ServiceError`] is returned if the operation or the hooks failed.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn delete<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        self.record.before_delete_hook(db_accessor).await?;
-        database_service::remove_record::<T, D>(&self.key, db_accessor, T::collection_name())
-            .await?;
-        self.record.after_delete_hook(db_accessor).await?;
-        Ok(())
+        self.delete_with_options(db_accessor, db_accessor.operation_options())
+            .await
     }
 
-    /// Removes the record from the database, skipping hooks.
+    /// Removes the record from the database.
     /// The structure won't be freed or emptied but the document won't exist in the global state
+    ///
+    /// # Note
+    ///
+    /// This function will **override** the default operations options:
+    /// - Revision will be ignored
+    /// - Hooks will be skipped
+    /// and should be used sparingly.
     ///
     /// # Hooks
     ///
@@ -217,19 +376,22 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
-    /// On failure a [`ServiceError`] is returned:
-    /// * [`NotFound`] on invalid document key
-    /// * [`UnprocessableEntity`] on data corruption
+    /// On failure a [`ServiceError`] is returned.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn force_delete<D>(&self, db_accessor: &D) -> Result<(), ServiceError>
+    pub async fn force_delete<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        database_service::remove_record::<T, D>(&self.key, db_accessor, T::collection_name()).await
+        self.delete_with_options(
+            db_accessor,
+            db_accessor
+                .operation_options()
+                .ignore_revs(true)
+                .ignore_hooks(true),
+        )
+        .await
     }
 
     /// Creates and returns edge between `from_record` and `target_record`.
@@ -327,7 +489,7 @@ impl<T: Record> DatabaseRecord<T> {
         D: DatabaseAccess + ?Sized,
         T: Send,
     {
-        T::find(&self.key, db_accessor).await
+        T::find(self.key(), db_accessor).await
     }
 
     /// Reloads a record from the database.
@@ -348,7 +510,7 @@ impl<T: Record> DatabaseRecord<T> {
         D: DatabaseAccess + ?Sized,
         T: Send,
     {
-        *self = T::find(&self.key, db_accessor).await?;
+        *self = T::find(self.key(), db_accessor).await?;
         Ok(())
     }
 
@@ -633,36 +795,6 @@ impl<T: Record> DatabaseRecord<T> {
         }
     }
 
-    /// Builds a DatabaseRecord from a arangors crate `DocumentResponse<T>`
-    /// It will return the filled `DatabaseRecord` on success or will return
-    /// a [`ServiceError`]::[`UnprocessableEntity`] on failure
-    ///
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
-    pub(crate) fn from_response(doc_response: DocumentResponse<T>) -> Result<Self, ServiceError> {
-        match doc_response {
-            DocumentResponse::Silent => Err(ServiceError::InternalError {
-                message: Some(String::from("Received unexpected silent document response")),
-            }),
-            DocumentResponse::Response { header, new, .. } => {
-                let doc: T = match new {
-                    Some(value) => value,
-                    None => {
-                        return Err(ServiceError::InternalError {
-                            message: Some(String::from("Expected ArangoDB to return new document")),
-                        });
-                    }
-                };
-                Ok(DatabaseRecord {
-                    key: header._key.clone(),
-                    id: header._id.clone(),
-                    rev: header._rev.clone(),
-                    record: doc,
-                })
-            }
-        }
-    }
-
     /// Getter for the Document `_id` built as `$collection_name/$_key
     pub fn id(&self) -> &String {
         &self.id
@@ -690,9 +822,61 @@ impl<T: Record> From<Document<T>> for DatabaseRecord<T> {
     }
 }
 
+impl<T: Record> TryFrom<DocumentResponse<DatabaseRecord<T>>> for DatabaseRecord<T> {
+    type Error = ServiceError;
+
+    fn try_from(value: DocumentResponse<DatabaseRecord<T>>) -> Result<Self, Self::Error> {
+        match value {
+            DocumentResponse::Silent => Err(ServiceError::InternalError {
+                message: Some(String::from("Received unexpected silent document response")),
+            }),
+            DocumentResponse::Response { new, header, .. } => match new {
+                Some(value) => Ok(value),
+                None => Err(ServiceError::InternalError {
+                    message: Some(format!(
+                        "Expected ArangoDB to return the new {} document",
+                        header._id
+                    )),
+                }),
+            },
+        }
+    }
+}
+
+impl<T: Record> TryFrom<DocumentResponse<T>> for DatabaseRecord<T> {
+    type Error = ServiceError;
+
+    fn try_from(value: DocumentResponse<T>) -> Result<Self, Self::Error> {
+        match value {
+            DocumentResponse::Silent => Err(ServiceError::InternalError {
+                message: Some(String::from("Received unexpected silent document response")),
+            }),
+            DocumentResponse::Response { header, new, .. } => {
+                let doc: T = match new {
+                    Some(value) => value,
+                    None => {
+                        return Err(ServiceError::InternalError {
+                            message: Some(format!(
+                                "Expected ArangoDB to return the new {} document",
+                                header._id
+                            )),
+                        });
+                    }
+                };
+                Ok(DatabaseRecord {
+                    key: header._key.clone(),
+                    id: header._id.clone(),
+                    rev: header._rev,
+                    record: doc,
+                })
+            }
+        }
+    }
+}
+
 impl<T: Record> Display for DatabaseRecord<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{} {} Database Record", T::collection_name(), self.key)
+        write!(f, "{} {} Database Record", T::collection_name(), self.key())
     }
 }
 
