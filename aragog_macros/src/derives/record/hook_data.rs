@@ -4,6 +4,15 @@ use syn::{Ident, Lit, Meta, NestedMeta};
 use crate::to_tokenstream::ToTokenStream;
 use crate::toolbox::{expect_bool_lit, expect_str_lit, get_ident};
 
+const FORBIDDEN_FUNCTIONS: [&str; 6] = [
+    "before_create_hook",
+    "before_save_hook",
+    "before_delete_hook",
+    "after_create_hook",
+    "after_save_hook",
+    "after_delete_hook",
+];
+
 #[derive(Clone, Debug)]
 pub struct HookDataBuilder {
     pub func: Option<String>,
@@ -19,9 +28,18 @@ pub struct HookData {
 }
 
 impl HookDataBuilder {
-    fn edit_func(&mut self, value: String) -> Result<(), String> {
+    fn edit_func(&mut self, lit: &Lit) -> Result<(), String> {
+        let value = expect_str_lit(lit)?;
         if self.func.is_some() {
             return Err(String::from("Can't have multiple `func` identifiers"));
+        }
+        if FORBIDDEN_FUNCTIONS.contains(&value.as_str()) {
+            emit_error!(
+                lit.span(),
+                "Please use a different method name than `{}` \
+                as it may lead to unexpected behavior",
+                value
+            );
         }
         self.func = Some(value);
         Ok(())
@@ -48,8 +66,7 @@ impl HookDataBuilder {
     fn handle_ident_and_lit(&mut self, ident: &str, lit: &Lit) -> Result<(), String> {
         match ident {
             "func" => {
-                let value = expect_str_lit(lit)?;
-                self.edit_func(value)?;
+                self.edit_func(lit)?;
             }
             "db_access" => {
                 let value = expect_bool_lit(lit)?;

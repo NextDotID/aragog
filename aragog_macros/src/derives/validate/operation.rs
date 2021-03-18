@@ -62,6 +62,13 @@ impl Operation {
             }
             "func" => {
                 let func = expect_str_lit(lit)?;
+                if func == "validations" {
+                    emit_error!(
+                        lit.span(),
+                        "Please use a different method name than `validations` \
+                        as it may lead to unexpected behavior"
+                    );
+                }
                 let field = match field {
                     Some(f) => Some(f.ident.as_ref().unwrap().to_string()),
                     None => None,
