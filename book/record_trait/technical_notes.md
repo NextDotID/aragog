@@ -15,6 +15,25 @@ If you derive the [Validate](../validate_trait/index.md) trait, you may want val
  }
 ```
 
+## Forbidden method names
+
+When using a hook like the following:
+
+`#[hook(before_create(func("my_method")))]`
+
+The called method names can't be: 
+
+- `before_create_hook`
+- `before_save_hook`
+- `before_delete_hook`
+- `after_create_hook`
+- `after_save_hook`
+- `after_delete_hook`
+
+to avoid unexpected behaviors like unwanted recursive hooks.
+
+> Try using explicit names for your hooks
+
 ## Direct implementation
 
 You can implement `Record` directly instead of deriving it.

@@ -15,6 +15,18 @@ If you derive the [Record](../record_trait/index.md) trait, you may want validat
  }
 ```
 
+## Forbidden method name
+
+When using a custom validation method like the following:
+
+`#[validate(func("my_method"))]`
+
+The called method names can't be `validations` to avoid unexpected behaviors like recursive validations.
+
+This is caused by the `Validate` method `validations` already being built and called by the derive macro.
+
+> Try using explicit names for your custom validation methods
+
 ## Direct implementation
 
 You can implement `Validate` directly instead of deriving it.
