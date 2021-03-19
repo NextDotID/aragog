@@ -16,7 +16,7 @@ The `Record` trait provides the following hooks:
 
 You can register various methods in these hooks with the following syntax:
 ```rust
-#[hook(before_create(func = "my_method"))]
+#[before_create(func = "my_method")]
 ```
 
 The hooked methods can follow various patterns using the following options:
@@ -34,7 +34,7 @@ If you combine a lot of operations, like creating documents in hooks or chaining
 
 ### Simple hook with no options
 ```rust
-#[hook(before_create(func = "my_method"))]
+#[before_create(func = "my_method")]
 ```
 *my_method* can be either:
 - ```rust 
@@ -46,7 +46,7 @@ If you combine a lot of operations, like creating documents in hooks or chaining
 
 ### Async hook
 ```rust
-#[hook(before_create(func = "my_method", is_async = true))]
+#[before_create(func = "my_method", is_async = true)]
 ```
 *my_method* can be either:
 - ```rust 
@@ -61,7 +61,7 @@ If you combine a lot of operations, like creating documents in hooks or chaining
 
 ### Hook with database access
 ```rust
-#[hook(before_create(func = "my_method", db_access = true))]
+#[before_create(func = "my_method", db_access = true)]
 ```
 *my_method* can be either:
 - ```rust 

@@ -1,71 +1,79 @@
-use crate::derives::record::hook_data::{HookData, HookDataBuilder};
+use syn::{Field, Path};
+
+use crate::derives::record::hook_data::HookData;
+use crate::derives::record::operation::HookOperation;
 use crate::parse_attribute::ParseAttribute;
-use crate::symbol::{Symbol, HOOK_ATTR_SYMBOL};
-use crate::toolbox::get_ident;
-use syn::{spanned::Spanned, Field, Meta, NestedMeta};
+use crate::toolbox::expect_no_field_name;
+use proc_macro2::Span;
+use syn::spanned::Spanned;
 
 #[derive(Clone, Debug)]
-pub enum Hook {
-    BeforeAll(HookData),
-    BeforeWrite(HookData),
-    BeforeSave(HookData),
-    BeforeCreate(HookData),
-    BeforeDelete(HookData),
-    AfterAll(HookData),
-    AfterWrite(HookData),
-    AfterSave(HookData),
-    AfterCreate(HookData),
-    AfterDelete(HookData),
+pub enum HookType {
+    BeforeAll,
+    BeforeWrite,
+    BeforeSave,
+    BeforeCreate,
+    BeforeDelete,
+    AfterAll,
+    AfterWrite,
+    AfterSave,
+    AfterCreate,
+    AfterDelete,
+}
+
+#[derive(Clone, Debug)]
+pub struct Hook {
+    pub hook_type: HookType,
+    pub hook_data: HookData,
 }
 
 impl ParseAttribute for Hook {
-    fn symbol() -> Symbol {
-        HOOK_ATTR_SYMBOL
+    type AttributeOperation = HookOperation;
+
+    fn init(path: &Path, field: Option<&Field>) -> Option<Self> {
+        let ident = path.get_ident()?;
+        expect_no_field_name(path.span(), field)?;
+        let hook_type = match ident.to_string().as_str() {
+            "before_all" => HookType::BeforeAll,
+            "before_write" => HookType::BeforeWrite,
+            "before_save" => HookType::BeforeSave,
+            "before_create" => HookType::BeforeCreate,
+            "before_delete" => HookType::BeforeDelete,
+            "after_all" => HookType::AfterAll,
+            "after_write" => HookType::AfterWrite,
+            "after_save" => HookType::AfterSave,
+            "after_create" => HookType::AfterCreate,
+            "after_delete" => HookType::AfterDelete,
+            _ => return None,
+        };
+        Some(Self {
+            hook_type,
+            hook_data: HookData {
+                func: None,
+                database_access: None,
+                is_async: None,
+            },
+        })
     }
 
-    fn parse_meta(meta: &Meta, _field: Option<&Field>) -> Result<Self, String> {
-        match meta {
-            Meta::List(list) => {
-                // Defines our enum variant
-                let ident = get_ident(&list.path)?;
-                // By default everything is true
-                let mut data = HookDataBuilder::default();
-                // We now go through expected arguments (func, self_mutability, db_access)
-                for nest in list.nested.iter() {
-                    match nest {
-                        NestedMeta::Meta(meta) => match data.parse_meta(meta) {
-                            Ok(_) => (),
-                            Err(error) => emit_error!(meta.span(), error),
-                        },
-                        _ => {
-                            emit_error!(nest.span(), "Expected Meta");
-                            return Err(String::from("Wrong format"));
-                        }
-                    }
-                }
-                let data = data.into_data()?;
-                // We check the hook operation
-                let res = match ident.as_str() {
-                    "before_all" => Self::BeforeAll(data),
-                    "before_write" => Self::BeforeWrite(data),
-                    "before_save" => Self::BeforeSave(data),
-                    "before_create" => Self::BeforeCreate(data),
-                    "before_delete" => Self::BeforeDelete(data),
-                    "after_save" => Self::AfterSave(data),
-                    "after_create" => Self::AfterCreate(data),
-                    "after_delete" => Self::AfterDelete(data),
-                    "after_all" => Self::AfterAll(data),
-                    "after_write" => Self::AfterWrite(data),
-                    _ => {
-                        return Err(String::from(
-                            "Wrong identifier, specify a correct `before` or `after` hook.\
-                        (`before_create` for example)",
-                        ))
-                    }
-                };
-                Ok(res)
-            }
-            _ => Err(String::from("Wrong format, expected parenthesis")),
+    fn field(&self) -> Option<String> {
+        None
+    }
+
+    fn add_operation(&mut self, span: Span, operation: Self::AttributeOperation) {
+        match operation {
+            HookOperation::Func(func) => self.hook_data.edit_func(span, &func),
+            HookOperation::IsAsync(v) => self.hook_data.edit_is_async(span, v),
+            HookOperation::DbAccess(v) => self.hook_data.edit_db_access(span, v),
+        }
+    }
+
+    fn validate(&self, span: Span) -> bool {
+        if self.hook_data.func.is_none() {
+            emit_error!(span, "Missing function for {:?} hook", self.hook_type);
+            false
+        } else {
+            true
         }
     }
 }

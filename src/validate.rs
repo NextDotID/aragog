@@ -1,6 +1,7 @@
 use regex::Regex;
 
 use crate::{EdgeRecord, ServiceError};
+use std::fmt::Display;
 
 /// The `Validate` trait of the Aragog library.
 /// This trait provides the possibility to validate an instance or its fields formats or logic. Its main use
@@ -307,10 +308,10 @@ pub trait Validate {
     /// [`Validate`]: trait.Validate.html
     /// [`validations`]: trait.Validate.html#tymethod.validations
     #[allow(dead_code)]
-    fn validate_greater_than(
+    fn validate_greater_than<T: PartialOrd + Display>(
         field_path: &str,
-        value: i32,
-        min_value: i32,
+        value: T,
+        min_value: T,
         errors: &mut Vec<String>,
     ) -> bool {
         if value <= min_value {
@@ -342,10 +343,10 @@ pub trait Validate {
     /// [`Validate`]: trait.Validate.html
     /// [`validations`]: trait.Validate.html#tymethod.validations
     #[allow(dead_code)]
-    fn validate_greater_or_equal_to(
+    fn validate_greater_or_equal_to<T: PartialOrd + Display>(
         field_path: &str,
-        value: i32,
-        min_value: i32,
+        value: T,
+        min_value: T,
         errors: &mut Vec<String>,
     ) -> bool {
         if value < min_value {
@@ -377,10 +378,10 @@ pub trait Validate {
     /// [`Validate`]: trait.Validate.html
     /// [`validations`]: trait.Validate.html#tymethod.validations
     #[allow(dead_code)]
-    fn validate_lesser_than(
+    fn validate_lesser_than<T: PartialOrd + Display>(
         field_path: &str,
-        value: i32,
-        max_value: i32,
+        value: T,
+        max_value: T,
         errors: &mut Vec<String>,
     ) -> bool {
         if value >= max_value {
@@ -412,10 +413,10 @@ pub trait Validate {
     /// [`Validate`]: trait.Validate.html
     /// [`validations`]: trait.Validate.html#tymethod.validations
     #[allow(dead_code)]
-    fn validate_lesser_or_equal_to(
+    fn validate_lesser_or_equal_to<T: PartialOrd + Display>(
         field_path: &str,
-        value: i32,
-        max_value: i32,
+        value: T,
+        max_value: T,
         errors: &mut Vec<String>,
     ) -> bool {
         if value > max_value {

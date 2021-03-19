@@ -40,7 +40,7 @@ async fn create_order(pool: &DatabaseConnectionPool) -> DatabaseRecord<Order> {
 
 #[derive(Clone, Record, EdgeRecord, Serialize, Deserialize, Validate)]
 #[validate(func("validate_edge_fields"))]
-#[hook(before_write(func = "validate"))]
+#[before_write(func = "validate")]
 pub struct PartOf {
     _from: String,
     _to: String,

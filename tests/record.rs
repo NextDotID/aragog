@@ -16,10 +16,10 @@ pub struct Menu {
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record, Validate)]
-#[hook(before_write(func("validate")))]
-#[hook(before_create(func("increment_menu"), is_async = true, db_access = true))]
-#[hook(before_save(func("last_dish_update"), is_async = true, db_access = true))]
-#[hook(after_all(func("after_all")))]
+#[before_write(func("validate"))]
+#[before_create(func("increment_menu"), is_async = true, db_access = true)]
+#[before_save(func("last_dish_update"), is_async = true, db_access = true)]
+#[after_all(func("after_all"))]
 pub struct Dish {
     #[validate(min_length = 3)]
     pub name: String,
@@ -544,5 +544,137 @@ mod read {
                 Ok(())
             }
         }
+    }
+}
+
+mod all_macros {
+    use super::*;
+
+    #[derive(Serialize, Deserialize, Clone, Record)]
+    #[before_create(func = "before_create")]
+    #[before_save(func = "before_save")]
+    #[before_delete(func = "before_delete")]
+    #[before_write(func = "before_write")]
+    #[before_all(func = "before_all")]
+    #[after_create(func = "after_create")]
+    #[after_save(func = "after_save")]
+    #[after_delete(func = "after_delete")]
+    #[after_write(func = "after_write")]
+    #[after_all(func = "after_all")]
+    pub struct Dish {
+        before_create_count: u16,
+        before_save_count: u16,
+        before_delete_count: u16,
+        before_write_count: u16,
+        before_all_count: u16,
+        after_create_count: u16,
+        after_save_count: u16,
+        after_delete_count: u16,
+        after_write_count: u16,
+        after_all_count: u16,
+    }
+
+    impl Dish {
+        fn before_create(&mut self) -> Result<(), ServiceError> {
+            self.before_create_count += 1;
+            Ok(())
+        }
+        fn before_save(&mut self) -> Result<(), ServiceError> {
+            self.before_save_count += 1;
+            Ok(())
+        }
+        fn before_delete(&mut self) -> Result<(), ServiceError> {
+            self.before_delete_count += 1;
+            Ok(())
+        }
+        fn before_write(&mut self) -> Result<(), ServiceError> {
+            self.before_write_count += 1;
+            Ok(())
+        }
+        fn before_all(&mut self) -> Result<(), ServiceError> {
+            self.before_all_count += 1;
+            Ok(())
+        }
+        fn after_create(&mut self) -> Result<(), ServiceError> {
+            self.after_create_count += 1;
+            Ok(())
+        }
+        fn after_save(&mut self) -> Result<(), ServiceError> {
+            self.after_save_count += 1;
+            Ok(())
+        }
+        fn after_delete(&mut self) -> Result<(), ServiceError> {
+            self.after_delete_count += 1;
+            Ok(())
+        }
+        fn after_write(&mut self) -> Result<(), ServiceError> {
+            self.after_write_count += 1;
+            Ok(())
+        }
+        fn after_all(&mut self) -> Result<(), ServiceError> {
+            self.after_all_count += 1;
+            Ok(())
+        }
+    }
+
+    impl Default for Dish {
+        fn default() -> Self {
+            Self {
+                before_create_count: 0,
+                before_save_count: 0,
+                before_delete_count: 0,
+                before_write_count: 0,
+                before_all_count: 0,
+                after_create_count: 0,
+                after_save_count: 0,
+                after_delete_count: 0,
+                after_write_count: 0,
+                after_all_count: 0,
+            }
+        }
+    }
+
+    #[maybe_async::test(
+        feature = "blocking",
+        async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn hooks_are_called() {
+        let db = common::setup_db().await;
+        let doc = Dish::default();
+        let mut rec = DatabaseRecord::create(doc, &db).await.unwrap();
+        assert_eq!(rec.before_create_count, 1);
+        assert_eq!(rec.before_save_count, 0);
+        assert_eq!(rec.before_delete_count, 0);
+        assert_eq!(rec.before_write_count, 1);
+        assert_eq!(rec.before_all_count, 1);
+        assert_eq!(rec.after_create_count, 1);
+        assert_eq!(rec.after_save_count, 0);
+        assert_eq!(rec.after_delete_count, 0);
+        assert_eq!(rec.after_write_count, 1);
+        assert_eq!(rec.after_all_count, 1);
+        rec.record = Dish::default();
+        rec.save(&db).await.unwrap();
+        assert_eq!(rec.before_create_count, 0);
+        assert_eq!(rec.before_save_count, 1);
+        assert_eq!(rec.before_delete_count, 0);
+        assert_eq!(rec.before_write_count, 1);
+        assert_eq!(rec.before_all_count, 1);
+        assert_eq!(rec.after_create_count, 0);
+        assert_eq!(rec.after_save_count, 1);
+        assert_eq!(rec.after_delete_count, 0);
+        assert_eq!(rec.after_write_count, 1);
+        assert_eq!(rec.after_all_count, 1);
+        rec.record = Dish::default();
+        rec.delete(&db).await.unwrap();
+        assert_eq!(rec.before_create_count, 0);
+        assert_eq!(rec.before_save_count, 0);
+        assert_eq!(rec.before_delete_count, 1);
+        assert_eq!(rec.before_write_count, 0);
+        assert_eq!(rec.before_all_count, 1);
+        assert_eq!(rec.after_create_count, 0);
+        assert_eq!(rec.after_save_count, 0);
+        assert_eq!(rec.after_delete_count, 1);
+        assert_eq!(rec.after_write_count, 0);
+        assert_eq!(rec.after_all_count, 1);
     }
 }

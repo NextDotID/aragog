@@ -6,7 +6,7 @@ If you derive the [Validate](../validate_trait/index.md) trait, you may want val
 
 ```rust
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
-#[hook(before_write(func = "validate"))] // This hook will launch validations before `create` and `save`
+#[before_write(func = "validate")] // This hook will launch validations before `create` and `save`
  pub struct User {
      pub username: String,
      pub first_name: String,
@@ -19,7 +19,7 @@ If you derive the [Validate](../validate_trait/index.md) trait, you may want val
 
 When using a hook like the following:
 
-`#[hook(before_create(func("my_method")))]`
+`#[before_create(func("my_method"))]`
 
 The called method names can't be: 
 
