@@ -5,10 +5,11 @@ use serde::{Deserialize, Serialize};
 
 /// this is an Order
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
-#[hook(before_write(func = "validate"))]
+#[before_write(func = "validate")]
 #[validate(func = "extra_validations")]
 #[serde(rename_all = "PascalCase")]
 pub struct Order {
+    #[validate_each(call_validations)]
     pub dishes: Vec<Dish>,
     pub total_price: u16,
     created_at: u64,

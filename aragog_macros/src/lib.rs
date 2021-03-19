@@ -12,55 +12,49 @@ use crate::derives::{impl_edge_record_macro, impl_record_macro, impl_validate_ma
 
 mod derives;
 mod parse_attribute;
-mod symbol;
+mod parse_operation;
 mod to_tokenstream;
 mod toolbox;
 
 #[proc_macro_error]
-#[proc_macro_derive(Record, attributes(hook))]
+#[proc_macro_derive(
+    Record,
+    attributes(
+        before_create,
+        before_save,
+        before_write,
+        before_delete,
+        before_all,
+        after_create,
+        after_save,
+        after_delete,
+        after_write,
+        after_all,
+    )
+)]
 pub fn record_macro_derive(attr: TokenStream) -> TokenStream {
-    // Span for error
-    let span = attr.clone().into_iter().next().unwrap().span();
-
     // Construct a representation of Rust code as a syntax tree
     // that we can manipulate
     let ast: DeriveInput = syn::parse(attr).unwrap();
 
     // Build the trait implementation
-    match impl_record_macro(&ast) {
-        Ok(stream) => stream,
-        Err(error) => {
-            emit_error!(span, error);
-            panic!();
-        }
-    }
+    impl_record_macro(&ast)
 }
 
 #[proc_macro_error]
-#[proc_macro_derive(Validate, attributes(validate))]
+#[proc_macro_derive(Validate, attributes(validate, validate_each))]
 pub fn validate_macro_derive(attr: TokenStream) -> TokenStream {
-    // Span for error
-    let span = attr.clone().into_iter().next().unwrap().span();
-
     // Construct a representation of Rust code as a syntax tree
     // that we can manipulate
     let ast: DeriveInput = syn::parse(attr).unwrap();
 
     // Build the trait implementation
-    match impl_validate_macro(&ast) {
-        Ok(stream) => stream,
-        Err(error) => {
-            emit_error!(span, error);
-            panic!();
-        }
-    }
+    impl_validate_macro(&ast)
 }
 
 #[proc_macro_error]
 #[proc_macro_derive(EdgeRecord)]
 pub fn edge_record_macro_derive(attr: TokenStream) -> TokenStream {
-    // Span for error
-    let span = attr.clone().into_iter().next().unwrap().span();
     // Construct a representation of Rust code as a syntax tree
     // that we can manipulate
     let ast: DeriveInput = syn::parse(attr).unwrap();
@@ -86,13 +80,10 @@ pub fn edge_record_macro_derive(attr: TokenStream) -> TokenStream {
             }
             _ => {}
         },
-        _ => emit_error!(span, "Only Structs can derive `EdgeRecord`"),
+        _ => emit_call_site_error!("Only Structs can derive `EdgeRecord`"),
     }
     if !has_from || !has_to {
-        emit_error!(
-            span,
-            "`EdgeRecord` derived structs require a `_from` and `_to` fields"
-        )
+        emit_call_site_error!("`EdgeRecord` derived structs require a `_from` and `_to` fields")
     }
     // Add from/to methods
     impl_edge_record_macro(&ast)

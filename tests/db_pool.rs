@@ -11,7 +11,7 @@ use common::*;
 pub mod common;
 
 #[derive(Serialize, Deserialize, Record, Clone)]
-#[hook(before_create(func = "before_create"))]
+#[before_create(func = "before_create")]
 struct Dish {
     pub name: String,
     pub price: u16,

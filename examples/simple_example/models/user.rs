@@ -4,7 +4,8 @@ use serde::{Deserialize, Serialize};
 
 /// This is a User
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
-#[hook(before_create(func("validate")), before_save(func("validate")))]
+#[before_create(func("validate"))]
+#[before_save(func("validate"))]
 pub struct User {
     #[validate(min_length = 5, func("validate_username"))]
     pub username: String,
@@ -15,6 +16,8 @@ pub struct User {
     pub is_cook: bool,
     #[validate(func("validate_money"))]
     pub money: u16,
+    #[validate_each(min_length = 5, max_length = 15)]
+    pub roles: Vec<String>,
 }
 
 pub enum DishAction {

@@ -5,8 +5,8 @@ use aragog::{DatabaseAccess, New, Record, ServiceError, Update, Validate};
 
 /// this is a Dish
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
-#[hook(before_create(func = "hook_before_create", is_async = true, db_access = true))]
-#[hook(before_save(func = "hook_before_save"))]
+#[before_create(func = "hook_before_create", is_async = true, db_access = true)]
+#[before_save(func = "hook_before_save")]
 pub struct Dish {
     #[validate(min_length = 5, max_length(20))]
     pub name: String,

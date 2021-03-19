@@ -113,6 +113,7 @@ async fn main() {
         age: 18,
         is_cook: false,
         money: 100,
+        roles: vec!["Admin".to_string()],
     };
     assert!(!wrong_user.is_valid());
 
@@ -125,6 +126,7 @@ async fn main() {
         age: 18,
         is_cook: false,
         money: 100,
+        roles: vec!["Admin".to_string()],
     };
     let record = DatabaseRecord::create(user, &db_pool).await.unwrap();
 

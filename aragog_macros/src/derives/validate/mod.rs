@@ -7,9 +7,9 @@ use std::borrow::Borrow;
 
 use crate::parse_attribute::ParseAttribute;
 use crate::to_tokenstream::ToTokenStream;
-use syn::{Data, Fields};
+use syn::{spanned::Spanned, Data, Fields};
 
-pub fn impl_validate_macro(ast: &syn::DeriveInput) -> Result<TokenStream, String> {
+pub fn impl_validate_macro(ast: &syn::DeriveInput) -> TokenStream {
     let target_name = &ast.ident;
 
     let mut commands = Vec::new();
@@ -29,7 +29,25 @@ pub fn impl_validate_macro(ast: &syn::DeriveInput) -> Result<TokenStream, String
             }
             _ => {}
         },
-        _ => return Err("Only Structs can derive `Validate`".to_string()),
+        Data::Enum(data) => {
+            for variant in data.variants.iter() {
+                if !variant.attrs.is_empty() {
+                    emit_error!(
+                        variant.span(),
+                        "validation attributes on enum variants are not supported"
+                    );
+                }
+                for field in variant.fields.iter() {
+                    for attr in field.attrs.iter() {
+                        emit_error!(
+                            attr.span(),
+                            "validation attributes on enum variants are not supported"
+                        );
+                    }
+                }
+            }
+        }
+        _ => {}
     }
 
     let mut validation_quote = quote! {};
@@ -49,5 +67,5 @@ pub fn impl_validate_macro(ast: &syn::DeriveInput) -> Result<TokenStream, String
     };
     // Debug purposes
     // println!("{}", gen);
-    Ok(gen.into())
+    gen.into()
 }

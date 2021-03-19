@@ -9,13 +9,14 @@ use syn::Data;
 mod hook;
 mod hook_data;
 mod hooks_container;
+mod operation;
 
-pub fn impl_record_macro(ast: &syn::DeriveInput) -> Result<TokenStream, String> {
+pub fn impl_record_macro(ast: &syn::DeriveInput) -> TokenStream {
     let target_name = &ast.ident;
 
     match ast.data.borrow() {
         Data::Struct(_elem) => {}
-        _ => return Err("Only Structs can derive `Record`".to_string()),
+        _ => emit_call_site_error!("Only Structs can derive `Record`"),
     }
 
     let mut hooks = Vec::new();
@@ -43,5 +44,5 @@ pub fn impl_record_macro(ast: &syn::DeriveInput) -> Result<TokenStream, String> 
     };
     // Debug purpose
     // println!("{}", gen);
-    Ok(gen.into())
+    gen.into()
 }

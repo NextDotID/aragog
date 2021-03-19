@@ -1,4 +1,4 @@
-use crate::derives::record::hook::Hook;
+use crate::derives::record::hook::{Hook, HookType};
 use crate::derives::record::hook_data::HookData;
 use crate::to_tokenstream::ToTokenStream;
 use proc_macro2::TokenStream;
@@ -29,32 +29,33 @@ impl Default for HooksContainer {
 impl From<Vec<Hook>> for HooksContainer {
     fn from(vec: Vec<Hook>) -> Self {
         let mut res = Self::default();
-        for item in vec {
-            match item {
-                Hook::BeforeAll(data) => {
+        for hook in vec {
+            let data = hook.hook_data;
+            match hook.hook_type {
+                HookType::BeforeAll => {
                     res.before_create.push(data.clone());
                     res.before_save.push(data.clone());
                     res.before_delete.push(data.clone());
                 }
-                Hook::BeforeWrite(data) => {
+                HookType::BeforeWrite => {
                     res.before_create.push(data.clone());
                     res.before_save.push(data.clone());
                 }
-                Hook::AfterAll(data) => {
+                HookType::AfterAll => {
                     res.after_create.push(data.clone());
                     res.after_save.push(data.clone());
                     res.after_delete.push(data.clone());
                 }
-                Hook::AfterWrite(data) => {
+                HookType::AfterWrite => {
                     res.after_create.push(data.clone());
                     res.after_save.push(data.clone());
                 }
-                Hook::BeforeSave(data) => res.before_save.push(data),
-                Hook::BeforeCreate(data) => res.before_create.push(data),
-                Hook::BeforeDelete(data) => res.before_delete.push(data),
-                Hook::AfterSave(data) => res.after_save.push(data),
-                Hook::AfterCreate(data) => res.after_create.push(data),
-                Hook::AfterDelete(data) => res.after_delete.push(data),
+                HookType::BeforeSave => res.before_save.push(data),
+                HookType::BeforeCreate => res.before_create.push(data),
+                HookType::BeforeDelete => res.before_delete.push(data),
+                HookType::AfterSave => res.after_save.push(data),
+                HookType::AfterCreate => res.after_create.push(data),
+                HookType::AfterDelete => res.after_delete.push(data),
             }
         }
         res

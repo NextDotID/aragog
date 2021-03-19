@@ -6,7 +6,7 @@ If you derive the [Record](../record_trait/index.md) trait, you may want validat
 
 ```rust
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
-#[hook(before_write(func = "validate"))] // This hook will launch validations before `create` and `save`
+#[before_write(func = "validate")] // This hook will launch validations before `create` and `save`
  pub struct User {
      pub username: String,
      pub first_name: String,
@@ -14,6 +14,10 @@ If you derive the [Record](../record_trait/index.md) trait, you may want validat
      pub age: usize
  }
 ```
+
+## Enum validations
+
+Enums can derive `Validate` but field validation attributes are not supported.
 
 ## Forbidden method name
 
@@ -26,6 +30,8 @@ The called method names can't be `validations` to avoid unexpected behaviors lik
 This is caused by the `Validate` method `validations` already being built and called by the derive macro.
 
 > Try using explicit names for your custom validation methods
+
+If your objective is to call the validations of a compound object implementing `Validate` use the `call_validations` operation.
 
 ## Direct implementation
 
