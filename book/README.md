@@ -8,4 +8,4 @@ for more detailed information.
 
 Missing sections:
 - The relation traits (`Link`and `ForeignLink`)
-- The optional traits (`New`, `Update` and `Authenticate`)
+- The optional traits (`New`, `Update` and `AuthorizeAction`)
