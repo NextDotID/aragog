@@ -3,9 +3,9 @@
 
 ## `DatabaseAccess` trait
 
-The object `DatabaseConnectionPool` is the default handler for every database operations but you can create your own.
+The object `DatabaseConnection` is the default handler for every database operations but you can create your own.
 
-Every operation taking the pool as an argument is taking a **Generic** type implementing `DatabaseAccess`,
+Every operation taking the connection as an argument is taking a **Generic** type implementing `DatabaseAccess`,
 so you can implement it on your own struct.
 
 > Note: This is not recommended, modification to `DatabaseAccess` can happen without considering them as **breaking**.
@@ -19,18 +19,18 @@ This means you can use dynamically typed [trait objects](https://doc.rust-lang.o
 Example extract from [boxed example](../../examples/boxed_example):
 
 ```rust
-pub struct BoxedPool {
-    pub pool: Box<dyn DatabaseAccess>,
+pub struct BoxedConnection {
+    pub connection: Box<dyn DatabaseAccess>,
 }
 
-impl BoxedPool {
-    pub fn pool(&self) -> &dyn DatabaseAccess {
-        self.pool.deref()
+impl BoxedConnection {
+    pub fn connection(&self) -> &dyn DatabaseAccess {
+        self.connection.deref()
     }
 }
 ```
 
 ## Database truncation
 
-The `DatabaseConnectionPool` provides a `truncate_database` method but you should use it only for testing purposes,
-it is highly destructive as it will drop every collections known to the pool.
+The `DatabaseConnection` provides a `truncate_database` method but you should use it only for testing purposes,
+it is highly destructive as it will drop every collections known to the connection.

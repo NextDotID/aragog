@@ -22,7 +22,7 @@ use crate::Record;
 /// To create a edge between two existing [`DatabaseRecord`] you can use the following process:
 ///
 /// ```rust no_run
-/// # use aragog::{DatabaseRecord, EdgeRecord, Record, DatabaseConnectionPool};
+/// # use aragog::{DatabaseRecord, EdgeRecord, Record, DatabaseConnection};
 /// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
 /// #
 /// #[derive(Clone, Record, Serialize, Deserialize)]
@@ -36,7 +36,7 @@ use crate::Record;
 /// }
 /// # #[tokio::main]
 /// # async fn main() {
-/// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+/// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
 ///
 /// let record_a = Character::find("123", &db_accessor).await.unwrap();
 /// let record_b = Character::find("234", &db_accessor).await.unwrap();

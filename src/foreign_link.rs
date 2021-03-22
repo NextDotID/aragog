@@ -6,7 +6,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 /// # Example
 ///
 /// ```rust
-/// # use aragog::{Record, Validate, ForeignLink, DatabaseConnectionPool, DatabaseRecord, AuthMode};
+/// # use aragog::{Record, Validate, ForeignLink, DatabaseConnection, DatabaseRecord, AuthMode};
 /// # use serde::{Deserialize, Serialize};
 /// # use std::borrow::Borrow;
 /// #
@@ -27,7 +27,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 ///
 /// # #[tokio::main]
 /// # async fn main() {
-/// # let database_pool = DatabaseConnectionPool::builder()
+/// # let database_connection = DatabaseConnection::builder()
 /// #     .with_credentials(
 /// #       &std::env::var("DB_HOST").unwrap_or("http://localhost:8529".to_string()),
 /// #       &std::env::var("DB_NAME").unwrap_or("aragog_test".to_string()),
@@ -38,13 +38,13 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 /// #    .build()
 /// #    .await
 /// #    .unwrap();
-/// # database_pool.truncate().await;
-/// let user = DatabaseRecord::create(User {}, &database_pool).await.unwrap();
+/// # database_connection.truncate().await;
+/// let user = DatabaseRecord::create(User {}, &database_connection).await.unwrap();
 /// let order = Order {
 ///     content: "content".to_string(),
 ///     user_id: user.key().clone()
 /// };
-/// let linked_user = order.linked_model(&database_pool).await.unwrap();
+/// let linked_user = order.linked_model(&database_connection).await.unwrap();
 /// assert_eq!(user.id(), linked_user.id());
 /// # }
 /// ```
@@ -54,7 +54,7 @@ pub trait ForeignLink<T: Record>: Sized {
     ///
     /// # Example
     /// ```rust
-    /// # use aragog::{Record, Validate, ForeignLink, DatabaseConnectionPool, DatabaseRecord};
+    /// # use aragog::{Record, Validate, ForeignLink, DatabaseConnection, DatabaseRecord};
     /// # use serde::{Deserialize, Serialize};
     /// # use std::borrow::Borrow;
     /// #
@@ -77,21 +77,21 @@ pub trait ForeignLink<T: Record>: Sized {
 
     /// Retrieves the record matching the defined `foreign_key`. Type inference may be required.
     #[cfg(feature = "async")]
-    async fn linked_model<D>(&self, db_pool: &D) -> Result<DatabaseRecord<T>, ServiceError>
+    async fn linked_model<D>(&self, db_access: &D) -> Result<DatabaseRecord<T>, ServiceError>
     where
         Self: Sized,
         T: 'async_trait,
         D: DatabaseAccess + ?Sized,
     {
-        DatabaseRecord::find(self.foreign_key(), db_pool).await
+        DatabaseRecord::find(self.foreign_key(), db_access).await
     }
 
     /// Retrieves the record matching the defined `foreign_key`. Type inference may be required.
     #[cfg(not(feature = "async"))]
-    fn linked_model<D>(&self, db_pool: &D) -> Result<DatabaseRecord<T>, ServiceError>
+    fn linked_model<D>(&self, db_access: &D) -> Result<DatabaseRecord<T>, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        DatabaseRecord::find(self.foreign_key(), db_pool)
+        DatabaseRecord::find(self.foreign_key(), db_access)
     }
 }

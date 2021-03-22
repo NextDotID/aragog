@@ -4,7 +4,7 @@ use serde::Serialize;
 use crate::db::transaction::Transaction;
 use crate::query::{Query, RecordQueryResult};
 use crate::transaction::TransactionBuilder;
-use crate::{DatabaseAccess, DatabaseConnectionPool, DatabaseRecord, ServiceError};
+use crate::{DatabaseAccess, DatabaseConnection, DatabaseRecord, ServiceError};
 
 /// The main trait of the Aragog library.
 /// Trait for structures that can be stored in Database.
@@ -55,7 +55,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// # Example
     ///
     /// ```rust
-    /// # use aragog::{Record, DatabaseConnectionPool};
+    /// # use aragog::{Record, DatabaseConnection};
     /// # use serde::{Deserialize, Serialize};
     /// #
     /// #[derive(Clone, Serialize, Deserialize, Record)]
@@ -65,7 +65,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_pool = DatabaseConnectionPool::builder()
+    /// # let db_connection = DatabaseConnection::builder()
     ///     # .with_schema_path("tests/schema.yaml")
     ///     # .apply_schema()
     ///     # .build()
@@ -73,7 +73,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///     # .unwrap();
     ///
     /// let user = User { name: "Patrick".to_owned() };
-    /// let created_user = User::create(user, &db_pool).await.unwrap();
+    /// let created_user = User::create(user, &db_connection).await.unwrap();
     ///
     /// assert_eq!(created_user.name, "Patrick".to_owned());
     /// # }
@@ -185,8 +185,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// # Arguments
     ///
-    /// * `db_pool` - The current database connection pool
-    async fn transaction(db_pool: &DatabaseConnectionPool) -> Result<Transaction, ServiceError> {
-        Self::transaction_builder().build(db_pool).await
+    /// * `db_connection` - The current database connection
+    async fn transaction(db_connection: &DatabaseConnection) -> Result<Transaction, ServiceError> {
+        Self::transaction_builder().build(db_connection).await
     }
 }

@@ -1,10 +1,10 @@
 extern crate env_logger;
 
-use crate::boxed_pool::BoxedPool;
+use crate::boxed_connection::BoxedConnection;
 use crate::models::user::User;
-use aragog::{AuthMode, DatabaseConnectionPool, DatabaseRecord};
+use aragog::{AuthMode, DatabaseConnection, DatabaseRecord};
 
-mod boxed_pool;
+mod boxed_connection;
 mod models;
 
 const DEFAULT_DB_HOST: &str = "http://localhost:8529";
@@ -18,7 +18,7 @@ async fn main() {
     env_logger::init();
 
     // Connect to database and generates collections and indexes
-    let db_pool = DatabaseConnectionPool::builder()
+    let db_connection = DatabaseConnection::builder()
         .with_credentials(
             &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
@@ -33,10 +33,10 @@ async fn main() {
         .unwrap();
 
     // Testing purposes
-    db_pool.truncate().await;
+    db_connection.truncate().await;
 
-    let boxed_pool = BoxedPool {
-        pool: Box::new(db_pool),
+    let boxed_connection = BoxedConnection {
+        connection: Box::new(db_connection),
     };
 
     let user = User {
@@ -45,7 +45,7 @@ async fn main() {
         last_name: String::from("Surcouf"),
     };
 
-    DatabaseRecord::create(user, boxed_pool.pool())
+    DatabaseRecord::create(user, boxed_connection.connection())
         .await
         .unwrap();
 

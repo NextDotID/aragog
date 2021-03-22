@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use aragog::{DatabaseConnectionPool, DatabaseRecord, EdgeRecord, Record, ServiceError, Validate};
+use aragog::{DatabaseConnection, DatabaseRecord, EdgeRecord, Record, ServiceError, Validate};
 
 mod common;
 
@@ -15,24 +15,24 @@ pub struct Order {
 }
 
 #[maybe_async::maybe_async]
-async fn create_dish(pool: &DatabaseConnectionPool) -> DatabaseRecord<Dish> {
+async fn create_dish(connection: &DatabaseConnection) -> DatabaseRecord<Dish> {
     DatabaseRecord::create(
         Dish {
             name: "Pizza Mozarella".to_string(),
         },
-        pool,
+        connection,
     )
     .await
     .unwrap()
 }
 
 #[maybe_async::maybe_async]
-async fn create_order(pool: &DatabaseConnectionPool) -> DatabaseRecord<Order> {
+async fn create_order(connection: &DatabaseConnection) -> DatabaseRecord<Order> {
     DatabaseRecord::create(
         Order {
             name: "Menu Pizza".to_string(),
         },
-        pool,
+        connection,
     )
     .await
     .unwrap()
@@ -52,9 +52,9 @@ pub struct PartOf {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn edge_can_be_created() -> Result<(), String> {
-    let pool = common::setup_db().await;
-    let dish = create_dish(&pool).await;
-    let order = create_order(&pool).await;
+    let connection = common::setup_db().await;
+    let dish = create_dish(&connection).await;
+    let order = create_order(&connection).await;
 
     DatabaseRecord::create(
         PartOf {
@@ -62,7 +62,7 @@ async fn edge_can_be_created() -> Result<(), String> {
             _to: order.id().clone(),
             description: "part of".to_string(),
         },
-        &pool,
+        &connection,
     )
     .await
     .unwrap();
@@ -74,11 +74,11 @@ async fn edge_can_be_created() -> Result<(), String> {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn edge_can_be_created_with_a_simple_link() -> Result<(), String> {
-    let pool = common::setup_db().await;
-    let dish = create_dish(&pool).await;
-    let order = create_order(&pool).await;
+    let connection = common::setup_db().await;
+    let dish = create_dish(&connection).await;
+    let order = create_order(&connection).await;
 
-    let record = DatabaseRecord::link(&dish, &order, &pool, |_from, _to| PartOf {
+    let record = DatabaseRecord::link(&dish, &order, &connection, |_from, _to| PartOf {
         _from,
         _to,
         description: "Test".to_string(),
@@ -103,11 +103,11 @@ async fn edge_can_be_created_with_a_simple_link() -> Result<(), String> {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn link_launches_hooks() -> Result<(), String> {
-    let pool = common::setup_db().await;
-    let dish = create_dish(&pool).await;
-    let order = create_order(&pool).await;
+    let connection = common::setup_db().await;
+    let dish = create_dish(&connection).await;
+    let order = create_order(&connection).await;
 
-    let res = DatabaseRecord::link(&dish, &order, &pool, |_from, _to| PartOf {
+    let res = DatabaseRecord::link(&dish, &order, &connection, |_from, _to| PartOf {
         _from: "123".to_string(),
         _to,
         description: "Test".to_string(),

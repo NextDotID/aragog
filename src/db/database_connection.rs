@@ -4,15 +4,15 @@ use arangors::client::reqwest::ReqwestClient;
 use arangors::{Connection, Database};
 
 use crate::db::database_collection::DatabaseCollection;
-use crate::db::database_connection_pool_builder::{
-    DatabaseConnectionPoolBuilder, DatabaseSchemaOption, PoolCredentialsOption,
+use crate::db::database_connection_builder::{
+    DatabaseConnectionBuilder, DatabaseSchemaOption, DbCredentialsOption,
 };
 use crate::schema::{DatabaseSchema, SchemaDatabaseOperation};
 use crate::{DatabaseAccess, OperationOptions, ServiceError};
 
 /// Struct containing ArangoDB connections and information to access the database, collections and documents
 #[derive(Clone, Debug)]
-pub struct DatabaseConnectionPool {
+pub struct DatabaseConnection {
     /// Map between a collection name and a `DatabaseCollection` instance
     collections: HashMap<String, DatabaseCollection>,
     /// The database accessor
@@ -42,23 +42,23 @@ impl Default for AuthMode {
     }
 }
 
-impl DatabaseConnectionPool {
-    /// Starts the builder for the database connection pool instance.
+impl DatabaseConnection {
+    /// Starts the builder for the database connection instance.
     ///
     /// For default use with env var
     /// ```rust
-    /// # use aragog::{AuthMode, DatabaseConnectionPool};
+    /// # use aragog::{AuthMode, DatabaseConnection};
     /// # use aragog::schema::DatabaseSchema;
     /// # #[tokio::main]
     /// # async fn main() {
-    /// let db_pool = DatabaseConnectionPool::builder()
+    /// let db_connection = DatabaseConnection::builder()
     ///     // You can specify a host and credentials with this method.
     ///     // Otherwise, the builder will look for the env vars: `DB_HOST`, `DB_NAME`, `DB_USER` and `DB_PASSWORD`.
     ///     .with_credentials("http://localhost:8529", "db", "user", "password")
     ///     // You can specify a authentication mode between `Basic` and `Jwt`
     ///     // Otherwise the default value will be used (`Basic`).
     ///     .with_auth_mode(AuthMode::Basic)
-    ///     // You can specify a schema path to initialize the database pool
+    ///     // You can specify a schema path to initialize the database connection
     ///     // Otherwise the env var `SCHEMA_PATH` or the default value `config/db/schema.yaml` will be used.
     ///     .with_schema_path("config/db/schema.yaml")
     ///     // If you prefer you can use your own custom schema
@@ -72,7 +72,7 @@ impl DatabaseConnectionPool {
     /// #     )
     ///     // The schema wil silently apply to the database, useful only if you don't use the CLI and migrations
     ///     .apply_schema()
-    ///     // You then need to build the pool
+    ///     // You then need to build the database connection
     ///     .build()
     ///     .await
     ///     .unwrap();
@@ -80,11 +80,11 @@ impl DatabaseConnectionPool {
     /// ```
     ///
     /// You can also specify a custom `DatabaseSchema` using `with_schema`.
-    pub fn builder() -> DatabaseConnectionPoolBuilder {
-        DatabaseConnectionPoolBuilder {
+    pub fn builder() -> DatabaseConnectionBuilder {
+        DatabaseConnectionBuilder {
             apply_schema: false,
             auth_mode: AuthMode::default(),
-            credentials: PoolCredentialsOption::Auto,
+            credentials: DbCredentialsOption::Auto,
             schema: DatabaseSchemaOption::Auto,
             operation_options: OperationOptions::default(),
         }
@@ -126,14 +126,14 @@ impl DatabaseConnectionPool {
         Ok(db_connection.db(&db_name).await?)
     }
 
-    /// retrieves a vector of all collection names from the pool
+    /// retrieves a vector of all collection names from the database
     pub fn collections_names(&self) -> Vec<String> {
         self.collections.keys().cloned().collect()
     }
 
     /// **DESTRUCTIVE OPERATION**
     ///
-    /// This will truncate all collections in the database pool, the collection will still exist but
+    /// This will truncate all collections in the database, the collection will still exist but
     /// every document will be destryed.
     ///
     /// # Panics
@@ -174,7 +174,7 @@ impl DatabaseConnectionPool {
     }
 }
 
-impl DatabaseAccess for DatabaseConnectionPool {
+impl DatabaseAccess for DatabaseConnection {
     fn operation_options(&self) -> OperationOptions {
         self.operation_options.clone()
     }

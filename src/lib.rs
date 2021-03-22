@@ -22,7 +22,7 @@
 //! ## Features
 //!
 //! By now the available features are:
-//! * Creating a database connection pool from a defined `schema.yaml` (See [aragog_cli][CLI])
+//! * Creating a database connection from a defined `schema.yaml` (See [aragog_cli][CLI])
 //! * Structures can implement different behaviors:
 //!     * `Record`: The structure can be written and retrieved as an ArangoDB [collection document][collection_document]. This is the main trait for your models
 //!     * `EdgeRecord`: The structure can be written and retrieved as an ArangoDB [edge collection document][edge_document]
@@ -44,16 +44,16 @@
 //!
 //! In order for everything to work you need a `schema.yaml` file. Use [aragog_cli][CLI] to create migrations and generate the file.
 //!
-//! ### Creating a pool
+//! ### Creating a database connection
 //!
-//! To connect to the database and initialize a connection pool you may use the following builder pattern options:
+//! To connect to the database and initialize a database connection you may use the following builder pattern options:
 //!
 //! ```rust
-//! # use aragog::{AuthMode, DatabaseConnectionPool, OperationOptions};
+//! # use aragog::{AuthMode, DatabaseConnection, OperationOptions};
 //! # use aragog::schema::DatabaseSchema;
 //! # #[tokio::main]
 //! # async fn main() {
-//! let db_pool = DatabaseConnectionPool::builder()
+//! let db_connection = DatabaseConnection::builder()
 //!     // You can specify a host and credentials with this method.
 //!     // Otherwise, the builder will look for the env vars: `DB_HOST`, `DB_NAME`, `DB_USER` and `DB_PASSWORD`.
 //!     .with_credentials("http://localhost:8529", "db", "user", "password")
@@ -63,7 +63,7 @@
 //!     // You can specify some operations options that will be used for every `write` operations like
 //!     // `create`, `save` and `delete`.
 //!     .with_operation_options(OperationOptions::default())
-//!     // You can specify a schema path to initialize the database pool
+//!     // You can specify a schema path to initialize the database connection
 //!     // Otherwise the env var `SCHEMA_PATH` or the default value `config/db/schema.yaml` will be used.
 //!     .with_schema_path("config/db/schema.yaml")
 //!     // If you prefer you can use your own custom schema
@@ -77,7 +77,7 @@
 //! #   )
 //!     // The schema wil silently apply to the database, useful only if you don't use the CLI and migrations
 //!     .apply_schema()
-//!     // You then need to build the pool
+//!     // You then need to build the connection
 //!     .build()
 //!     .await
 //!     .unwrap();
@@ -98,7 +98,7 @@
 //! **Example:**
 //!
 //! ```rust
-//! use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, AuthMode};
+//! use aragog::{Record, DatabaseConnection, DatabaseRecord, AuthMode};
 //! use serde::{Serialize, Deserialize};
 //! use tokio;
 //!
@@ -113,12 +113,12 @@
 //! #[tokio::main]
 //! async fn main() {
 //! // Database connection Setup
-//!     let database_pool = DatabaseConnectionPool::builder()
+//!     let database_connection = DatabaseConnection::builder()
 //! # .with_schema_path("tests/schema.yaml").apply_schema()
 //!         .build()
 //!         .await
 //!         .unwrap();
-//! #     database_pool.truncate().await;
+//! #     database_connection.truncate().await;
 //!     // Define a document
 //!     let mut user = User {
 //!         username: String::from("LeRevenant1234"),
@@ -127,11 +127,11 @@
 //!         age: 18
 //!     };
 //!     // user_record is a DatabaseRecord<User>
-//!     let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
+//!     let mut user_record = DatabaseRecord::create(user, &database_connection).await.unwrap();
 //!     // You can access and edit the document
 //!     user_record.username = String::from("LeRevenant1524356");
 //!     // And directly save it
-//!     user_record.save(&database_pool).await.unwrap();
+//!     user_record.save(&database_connection).await.unwrap();
 //! }
 //! ```
 //! ### Edge Record
@@ -142,7 +142,7 @@
 //! **Example:**
 //!
 //! ```rust
-//! # use aragog::{Record, EdgeRecord, DatabaseConnectionPool, DatabaseRecord, AuthMode};
+//! # use aragog::{Record, EdgeRecord, DatabaseConnection, DatabaseRecord, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use tokio;
 //! #
@@ -165,18 +165,18 @@
 //!
 //! #[tokio::main]
 //! async fn main() {
-//! # let database_pool = DatabaseConnectionPool::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
-//! #  database_pool.truncate().await;
+//! # let database_connection = DatabaseConnection::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
+//! #  database_connection.truncate().await;
 //!     // Define a document
 //!     let mut dish = DatabaseRecord::create(Dish {
 //!         name: "Pizza".to_string(),
 //!         price: 10,
-//!     }, &database_pool).await.unwrap();
+//!     }, &database_connection).await.unwrap();
 //!     let mut order = DatabaseRecord::create(Order {
 //!         name: "Order 1".to_string(),
-//!     }, &database_pool).await.unwrap();
+//!     }, &database_connection).await.unwrap();
 //!
-//!     let edge = DatabaseRecord::link(&dish, &order, &database_pool, |_from, _to| {
+//!     let edge = DatabaseRecord::link(&dish, &order, &database_connection, |_from, _to| {
 //!         PartOf { _from, _to }
 //!     }).await.unwrap();
 //!     assert_eq!(edge._from(), dish.id());
@@ -191,7 +191,7 @@
 //! Aragog now supports transactional operations without API changes through the new `Transaction` Object.
 //!
 //! ```rust
-//! # use aragog::{Record, transaction::Transaction, DatabaseConnectionPool, DatabaseRecord, AuthMode};
+//! # use aragog::{Record, transaction::Transaction, DatabaseConnection, DatabaseRecord, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use tokio;
 //! #
@@ -203,28 +203,28 @@
 //!
 //! #[tokio::main]
 //! async fn main() {
-//!     let database_pool = DatabaseConnectionPool::builder()
+//!     let database_connection = DatabaseConnection::builder()
 //!         # .with_schema_path("tests/schema.yaml").apply_schema()
 //!         .build().await.unwrap();
-//!     #  database_pool.truncate().await;
+//!     #  database_connection.truncate().await;
 //!
 //!     // Instantiate a new transaction
-//!     let transaction = Transaction::new(&database_pool).await.unwrap();
+//!     let transaction = Transaction::new(&database_connection).await.unwrap();
 //!     // Safely execute operations:
-//!     let output = transaction.safe_execute(|transaction_pool| async move {
-//!         // We use the provided `transaction_pool` instead of the classic pool
+//!     let output = transaction.safe_execute(|transaction_connection| async move {
+//!         // We use the provided `transaction_connection` instead of the classic connection
 //!         DatabaseRecord::create(Dish {
 //!             name: "Pizza".to_string(),
 //!             price: 10,
-//!         }, &transaction_pool).await?;
+//!         }, &transaction_connection).await?;
 //!         DatabaseRecord::create(Dish {
 //!             name: "Pasta".to_string(),
 //!             price: 8,
-//!         }, &transaction_pool).await?;
+//!         }, &transaction_connection).await?;
 //!         DatabaseRecord::create(Dish {
 //!             name: "Sandwich".to_string(),
 //!             price: 5,
-//!         }, &transaction_pool).await?;
+//!         }, &transaction_connection).await?;
 //!         Ok(())
 //!     }).await.unwrap();
 //!
@@ -235,7 +235,7 @@
 //!
 //! If an operation fails in the `safe_execute` block the transaction will be aborted and every operaiton cancelled.
 //!
-//!> Note: All the `DatabaseRecord` operation (create, save, link, etc) work as transactional, simply use the the provded transaction `pool` instead of the classic pool
+//!> Note: All the `DatabaseRecord` operation (create, save, link, etc) work as transactional, simply use the the provded transaction `database_connection` instead of the classic connection
 //!
 //! ### Querying
 //!
@@ -244,7 +244,7 @@
 //!
 //! **Example**
 //! ```rust
-//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, AuthMode};
+//! # use aragog::{Record, DatabaseConnection, DatabaseRecord, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use aragog::query::{Comparison, Filter};
 //! # use tokio;
@@ -259,8 +259,8 @@
 //! #
 //! # #[tokio::main]
 //! # async fn main() {
-//! # let database_pool = DatabaseConnectionPool::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
-//! # database_pool.truncate().await;
+//! # let database_connection = DatabaseConnection::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
+//! # database_connection.truncate().await;
 //! # let mut user = User {
 //! #     username: String::from("LeRevenant1234"),
 //! #     first_name: String::from("Robert"),
@@ -268,30 +268,30 @@
 //! #     age: 18,
 //! # };
 //! // User creation
-//! let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
+//! let record = DatabaseRecord::create(user, &database_connection).await.unwrap();
 //!
 //! // Find with the primary key or..
-//! let user_record = User::find(record.key(), &database_pool).await.unwrap();
+//! let user_record = User::find(record.key(), &database_connection).await.unwrap();
 //! // .. Generate a query and..
 //! let query = User::query().filter(Filter::new(Comparison::field("last_name").equals_str("Surcouf")).and(Comparison::field("age").greater_than(15)));
 //! // get the only record (fails if no or multiple records)
-//! let user_record = User::get(query, &database_pool).await.unwrap().uniq().unwrap();
+//! let user_record = User::get(query, &database_connection).await.unwrap().uniq().unwrap();
 //!
 //! // Find all users with multiple conditions
 //! let query = User::query().filter(Filter::new(Comparison::field("last_name").like("%Surc%")).and(Comparison::field("age").in_array(&[15,16,17,18])));
 //! let clone_query = query.clone(); // we clone the query
 //!
 //! // This syntax is valid...
-//! let user_records = User::get(query, &database_pool).await.unwrap();
+//! let user_records = User::get(query, &database_connection).await.unwrap();
 //! // ... This one too
-//! let user_records = clone_query.call(&database_pool).await.unwrap().get_records::<User>();
+//! let user_records = clone_query.call(&database_connection).await.unwrap().get_records::<User>();
 //! # }
 //! ```
 //! You can simplify the previous queries with some tweaks and macros:
 //! ```rust
 //! #[macro_use]
 //! extern crate aragog;
-//! # use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, AuthMode};
+//! # use aragog::{Record, DatabaseConnection, DatabaseRecord, AuthMode};
 //! # use serde::{Serialize, Deserialize};
 //! # use aragog::query::{Query, Comparison, Filter};
 //! # use tokio;
@@ -305,8 +305,8 @@
 //! # }
 //! # #[tokio::main]
 //! # async fn main() {
-//! # let database_pool = DatabaseConnectionPool::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
-//! # database_pool.truncate().await;
+//! # let database_connection = DatabaseConnection::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
+//! # database_connection.truncate().await;
 //! # let mut user = User {
 //! #     username: String::from("LeRevenant1234"),
 //! #     first_name: String::from("Robert"),
@@ -314,21 +314,21 @@
 //! #     age: 18,
 //! # };
 //!
-//! let record = DatabaseRecord::create(user, &database_pool).await.unwrap();
+//! let record = DatabaseRecord::create(user, &database_connection).await.unwrap();
 //!
 //! // Find a user with a query
 //! let query = User::query().filter(compare!(field "last_name").equals_str("Surcouf").and(compare!(field "age").greater_than(15)));
 //!
 //! // get the only record (fails if no or multiple records)
-//! let user_record = User::get(query, &database_pool).await.unwrap().uniq().unwrap();
+//! let user_record = User::get(query, &database_connection).await.unwrap().uniq().unwrap();
 //!
 //! // Find all users with multiple conditions
 //! let query = User::query().filter(compare!(field "last_name").like("%Surc%").and(compare!(field "age").in_array(&[15,16,17,18])));
 //! let clone_query = query.clone();
 //! // This syntax is valid...
-//! let user_records = User::get(query, &database_pool).await.unwrap();
+//! let user_records = User::get(query, &database_connection).await.unwrap();
 //! // ... This one too
-//! let user_records = clone_query.call(&database_pool).await.unwrap().get_records::<User>();
+//! let user_records = clone_query.call(&database_connection).await.unwrap().get_records::<User>();
 //! # }
 //! ```
 //! #### Query Object
@@ -347,8 +347,8 @@
 //! > The order of operations will be respected in the rendered AQL query (except for `distinct`)
 //!
 //! you can then call a query in the following ways:
-//! * `query.call::<Object>(&database_connection_pool)`
-//! * `Object::get(query, &database_connection_pool`
+//! * `query.call::<Object>(&database_connection)`
+//! * `Object::get(query, &database_connection)`
 //!
 //! Which will return a `JsonQueryResult` containing a `Vec` of `serde_json::Value`.
 //! `JsonQueryResult` can return deserialized models as `DatabaseRecord` by calling `.get_records::<T>()`
@@ -502,8 +502,8 @@ pub use aragog_macros::*;
 #[cfg(not(feature = "minimal_traits"))]
 pub use {authorize_action::AuthorizeAction, new::New, update::Update};
 pub use {
-    db::database_access::DatabaseAccess, db::database_connection_pool::AuthMode,
-    db::database_connection_pool::DatabaseConnectionPool, db::database_record::DatabaseRecord,
+    db::database_access::DatabaseAccess, db::database_connection::AuthMode,
+    db::database_connection::DatabaseConnection, db::database_record::DatabaseRecord,
     db::operation_options::OperationOptions, db::transaction, edge_record::EdgeRecord,
     error::ServiceError, foreign_link::ForeignLink, link::Link, record::Record, validate::Validate,
 };

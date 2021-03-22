@@ -28,13 +28,13 @@ struct SerializedDishRecord {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn serialization_works() {
-    let pool = common::setup_db().await;
+    let connection = common::setup_db().await;
     let doc = Dish {
         name: "Pizza".to_string(),
         description: "Italian Dish".to_string(),
         price: 13,
     };
-    let record = DatabaseRecord::create(doc, &pool).await.unwrap();
+    let record = DatabaseRecord::create(doc, &connection).await.unwrap();
     let json = serde_json::to_string(&record).unwrap();
     let serialized_dish: SerializedDishRecord = serde_json::from_str(&json).unwrap();
     assert_eq!(serialized_dish.price, record.price);
@@ -50,13 +50,13 @@ async fn serialization_works() {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn deserialization_works() {
-    let pool = common::setup_db().await;
+    let connection = common::setup_db().await;
     let doc = Dish {
         name: "Pizza".to_string(),
         description: "Italian Dish".to_string(),
         price: 13,
     };
-    let record = DatabaseRecord::create(doc, &pool).await.unwrap();
+    let record = DatabaseRecord::create(doc, &connection).await.unwrap();
     let json = serde_json::to_string(&record).unwrap();
     let deserialize_record: DatabaseRecord<Dish> = serde_json::from_str(&json).unwrap();
     assert_eq!(deserialize_record.price, record.price);
@@ -72,19 +72,19 @@ async fn deserialization_works() {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn revision_check_works() -> Result<(), String> {
-    let pool = common::setup_db().await;
+    let connection = common::setup_db().await;
     let doc = Dish {
         name: "Piza".to_string(),
         description: "Italian Dish".to_string(),
         price: 13,
     };
-    let mut record = DatabaseRecord::create(doc, &pool).await.unwrap();
+    let mut record = DatabaseRecord::create(doc, &connection).await.unwrap();
     // We save the revision
     let old_rev = record.rev().clone();
     // We modify the document
     record.name = String::from("Pizza");
     // We save it
-    record.save(&pool).await.unwrap();
+    record.save(&connection).await.unwrap();
     // The new revision should be changed
     assert_ne!(record.rev(), &old_rev);
 
@@ -99,7 +99,7 @@ async fn revision_check_works() -> Result<(), String> {
 
     // Should fail with rev check
     match deserialize_record
-        .save_with_options(&pool, OperationOptions::default().ignore_revs(false))
+        .save_with_options(&connection, OperationOptions::default().ignore_revs(false))
         .await
     {
         Ok(_) => return Err(String::from("_rev check should have failed")),
@@ -113,7 +113,7 @@ async fn revision_check_works() -> Result<(), String> {
         },
     }
     // Should succeed without rev check
-    deserialize_record.save(&pool).await.unwrap();
+    deserialize_record.save(&connection).await.unwrap();
 
     Ok(())
 }

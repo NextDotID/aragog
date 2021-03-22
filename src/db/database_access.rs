@@ -12,14 +12,14 @@ use crate::{OperationOptions, ServiceError};
 ///
 /// # Usage
 ///
-/// Instead of directly calling [`DatabaseConnectionPool`],
+/// Instead of directly calling [`DatabaseConnection`],
 /// which is the main database accessor, this allow for a more abstract and modular system.
 /// This way, the `Transaction` system can work with all the current methods.
 ///
 /// # Note:
 /// this trait is meant for development purposes, for a classic use of the library you don't need this trait.
 ///
-/// [`DatabaseConnectionPool`]: struct.DatabaseConnectionPool.html
+/// [`DatabaseConnection`]: struct.DatabaseConnection.html
 #[maybe_async::maybe_async]
 pub trait DatabaseAccess: Sync {
     /// Defines the default operation options to use on `write` operations.

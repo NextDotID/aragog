@@ -5,25 +5,25 @@ use arangors::client::reqwest::ReqwestClient;
 use arangors::transaction::Transaction as TransactionLayer;
 
 pub use {
-    transaction_builder::TransactionBuilder, transaction_output::TransactionOutput,
-    transaction_pool::TransactionPool,
+    transaction_builder::TransactionBuilder, transaction_connection::TransactionDatabaseConnection,
+    transaction_output::TransactionOutput,
 };
 
-use crate::{DatabaseConnectionPool, ServiceError};
+use crate::{DatabaseConnection, ServiceError};
 
 mod transaction_builder;
+mod transaction_connection;
 mod transaction_output;
-mod transaction_pool;
 
 /// Struct representing a ArangoDB transaction.
 ///
-/// Its `pool` is equivalent to a [`DatabaseConnectionPool`] but for transactional operations.
-/// Use it instead of the classic pool to use the streaming transaction.
+/// Its `database_connection` is equivalent to a [`DatabaseConnection`] but for transactional operations.
+/// Use it instead of the classic connection to use the streaming transaction.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use aragog::{DatabaseConnectionPool, transaction::Transaction, Record, Validate, DatabaseRecord};
+/// # use aragog::{DatabaseConnection, transaction::Transaction, Record, Validate, DatabaseRecord};
 /// # use aragog::query::{Comparison, Filter};
 /// # use serde::{Serialize, Deserialize};
 ///
@@ -35,35 +35,35 @@ mod transaction_pool;
 ///
 /// # #[tokio::main]
 /// # async fn main() {
-/// let db_pool = DatabaseConnectionPool::builder()
+/// let db_connection = DatabaseConnection::builder()
 ///     # .with_schema_path("tests/schema.yaml")
 ///     # .apply_schema()
 ///     .build()
 ///     .await
 ///     .unwrap();
-/// # db_pool.truncate().await;
-/// // Build a transaction pool from the main database pool
-/// let transaction = Transaction::new(&db_pool).await.unwrap();
+/// # db_connection.truncate().await;
+/// // Build a transaction connection from the main database connection
+/// let transaction = Transaction::new(&db_connection).await.unwrap();
 /// // Safely execute document operations in the transaction, the transaction will be closed afterwards
-/// let result = transaction.safe_execute(|pool| async move {
+/// let result = transaction.safe_execute(|connection| async move {
 ///     // All operations here will be transactional, if an error is raised, the transaction will be aborted.
 ///     let doc = User {
 ///         field1: String::from("foo"),
 ///         field2: String::from("bar"),
 ///     };
 ///     // The closure safely checks for errors, use the `?` operator and avoid `unwrap()`
-///     let mut db_doc = DatabaseRecord::create(doc, &pool).await?;
+///     let mut db_doc = DatabaseRecord::create(doc, &connection).await?;
 ///     db_doc.field1 = String::from("not foo");
-///     db_doc.save(&pool).await?;
+///     db_doc.save(&connection).await?;
 ///     Ok(db_doc)
 /// }).await.unwrap();
 ///
 /// // We make sure everything was committed
 /// assert!(result.is_committed());
-/// // We retrieve our document from the classic pool to check if it worked
+/// // We retrieve our document from the classic connection to check if it worked
 /// let result = User::get(
 ///     User::query().filter(Comparison::field("field1").equals_str("not foo").into()),
-///     &db_pool
+///     &db_connection
 /// ).await.unwrap();
 /// assert_eq!(result.len(), 1);
 /// # }
@@ -74,11 +74,11 @@ mod transaction_pool;
 /// The `WRITE` transaction operations muse be document related: `create`, `save`, `delete`, etc. The AQL operations may not work.
 /// On the other hand all `READ` operations as `find`, `get`, etc should all work even with `AQL` queries.
 ///
-/// [`DatabaseConnectionPool`]: ../struct.DatabaseConnectionPool.html
+/// [`DatabaseConnection`]: ../struct.DatabaseConnection.html
 // TODO: Add #[derive(Debug)] when arangors supports it
 pub struct Transaction {
     accessor: TransactionLayer<ReqwestClient>,
-    pool: TransactionPool,
+    database_connection: TransactionDatabaseConnection,
 }
 
 impl Transaction {
@@ -87,11 +87,11 @@ impl Transaction {
         self.accessor.id()
     }
 
-    /// Instantiates a new `Transaction` from a [`DatabaseConnectionPool`] on all collections
+    /// Instantiates a new `Transaction` from a [`DatabaseConnection`] on all collections
     ///
     /// # Arguments
     ///
-    /// * `db_pool` - The current database pool
+    /// * `db_connection` - The current database connection
     ///
     /// The transaction will be initialized with default settings:
     /// - No disk writing wait (waitForSync)
@@ -100,11 +100,11 @@ impl Transaction {
     ///
     /// For more options use [`TransactionBuilder`]
     ///
-    /// [`DatabaseConnectionPool`]: ../struct.DatabaseConnectionPool.html
+    /// [`DatabaseConnection`]: ../struct.DatabaseConnection.html
     /// [`TransactionBuilder`]: struct.TransactionBuilder.html
     #[maybe_async::maybe_async]
-    pub async fn new(db_pool: &DatabaseConnectionPool) -> Result<Self, ServiceError> {
-        TransactionBuilder::new().build(db_pool).await
+    pub async fn new(db_connection: &DatabaseConnection) -> Result<Self, ServiceError> {
+        TransactionBuilder::new().build(db_connection).await
     }
 
     /// Tries to commit all operations from the transaction
@@ -114,7 +114,7 @@ impl Transaction {
     /// # Example
     ///
     /// ```rust
-    /// # use aragog::{DatabaseConnectionPool, transaction::Transaction, Record, Validate, DatabaseRecord};
+    /// # use aragog::{DatabaseConnection, transaction::Transaction, Record, Validate, DatabaseRecord};
     /// # use serde::{Serialize, Deserialize};
     ///
     /// #[derive(Debug, Clone, Record, Validate, Serialize, Deserialize)]
@@ -125,20 +125,20 @@ impl Transaction {
     ///
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_pool = DatabaseConnectionPool::builder()
+    /// # let db_connection = DatabaseConnection::builder()
     ///     # .with_schema_path("tests/schema.yaml")
     ///     # .apply_schema()
     ///     # .build()
     ///     # .await
     ///     # .unwrap();
-    /// // Build a transaction pool from the main database pool
-    /// let transaction = Transaction::new(&db_pool).await.unwrap();
+    /// // Build a transaction connection from the main database connection
+    /// let transaction = Transaction::new(&db_connection).await.unwrap();
     /// let doc = User {
     ///     field1: String::from("foo"),
     ///     field2: String::from("bar"),
     /// };
-    /// // Use the transaction pool instead of the standard `DatabaseConnectionPool`
-    /// match DatabaseRecord::create(doc, transaction.pool()).await {
+    /// // Use the transaction connection instead of the standard `DatabaseConnection`
+    /// match DatabaseRecord::create(doc, transaction.database_connection()).await {
     ///     /// On the operation success we commit the complete pool of operations
     ///     Ok(_) => transaction.commit().await.unwrap(),
     ///     /// On the operation success we abort the complete pool of operations
@@ -166,7 +166,7 @@ impl Transaction {
     /// # Example
     ///
     /// ```rust
-    /// # use aragog::{DatabaseConnectionPool, transaction::Transaction, Record, Validate, DatabaseRecord};
+    /// # use aragog::{DatabaseConnection, transaction::Transaction, Record, Validate, DatabaseRecord};
     /// # use serde::{Serialize, Deserialize};
     ///
     /// #[derive(Debug, Clone, Record, Validate, Serialize, Deserialize)]
@@ -177,20 +177,20 @@ impl Transaction {
     ///
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_pool = DatabaseConnectionPool::builder()
+    /// # let db_connection = DatabaseConnection::builder()
     ///     # .with_schema_path("tests/schema.yaml")
     ///     # .apply_schema()
     ///     # .build()
     ///     # .await
     ///     # .unwrap();
-    /// // Build a transaction pool from the main database pool
-    /// let transaction = Transaction::new(&db_pool).await.unwrap();
+    /// // Build a transaction connection from the main database connection
+    /// let transaction = Transaction::new(&db_connection).await.unwrap();
     /// let doc = User {
     ///     field1: String::from("foo"),
     ///     field2: String::from("bar"),
     /// };
-    /// // Use the transaction pool instead of the standard `DatabaseConnectionPool`
-    /// match DatabaseRecord::create(doc, transaction.pool()).await {
+    /// // Use the transaction connection instead of the standard `DatabaseConnection`
+    /// match DatabaseRecord::create(doc, transaction.database_connection()).await {
     ///     /// On the operation success we commit the complete pool of operations
     ///     Ok(_) => transaction.commit().await.unwrap(),
     ///     /// On the operation failure we abort the complete pool of operations
@@ -210,13 +210,13 @@ impl Transaction {
         Ok(())
     }
 
-    /// Allows to run multiple operations using the transaction pool. If an operation fails or an `Err`
+    /// Allows to run multiple operations using the transaction connection. If an operation fails or an `Err`
     /// is returned by the closure, all operations will be aborted
     ///
     /// # Example
     ///
     /// ```rust
-    /// # use aragog::{DatabaseConnectionPool, transaction::Transaction, Record, Validate, DatabaseRecord};
+    /// # use aragog::{DatabaseConnection, transaction::Transaction, Record, Validate, DatabaseRecord};
     /// # use serde::{Serialize, Deserialize};
     ///
     /// #[derive(Debug, Clone, Record, Validate, Serialize, Deserialize)]
@@ -227,26 +227,26 @@ impl Transaction {
     ///
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_pool = DatabaseConnectionPool::builder()
+    /// # let db_connection = DatabaseConnection::builder()
     ///     # .with_schema_path("tests/schema.yaml")
     ///     # .apply_schema()
     ///     # .build()
     ///     # .await
     ///     # .unwrap();
-    /// # db_pool.truncate().await;
-    /// // Build a transaction pool from the main database pool
-    /// let transaction = Transaction::new(&db_pool).await.unwrap();
+    /// # db_connection.truncate().await;
+    /// // Build a transaction connection from the main database connection
+    /// let transaction = Transaction::new(&db_connection).await.unwrap();
     /// // Safely execute document operations in the transaction
-    /// transaction.safe_execute(|pool| async move {
+    /// transaction.safe_execute(|connection| async move {
     ///     // All operations here will be transactional, if an error is raised, the transaction will be aborted.
     ///     let doc = User {
     ///         field1: String::from("foo"),
     ///         field2: String::from("bar"),
     ///     };
     ///     // The closure safely checks for errors, use the `?` operator and avoid `unwrap()`
-    ///     let mut db_doc = DatabaseRecord::create(doc, &pool).await?;
+    ///     let mut db_doc = DatabaseRecord::create(doc, &connection).await?;
     ///     db_doc.field1 = String::from("not foo");
-    ///     db_doc.save(&pool).await?;
+    ///     db_doc.save(&connection).await?;
     ///     Ok(db_doc)
     /// }).await.unwrap();
     /// # }
@@ -261,11 +261,11 @@ impl Transaction {
         operations: O,
     ) -> Result<TransactionOutput<T>, ServiceError>
     where
-        O: FnOnce(TransactionPool) -> F,
+        O: FnOnce(TransactionDatabaseConnection) -> F,
         F: Future<Output = Result<T, ServiceError>>,
     {
         log::trace!("Safely executing transactional operations..");
-        let res = operations(self.pool.clone()).await;
+        let res = operations(self.database_connection.clone()).await;
         log::trace!(
             "Safely executing transactional operations.. Done. Success: {}",
             res.is_ok()
@@ -273,13 +273,13 @@ impl Transaction {
         self.handle_safe_execute(res).await
     }
 
-    /// Allows to run multiple operations using the transaction pool. If an operation fails or an `Err`
+    /// Allows to run multiple operations using the transaction connection. If an operation fails or an `Err`
     /// is returned by the closure, all operations will be aborted
     ///
     /// # Example
     ///
     /// ```rust
-    /// # use aragog::{DatabaseConnectionPool, transaction::Transaction, Record, Validate, DatabaseRecord};
+    /// # use aragog::{DatabaseConnection, transaction::Transaction, Record, Validate, DatabaseRecord};
     /// # use serde::{Serialize, Deserialize};
     ///
     /// #[derive(Debug, Clone, Record, Validate, Serialize, Deserialize)]
@@ -290,26 +290,26 @@ impl Transaction {
     ///
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_pool = DatabaseConnectionPool::builder()
+    /// # let db_connection = DatabaseConnection::builder()
     ///     # .with_schema_path("tests/schema.yaml")
     ///     # .apply_schema()
     ///     # .build()
     ///     # .await
     ///     # .unwrap();
-    /// # db_pool.truncate().await;
-    /// // Build a transaction pool from the main database pool
-    /// let transaction = Transaction::new(&db_pool).await.unwrap();
+    /// # db_connection.truncate().await;
+    /// // Build a transaction connection from the main database connection
+    /// let transaction = Transaction::new(&db_connection).await.unwrap();
     /// // Safely execute document operations in the transaction
-    /// transaction.safe_execute(|pool| async move {
+    /// transaction.safe_execute(|connection| async move {
     ///     // All operations here will be transactional, if an error is raised, the transaction will be aborted.
     ///     let doc = User {
     ///         field1: String::from("foo"),
     ///         field2: String::from("bar"),
     ///     };
     ///     // The closure safely checks for errors, use the `?` operator and avoid `unwrap()`
-    ///     let mut db_doc = DatabaseRecord::create(doc, &pool).await?;
+    ///     let mut db_doc = DatabaseRecord::create(doc, &connection).await?;
     ///     db_doc.field1 = String::from("not foo");
-    ///     db_doc.save(&pool).await?;
+    ///     db_doc.save(&connection).await?;
     ///     Ok(db_doc)
     /// }).await.unwrap();
     /// # }
@@ -321,10 +321,10 @@ impl Transaction {
     #[cfg(not(feature = "async"))]
     pub fn safe_execute<T, O>(&self, operations: O) -> Result<TransactionOutput<T>, ServiceError>
     where
-        O: FnOnce(TransactionPool) -> Result<T, ServiceError>,
+        O: FnOnce(TransactionDatabaseConnection) -> Result<T, ServiceError>,
     {
         log::trace!("Safely executing transactional operations..");
-        let res = operations(self.pool.clone());
+        let res = operations(self.database_connection.clone());
         log::trace!(
             "Safely executing transactional operations.. Done. Success: {}",
             res.is_ok()
@@ -351,11 +351,23 @@ impl Transaction {
         }
     }
 
-    /// Retrieves the pool of the transaction which implements [`DatabaseAccess`].
-    /// This pool can be used exactly the same way was the classic database pool.
+    /// Retrieves the database connection of the transaction which implements [`DatabaseAccess`].
+    /// This connection can be used exactly the same way was the classic database connection.
     ///
     /// [`DatabaseAccess`]: ../trait.DatabaseAccess.html
-    pub fn pool(&self) -> &TransactionPool {
-        &self.pool
+    #[deprecated(
+        since = "0.12.0",
+        note = "Please use the `database_connection` function instead"
+    )]
+    pub fn pool(&self) -> &TransactionDatabaseConnection {
+        &self.database_connection
+    }
+
+    /// Retrieves the database connection of the transaction which implements [`DatabaseAccess`].
+    /// This connection can be used exactly the same way was the classic database connection.
+    ///
+    /// [`DatabaseAccess`]: ../trait.DatabaseAccess.html
+    pub fn database_connection(&self) -> &TransactionDatabaseConnection {
+        &self.database_connection
     }
 }

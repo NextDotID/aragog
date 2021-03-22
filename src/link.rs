@@ -7,7 +7,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 /// # Example
 ///
 /// ```rust
-/// # use aragog::{Record, Validate, Link, DatabaseConnectionPool, DatabaseRecord, AuthMode};
+/// # use aragog::{Record, Validate, Link, DatabaseConnection, DatabaseRecord, AuthMode};
 /// # use aragog::query::{Query, Comparison};
 /// # use serde::{Deserialize, Serialize};
 /// # use std::borrow::Borrow;
@@ -29,7 +29,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 ///
 /// # #[tokio::main]
 /// # async fn main() {
-/// # let database_pool = DatabaseConnectionPool::builder()
+/// # let database_connection = DatabaseConnection::builder()
 /// #     .with_credentials(
 /// #       &std::env::var("DB_HOST").unwrap_or("http://localhost:8529".to_string()),
 /// #       &std::env::var("DB_NAME").unwrap_or("aragog_test".to_string()),
@@ -40,15 +40,15 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 /// #    .build()
 /// #    .await
 /// #    .unwrap();
-/// # database_pool.truncate().await;
-/// let user = DatabaseRecord::create(User {}, &database_pool).await.unwrap();
+/// # database_connection.truncate().await;
+/// let user = DatabaseRecord::create(User {}, &database_connection).await.unwrap();
 /// let order = DatabaseRecord::create(
 ///     Order {
 ///         content: "content".to_string(),
 ///         user_id: user.key().clone()
 ///     },
-///     &database_pool).await.unwrap();
-/// let orders = user.linked_models(&database_pool).await.unwrap();
+///     &database_connection).await.unwrap();
+/// let orders = user.linked_models(&database_connection).await.unwrap();
 /// assert_eq!(user.key(), &orders.first().unwrap().user_id);
 /// # }
 /// ```
@@ -59,7 +59,7 @@ pub trait Link<T: Record>: Sized {
     /// # Example
     ///
     /// ```rust
-    /// # use aragog::{Record, Validate, Link, DatabaseConnectionPool, DatabaseRecord};
+    /// # use aragog::{Record, Validate, Link, DatabaseConnection, DatabaseRecord};
     /// # use aragog::query::{Query, Comparison};
     /// # use serde::{Deserialize, Serialize};
     /// # use std::borrow::Borrow;
@@ -83,21 +83,21 @@ pub trait Link<T: Record>: Sized {
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
     #[cfg(feature = "async")]
-    async fn linked_models<D>(&self, db_pool: &D) -> Result<RecordQueryResult<T>, ServiceError>
+    async fn linked_models<D>(&self, db_access: &D) -> Result<RecordQueryResult<T>, ServiceError>
     where
         Self: Sized,
         D: DatabaseAccess + ?Sized,
         T: 'async_trait,
     {
-        DatabaseRecord::get(self.link_query(), db_pool).await
+        DatabaseRecord::get(self.link_query(), db_access).await
     }
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
     #[cfg(not(feature = "async"))]
-    fn linked_models<D>(&self, db_pool: &D) -> Result<RecordQueryResult<T>, ServiceError>
+    fn linked_models<D>(&self, db_access: &D) -> Result<RecordQueryResult<T>, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        DatabaseRecord::get(self.link_query(), db_pool)
+        DatabaseRecord::get(self.link_query(), db_access)
     }
 }

@@ -2,7 +2,7 @@ extern crate env_logger;
 
 use aragog::transaction::Transaction;
 use aragog::{
-    AuthMode, DatabaseAccess, DatabaseConnectionPool, DatabaseRecord, New, ServiceError, Update,
+    AuthMode, DatabaseAccess, DatabaseConnection, DatabaseRecord, New, ServiceError, Update,
 };
 
 use crate::models::dish::{Dish, DishDTO};
@@ -21,7 +21,7 @@ async fn main() {
     env_logger::init();
 
     // Connect to database and generates collections and indexes
-    let db_pool = DatabaseConnectionPool::builder()
+    let db_connection = DatabaseConnection::builder()
         .with_credentials(
             &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
@@ -36,7 +36,7 @@ async fn main() {
         .unwrap();
 
     // Testing purposes
-    db_pool.truncate().await;
+    db_connection.truncate().await;
 
     // Instantiate a new dish
     let dish = Dish::new(DishDTO {
@@ -49,15 +49,15 @@ async fn main() {
     // New empty order
     let mut order = Order::new();
 
-    let transaction = Transaction::new(&db_pool).await.unwrap();
+    let transaction = Transaction::new(&db_connection).await.unwrap();
     let transaction_output = transaction
-        .safe_execute(|pool| async move {
+        .safe_execute(|connection| async move {
             // Creates a database record
-            let mut dish_record = DatabaseRecord::create(dish, &pool).await?;
+            let mut dish_record = DatabaseRecord::create(dish, &connection).await?;
             // Add a dish
             order.add(&dish_record.record);
             // Creates a database record
-            let mut order_record = DatabaseRecord::create(order, &pool).await?;
+            let mut order_record = DatabaseRecord::create(order, &connection).await?;
             // Update dish
             dish_record
                 .record
@@ -71,7 +71,7 @@ async fn main() {
             // Add the updated dish to the order
             order_record.add(&dish_record.record);
             // Save the order record
-            order_record.save(&pool).await?;
+            order_record.save(&connection).await?;
 
             assert_eq!(order_record.dishes.len(), 2);
             assert_eq!(order_record.total_price, 17);
@@ -86,7 +86,7 @@ async fn main() {
 
     // Checking
     assert_eq!(
-        db_pool
+        db_connection
             .collection("Dish")
             .unwrap()
             .record_count()
@@ -97,12 +97,12 @@ async fn main() {
 
     let mut dish_record = transaction_output.unwrap();
 
-    let transaction = Transaction::new(&db_pool).await.unwrap();
+    let transaction = Transaction::new(&db_connection).await.unwrap();
     let transaction_output = transaction
-        .safe_execute(|pool| async move {
+        .safe_execute(|connection| async move {
             // Making validation fail
             dish_record.price = 0;
-            dish_record.save(&pool).await?;
+            dish_record.save(&connection).await?;
             Ok(())
         })
         .await

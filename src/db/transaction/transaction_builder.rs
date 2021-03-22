@@ -1,6 +1,6 @@
 use crate::db::database_collection::DatabaseCollection;
-use crate::transaction::{Transaction, TransactionPool};
-use crate::{DatabaseAccess, DatabaseConnectionPool, OperationOptions, ServiceError};
+use crate::transaction::{Transaction, TransactionDatabaseConnection};
+use crate::{DatabaseAccess, DatabaseConnection, OperationOptions, ServiceError};
 use arangors::transaction::{TransactionCollections, TransactionSettings};
 use std::collections::HashMap;
 
@@ -43,22 +43,24 @@ impl TransactionBuilder {
     }
 
     /// Defines custom `write` operation options for this transaction.
-    /// By default the options set in the [`DatabaseConnectionPool`] are used.
+    /// By default the options set in the [`DatabaseConnection`] are used.
     ///
-    /// [`DatabaseConnectionPool`]: struct.DatabaseConnectionPool.html
+    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
     pub fn operation_options(mut self, options: OperationOptions) -> Self {
         self.operation_options = Some(options);
         self
     }
 
-    /// Builds the transaction with the database connection pool
+    /// Builds the transaction with the database connection
     #[maybe_async::maybe_async]
     pub async fn build(
         self,
-        db_pool: &DatabaseConnectionPool,
+        db_connection: &DatabaseConnection,
     ) -> Result<Transaction, ServiceError> {
-        let collection_names = self.collections.unwrap_or(db_pool.collections_names());
-        let accessor = db_pool
+        let collection_names = self
+            .collections
+            .unwrap_or(db_connection.collections_names());
+        let accessor = db_connection
             .database()
             .begin_transaction(
                 TransactionSettings::builder()
@@ -75,7 +77,7 @@ impl TransactionBuilder {
         log::trace!("Initialized ArangoDB transaction {}", accessor.id());
         // TODO: Change this for direct Collection<> transition when `arangors` supports it
         let mut collections = HashMap::new();
-        for collections_name in db_pool.collections_names().iter() {
+        for collections_name in db_connection.collections_names().iter() {
             let collection = accessor.collection(collections_name).await?;
             collections.insert(
                 collections_name.clone(),
@@ -83,14 +85,14 @@ impl TransactionBuilder {
             );
         }
         //
-        log::trace!("Initialized Aragog transaction pool");
-        let database = db_pool.database().clone();
+        log::trace!("Initialized Aragog transaction connection");
+        let database = db_connection.database().clone();
         let operation_options = self
             .operation_options
-            .unwrap_or(db_pool.operation_options());
+            .unwrap_or(db_connection.operation_options());
         Ok(Transaction {
             accessor,
-            pool: TransactionPool {
+            database_connection: TransactionDatabaseConnection {
                 collections,
                 database,
                 operation_options,

@@ -517,7 +517,7 @@ mod query {
 mod call {
     use serde::{Deserialize, Serialize};
 
-    use aragog::{DatabaseConnectionPool, DatabaseRecord, EdgeRecord, Record};
+    use aragog::{DatabaseConnection, DatabaseRecord, EdgeRecord, Record};
 
     use super::*;
 
@@ -542,12 +542,12 @@ mod call {
     }
 
     #[maybe_async::maybe_async]
-    async fn factory(db_pool: &DatabaseConnectionPool) {
+    async fn factory(db_connection: &DatabaseConnection) {
         let p1 = DatabaseRecord::create(
             Dish {
                 name: "Pizza Mozarella".to_string(),
             },
-            db_pool,
+            db_connection,
         )
         .await
         .unwrap();
@@ -555,7 +555,7 @@ mod call {
             Dish {
                 name: "Pizza Regina".to_string(),
             },
-            db_pool,
+            db_connection,
         )
         .await
         .unwrap();
@@ -563,7 +563,7 @@ mod call {
             Dish {
                 name: "Ice Cream".to_string(),
             },
-            db_pool,
+            db_connection,
         )
         .await
         .unwrap();
@@ -571,7 +571,7 @@ mod call {
             Dish {
                 name: "Wine".to_string(),
             },
-            db_pool,
+            db_connection,
         )
         .await
         .unwrap();
@@ -579,7 +579,7 @@ mod call {
             Dish {
                 name: "Spaghetti".to_string(),
             },
-            db_pool,
+            db_connection,
         )
         .await
         .unwrap();
@@ -588,7 +588,7 @@ mod call {
             Order {
                 name: "Menu Pizza".to_string(),
             },
-            db_pool,
+            db_connection,
         )
         .await
         .unwrap();
@@ -596,7 +596,7 @@ mod call {
             Order {
                 name: "Menu Pizza 2".to_string(),
             },
-            db_pool,
+            db_connection,
         )
         .await
         .unwrap();
@@ -604,39 +604,39 @@ mod call {
             Order {
                 name: "Menu Pasta".to_string(),
             },
-            db_pool,
+            db_connection,
         )
         .await
         .unwrap();
 
         // Menu 1
-        DatabaseRecord::link(&p1, &m1, db_pool, linker)
+        DatabaseRecord::link(&p1, &m1, db_connection, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&wi, &m1, db_pool, linker)
+        DatabaseRecord::link(&wi, &m1, db_connection, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&ic, &m1, db_pool, linker)
+        DatabaseRecord::link(&ic, &m1, db_connection, linker)
             .await
             .unwrap();
         // Menu 2
-        DatabaseRecord::link(&p2, &m2, db_pool, linker)
+        DatabaseRecord::link(&p2, &m2, db_connection, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&wi, &m2, db_pool, linker)
+        DatabaseRecord::link(&wi, &m2, db_connection, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&ic, &m2, db_pool, linker)
+        DatabaseRecord::link(&ic, &m2, db_connection, linker)
             .await
             .unwrap();
         // Menu 3
-        DatabaseRecord::link(&pa, &m3, db_pool, linker)
+        DatabaseRecord::link(&pa, &m3, db_connection, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&wi, &m3, db_pool, linker)
+        DatabaseRecord::link(&wi, &m3, db_connection, linker)
             .await
             .unwrap();
-        DatabaseRecord::link(&ic, &m3, db_pool, linker)
+        DatabaseRecord::link(&ic, &m3, db_connection, linker)
             .await
             .unwrap();
     }
@@ -646,12 +646,12 @@ mod call {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn simple_outbound_request() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        factory(&pool).await;
+        let connection = common::setup_db().await;
+        factory(&connection).await;
         let query = Query::new("Dish")
             .filter(compare!(field "name").like("Pizza%").into())
             .join_outbound(1, 1, false, PartOf::query());
-        let res = query.call(&pool).await.unwrap();
+        let res = query.call(&connection).await.unwrap();
         common::expect_assert_eq(res.len(), 2)?;
         let res = res.get_records::<Order>();
         common::expect_assert_eq(res.len(), 2)?;
@@ -667,12 +667,12 @@ mod call {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn simple_inbound_request() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        factory(&pool).await;
+        let connection = common::setup_db().await;
+        factory(&connection).await;
         let query = Query::new("Order")
             .filter(compare!(field "name").equals_str("Menu Pizza").into())
             .join_inbound(1, 1, false, PartOf::query());
-        let res = query.call(&pool).await.unwrap();
+        let res = query.call(&connection).await.unwrap();
         common::expect_assert_eq(res.len(), 3)?;
         let res = res.get_records::<Dish>();
         common::expect_assert_eq(res.len(), 3)?;
@@ -688,15 +688,15 @@ mod call {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn outbound_then_inbound_request() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        factory(&pool).await;
+        let connection = common::setup_db().await;
+        factory(&connection).await;
         let query = Query::new("Dish").join_outbound(
             1,
             1,
             false,
             PartOf::query().join_inbound(1, 1, false, PartOf::query().distinct()),
         );
-        let res = query.call(&pool).await.unwrap();
+        let res = query.call(&connection).await.unwrap();
         common::expect_assert_eq(res.len(), 5)?;
         let res = res.get_records::<Dish>();
         common::expect_assert_eq(res.len(), 5)?;

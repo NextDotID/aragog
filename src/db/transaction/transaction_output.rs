@@ -1,9 +1,9 @@
 use crate::ServiceError;
 
-/// Output of a [`TransactionPool`][`safe_execute`]
+/// Output of a [`TransactionDatabaseConnection`][`safe_execute`]
 ///
-/// [`TransactionPool`]: transaction/struct.TransactionPool.html
-/// [`safe_execute`]: transaction/struct.TransactionPool.html#method.safe_execute
+/// [`TransactionDatabaseConnection`]: transaction/struct.TransactionDatabaseConnection.html
+/// [`safe_execute`]: transaction/struct.TransactionDatabaseConnection.html#method.safe_execute
 #[must_use]
 pub enum TransactionOutput<T> {
     /// The transaction was committed

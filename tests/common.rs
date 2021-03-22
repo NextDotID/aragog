@@ -2,7 +2,7 @@
 
 use std::fmt::Debug;
 
-use aragog::DatabaseConnectionPool;
+use aragog::DatabaseConnection;
 
 pub const DEFAULT_DB_HOST: &str = "http://localhost:8529";
 pub const DEFAULT_DB_NAME: &str = "aragog_test";
@@ -10,8 +10,8 @@ pub const DEFAULT_DB_USER: &str = "test";
 pub const DEFAULT_DB_PWD: &str = "test";
 
 #[maybe_async::maybe_async]
-pub async fn setup_db() -> DatabaseConnectionPool {
-    let pool = DatabaseConnectionPool::builder()
+pub async fn setup_db() -> DatabaseConnection {
+    let connection = DatabaseConnection::builder()
         .with_credentials(
             &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
@@ -23,8 +23,8 @@ pub async fn setup_db() -> DatabaseConnectionPool {
         .build()
         .await
         .unwrap();
-    pool.truncate().await;
-    pool
+    connection.truncate().await;
+    connection
 }
 
 pub fn expect_assert(expr: bool) -> Result<(), String> {
