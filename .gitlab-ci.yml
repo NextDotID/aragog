@@ -1,6 +1,5 @@
 variables:
   CARGO_HOME: $CI_PROJECT_DIR/.cargo
-  RUSTFLAGS: -Ctarget-feature=-crt-static
   RUST_BACKTRACE: 1
 
 stages:
@@ -44,11 +43,6 @@ build:
     - rustup show
     - cargo -V
 
-.clang_template: &clang_template
-  before_script:
-    - apt update
-    - apt install -yq clang
-
 test:default:
   image: rust:latest
   <<: *test_template
@@ -66,13 +60,6 @@ test:actix:
   <<: *test_template
   script:
     - cargo test --features "actix" --tests -- --test-threads=1
-
-test:password_hashing:
-  image: rust:latest
-  <<: *test_template
-  <<: *clang_template
-  script:
-    - cargo test --features "password_hashing" --tests -- --test-threads=1
 
 test:blocking:
   image: rust:latest
@@ -110,7 +97,6 @@ test::rustfmt:
     - cargo fmt --all -- --check
 
 rustdoc:
-  <<: *clang_template
   <<: *cache_pull_template
   image: rust:latest
   stage: documentation
@@ -119,7 +105,7 @@ rustdoc:
   script:
     - cargo --version
     - rm -rf public
-    - cargo rustdoc -p $PKG_NAME --features "actix password_hashing"
+    - cargo rustdoc -p $PKG_NAME --features "actix"
     - mv target/doc public
   artifacts:
     paths:

@@ -23,7 +23,6 @@ entreprise = ["arangors/enterprise"]
 derive = ["aragog-macros"]
 actix = ["actix-web"]
 open-api = ["paperclip"]
-password_hashing = ["argonautica"]
 minimal_traits = []
 
 [dependencies]
@@ -51,8 +50,6 @@ maybe-async = "0.2"
 aragog-macros = { path = "aragog_macros", version = "0.5", optional = true }
 # Actix web compatibility
 actix-web = { version = "3.3", optional = true, default-features = false }
-# Argon2 hashing
-argonautica = { version = "0.2", optional = true }
 # Open API V2 Compatibility
 paperclip = { version = "0.5", optional = true, features = ["actix"] }
 

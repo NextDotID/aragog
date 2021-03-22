@@ -30,7 +30,6 @@
 //!     * `Link`: The structure can define relations with other models based on defined queries.
 //!     * `ForeignLink`: The structure can define relations with other models based on defined foreign key.
 //! * Structures can also implement optional traits (disabled with the `minimal_traits` feature):
-//!     * `Authenticate`: The structure can define a authentication behaviour from a `secret` (a password for example)
 //!     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
 //!     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
 //!     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
@@ -481,6 +480,7 @@
 //!
 #![forbid(missing_docs)]
 #![forbid(unsafe_code)]
+#![deny(warnings)]
 
 pub extern crate async_trait;
 
@@ -500,7 +500,7 @@ compile_error!(
 pub use aragog_macros::*;
 
 #[cfg(not(feature = "minimal_traits"))]
-pub use {authenticate::Authenticate, authorize_action::AuthorizeAction, new::New, update::Update};
+pub use {authorize_action::AuthorizeAction, new::New, update::Update};
 pub use {
     db::database_access::DatabaseAccess, db::database_connection_pool::AuthMode,
     db::database_connection_pool::DatabaseConnectionPool, db::database_record::DatabaseRecord,
@@ -508,8 +508,6 @@ pub use {
     error::ServiceError, foreign_link::ForeignLink, link::Link, record::Record, validate::Validate,
 };
 
-#[cfg(not(feature = "minimal_traits"))]
-mod authenticate;
 #[cfg(not(feature = "minimal_traits"))]
 mod authorize_action;
 mod db;
