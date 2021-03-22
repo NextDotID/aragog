@@ -41,11 +41,11 @@ let user = User {
     age: 18
 };
 // We create the document on the database collection "User", returning a `DatabaseRecord<User>`
-let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
+let mut user_record = DatabaseRecord::create(user, &database_connection).await.unwrap();
 // We can now access the unique `_key` of the document
 let document_key = user_record.key();
 // The key can be used to retrieve documents, returning again a `DatabaseRecord<User>`
-let found_user = User::find(document_key, &database_pool).await.unwrap();
+let found_user = User::find(document_key, &database_connection).await.unwrap();
 // We can access the document data from the database record
 assert_eq!(user.username, found_user.username);
  ```
@@ -66,7 +66,7 @@ The `DatabaseRecord` structure wraps all ODM operations for any struct implement
 
 Complete Example:
  ```rust
- use aragog::{Record, DatabaseConnectionPool, DatabaseRecord, Validate, AuthMode};
+ use aragog::{Record, DatabaseConnection, DatabaseRecord, Validate, AuthMode};
  use serde::{Serialize, Deserialize};
  use tokio;
 
@@ -81,7 +81,7 @@ Complete Example:
  #[tokio::main]
  async fn main() {
      // Database connection Setup
-     let database_pool = DatabaseConnectionPool::builder()
+     let database_connection = DatabaseConnection::builder()
          .build()
          .await
          .unwrap();
@@ -93,13 +93,13 @@ Complete Example:
          age: 18
      };
      // We create the user
-     let mut user_record = DatabaseRecord::create(user, &database_pool).await.unwrap();
+     let mut user_record = DatabaseRecord::create(user, &database_connection).await.unwrap();
      // You can access and edit the document
      user_record.username = String::from("LeRevenant1524356");
      // And directly save it
-     user_record.save(&database_pool).await.unwrap();
+     user_record.save(&database_connection).await.unwrap();
      // Or delete it
-     user_record.delete(&database_pool).await.unwrap();
+     user_record.delete(&database_connection).await.unwrap();
  }
  ```
 
@@ -116,7 +116,7 @@ These methods allow to customize some aspects of the operation:
 - `ignore_hooks`: Should the operation skip the related *Hooks* ?
 
 These options are available but you should use them sparingly. Prefer defining a global option settings directly
-in the [DatabaseConnectionPool](../init/db_pool.md) if you find yourself in a situation where you want:
+in the [DatabaseConnection](../init/db_connection.md) if you find yourself in a situation where you want:
 - To **always** or **never** wait for sync
 - To **always** or **never** ignore the revision system
 - To **always** skip the hooks

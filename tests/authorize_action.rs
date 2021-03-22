@@ -58,13 +58,13 @@ impl AuthorizeAction<Dish> for User {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn can_authorize() -> Result<(), String> {
-    let pool = common::setup_db().await;
+    let connection = common::setup_db().await;
     let dish = Dish {
         name: "Pizza".to_string(),
         price: 10,
         is_alcohol: false,
     };
-    let dish_record = DatabaseRecord::create(dish, &pool).await.unwrap();
+    let dish_record = DatabaseRecord::create(dish, &connection).await.unwrap();
     let user = User {
         name: "Kid".to_string(),
         age: 15,
@@ -84,13 +84,13 @@ async fn can_authorize() -> Result<(), String> {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn can_fail() -> Result<(), String> {
-    let pool = common::setup_db().await;
+    let connection = common::setup_db().await;
     let dish = Dish {
         name: "Forêt noire".to_string(),
         price: 10,
         is_alcohol: true,
     };
-    let dish_record = DatabaseRecord::create(dish, &pool).await.unwrap();
+    let dish_record = DatabaseRecord::create(dish, &connection).await.unwrap();
 
     // Not enough money and not cook
     let poor_user = User {

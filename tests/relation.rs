@@ -46,12 +46,12 @@ impl Link<Dish> for Dish {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn relation_work() -> Result<(), String> {
-    let pool = common::setup_db().await;
+    let connection = common::setup_db().await;
     let order = DatabaseRecord::create(
         Order {
             name: "Test".to_string(),
         },
-        &pool,
+        &connection,
     )
     .await
     .unwrap();
@@ -62,12 +62,12 @@ async fn relation_work() -> Result<(), String> {
             price: 10,
             order_id: order.key().clone(),
         },
-        &pool,
+        &connection,
     )
     .await
     .unwrap();
 
-    let relation: RecordQueryResult<Order> = dish.linked_models(&pool).await.unwrap();
+    let relation: RecordQueryResult<Order> = dish.linked_models(&connection).await.unwrap();
     common::expect_assert_eq(relation.uniq().unwrap().key(), order.key())?;
     Ok(())
 }
@@ -77,12 +77,12 @@ async fn relation_work() -> Result<(), String> {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn foreign_key_relation_work() -> Result<(), String> {
-    let pool = common::setup_db().await;
+    let connection = common::setup_db().await;
     let order = DatabaseRecord::create(
         Order {
             name: "Test".to_string(),
         },
-        &pool,
+        &connection,
     )
     .await
     .unwrap();
@@ -93,12 +93,12 @@ async fn foreign_key_relation_work() -> Result<(), String> {
             price: 10,
             order_id: order.key().clone(),
         },
-        &pool,
+        &connection,
     )
     .await
     .unwrap();
 
-    let relation: DatabaseRecord<Order> = dish.linked_model(&pool).await.unwrap();
+    let relation: DatabaseRecord<Order> = dish.linked_model(&connection).await.unwrap();
     common::expect_assert_eq(relation.key(), order.key())?;
     Ok(())
 }

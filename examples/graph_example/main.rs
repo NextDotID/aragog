@@ -1,7 +1,7 @@
 extern crate env_logger;
 
 use aragog::{query::Query, AuthMode};
-use aragog::{DatabaseConnectionPool, DatabaseRecord};
+use aragog::{DatabaseConnection, DatabaseRecord};
 
 use crate::models::{Character, ChildOf};
 
@@ -22,7 +22,7 @@ async fn main() {
     env_logger::init();
 
     // Connect to database and generates collections and indexes
-    let db_pool = DatabaseConnectionPool::builder()
+    let db_connection = DatabaseConnection::builder()
         .with_credentials(
             &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
@@ -36,7 +36,7 @@ async fn main() {
         .await
         .unwrap();
     // Testing purposes
-    db_pool.truncate().await;
+    db_connection.truncate().await;
 
     // Character creation
 
@@ -46,7 +46,7 @@ async fn main() {
             name: "Ned".to_string(),
             surname: "Stark".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -55,7 +55,7 @@ async fn main() {
             name: "Catelyn".to_string(),
             surname: "Stark".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -65,7 +65,7 @@ async fn main() {
             name: "Robb".to_string(),
             surname: "Stark".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -74,7 +74,7 @@ async fn main() {
             name: "Bran".to_string(),
             surname: "Stark".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -83,7 +83,7 @@ async fn main() {
             name: "Arya".to_string(),
             surname: "Stark".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -92,7 +92,7 @@ async fn main() {
             name: "Sansa".to_string(),
             surname: "Stark".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -101,7 +101,7 @@ async fn main() {
             name: "John".to_string(),
             surname: "Snow".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -112,7 +112,7 @@ async fn main() {
             name: "Tywin".to_string(),
             surname: "Lannister".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -121,7 +121,7 @@ async fn main() {
             name: "Jaime".to_string(),
             surname: "Lannister".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -130,7 +130,7 @@ async fn main() {
             name: "Cersei".to_string(),
             surname: "Lannister".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -139,7 +139,7 @@ async fn main() {
             name: "Tyrion".to_string(),
             surname: "Lannister".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -148,7 +148,7 @@ async fn main() {
             name: "Joffrey".to_string(),
             surname: "Baratheom".to_string(),
         },
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -157,59 +157,59 @@ async fn main() {
 
     //    Robb -> Ned
     //    Robb -> Catelyn
-    DatabaseRecord::link(&robb, &ned, &db_pool, create_child)
+    DatabaseRecord::link(&robb, &ned, &db_connection, create_child)
         .await
         .unwrap();
-    DatabaseRecord::link(&robb, &catelyn, &db_pool, create_child)
+    DatabaseRecord::link(&robb, &catelyn, &db_connection, create_child)
         .await
         .unwrap();
     //    Sansa -> Ned
     //    Sansa -> Catelyn
-    DatabaseRecord::link(&sansa, &ned, &db_pool, create_child)
+    DatabaseRecord::link(&sansa, &ned, &db_connection, create_child)
         .await
         .unwrap();
-    DatabaseRecord::link(&sansa, &catelyn, &db_pool, create_child)
+    DatabaseRecord::link(&sansa, &catelyn, &db_connection, create_child)
         .await
         .unwrap();
     //     Arya -> Ned
     //     Arya -> Catelyn
-    DatabaseRecord::link(&arya, &ned, &db_pool, create_child)
+    DatabaseRecord::link(&arya, &ned, &db_connection, create_child)
         .await
         .unwrap();
-    DatabaseRecord::link(&arya, &catelyn, &db_pool, create_child)
+    DatabaseRecord::link(&arya, &catelyn, &db_connection, create_child)
         .await
         .unwrap();
     //     Bran -> Ned
     //     Bran -> Catelyn
-    DatabaseRecord::link(&bran, &ned, &db_pool, create_child)
+    DatabaseRecord::link(&bran, &ned, &db_connection, create_child)
         .await
         .unwrap();
-    DatabaseRecord::link(&bran, &catelyn, &db_pool, create_child)
+    DatabaseRecord::link(&bran, &catelyn, &db_connection, create_child)
         .await
         .unwrap();
     //      Jon -> Ned
-    DatabaseRecord::link(&john, &ned, &db_pool, create_child)
+    DatabaseRecord::link(&john, &ned, &db_connection, create_child)
         .await
         .unwrap();
 
     //    Jaime -> Tywin
-    DatabaseRecord::link(&jaime, &tywin, &db_pool, create_child)
+    DatabaseRecord::link(&jaime, &tywin, &db_connection, create_child)
         .await
         .unwrap();
     //   Cersei -> Tywin
-    DatabaseRecord::link(&cersei, &tywin, &db_pool, create_child)
+    DatabaseRecord::link(&cersei, &tywin, &db_connection, create_child)
         .await
         .unwrap();
     //   Tyrion -> Tywin
-    DatabaseRecord::link(&tyrion, &tywin, &db_pool, create_child)
+    DatabaseRecord::link(&tyrion, &tywin, &db_connection, create_child)
         .await
         .unwrap();
     //  Joffrey -> Jaime
     //  Joffrey -> Cersei
-    DatabaseRecord::link(&joffrey, &cersei, &db_pool, create_child)
+    DatabaseRecord::link(&joffrey, &cersei, &db_connection, create_child)
         .await
         .unwrap();
-    DatabaseRecord::link(&joffrey, &jaime, &db_pool, create_child)
+    DatabaseRecord::link(&joffrey, &jaime, &db_connection, create_child)
         .await
         .unwrap();
 
@@ -217,7 +217,7 @@ async fn main() {
 
     // Find catelyn children
     let children =
-        DatabaseRecord::<Character>::get(catelyn.inbound_query(1, 1, "ChildOf"), &db_pool)
+        DatabaseRecord::<Character>::get(catelyn.inbound_query(1, 1, "ChildOf"), &db_connection)
             .await
             .unwrap();
     assert_eq!(
@@ -229,9 +229,10 @@ async fn main() {
         vec![robb.id(), sansa.id(), arya.id(), bran.id()]
     );
     // Find ned children
-    let children = DatabaseRecord::<Character>::get(ned.inbound_query(1, 1, "ChildOf"), &db_pool)
-        .await
-        .unwrap();
+    let children =
+        DatabaseRecord::<Character>::get(ned.inbound_query(1, 1, "ChildOf"), &db_connection)
+            .await
+            .unwrap();
     assert_eq!(
         children
             .documents
@@ -244,7 +245,7 @@ async fn main() {
     // Find joffrey ancestors
     let ancestors = DatabaseRecord::<Character>::get(
         joffrey.outbound_query(1, 2, "ChildOf").distinct(),
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();
@@ -265,7 +266,7 @@ async fn main() {
             false,
             Query::new("ChildOf").distinct(),
         ),
-        &db_pool,
+        &db_connection,
     )
     .await
     .unwrap();

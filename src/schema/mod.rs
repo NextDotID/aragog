@@ -17,7 +17,7 @@ pub const SCHEMA_DEFAULT_PATH: &str = "./src/config/db";
 pub const SCHEMA_DEFAULT_FILE_NAME: &str = "schema.yaml";
 
 /// Trait used for all schema elements allowing to synchronise schema changes.
-/// Used by `aragog_cli` for migrations and `DatabaseConnectionPool`
+/// Used by `aragog_cli` for migrations and `DatabaseConnection`
 #[maybe_async::maybe_async]
 pub trait SchemaDatabaseOperation {
     /// The `arangors` type to retrieve with the `get` method

@@ -3,9 +3,7 @@ extern crate aragog;
 
 use serde::{Deserialize, Serialize};
 
-use aragog::{
-    DatabaseAccess, DatabaseConnectionPool, DatabaseRecord, Record, ServiceError, Validate,
-};
+use aragog::{DatabaseAccess, DatabaseConnection, DatabaseRecord, Record, ServiceError, Validate};
 
 pub mod common;
 
@@ -69,7 +67,7 @@ fn init_dish(menu_id: &String) -> Dish {
 }
 
 #[maybe_async::maybe_async]
-async fn init_menu(db_access: &DatabaseConnectionPool) -> DatabaseRecord<Menu> {
+async fn init_menu(db_access: &DatabaseConnection) -> DatabaseRecord<Menu> {
     DatabaseRecord::create(
         Menu {
             dish_count: 0,
@@ -94,11 +92,11 @@ mod write {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn can_be_recorded_and_retrieved() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        let menu = init_menu(&pool).await;
+        let connection = common::setup_db().await;
+        let menu = init_menu(&connection).await;
         let dish = init_dish(menu.key());
-        let dish_record = DatabaseRecord::create(dish, &pool).await.unwrap();
-        let found_record = Dish::find(dish_record.key(), &pool).await.unwrap();
+        let dish_record = DatabaseRecord::create(dish, &connection).await.unwrap();
+        let found_record = Dish::find(dish_record.key(), &connection).await.unwrap();
         common::expect_assert_eq(dish_record.record, found_record.record)?;
         Ok(())
     }
@@ -109,11 +107,13 @@ mod write {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn can_fail() {
-        let pool = common::setup_db().await;
-        let menu = init_menu(&pool).await;
+        let connection = common::setup_db().await;
+        let menu = init_menu(&connection).await;
         let dish = init_dish(menu.key());
-        DatabaseRecord::create(dish.clone(), &pool).await.unwrap();
-        DatabaseRecord::create(dish, &pool).await.unwrap();
+        DatabaseRecord::create(dish.clone(), &connection)
+            .await
+            .unwrap();
+        DatabaseRecord::create(dish, &connection).await.unwrap();
     }
 
     mod hooks {
@@ -124,14 +124,14 @@ mod write {
             async(all(not(feature = "blocking")), tokio::test)
         )]
         async fn before_create_and_save_hook() -> Result<(), String> {
-            let pool = common::setup_db().await;
-            let menu = init_menu(&pool).await;
+            let connection = common::setup_db().await;
+            let menu = init_menu(&connection).await;
             assert_eq!(menu.dish_count, 0);
             let dish = init_dish(menu.key());
-            let mut res = DatabaseRecord::create(dish, &pool).await.unwrap();
+            let mut res = DatabaseRecord::create(dish, &connection).await.unwrap();
             res.name = String::from("New Name");
-            res.save(&pool).await.unwrap();
-            let menu = menu.reload(&pool).await.unwrap();
+            res.save(&connection).await.unwrap();
+            let menu = menu.reload(&connection).await.unwrap();
             assert_eq!(menu.dish_count, 1);
             assert_eq!(menu.last_dish_updated.as_ref().unwrap().name, res.name);
             Ok(())
@@ -145,19 +145,19 @@ mod write {
                 async(all(not(feature = "blocking")), tokio::test)
             )]
             async fn before_create_hook() -> Result<(), String> {
-                let pool = common::setup_db().await;
-                let mut menu = init_menu(&pool).await;
+                let connection = common::setup_db().await;
+                let mut menu = init_menu(&connection).await;
                 let dish = Dish {
                     name: "dish".to_string(),
                     description: "description".to_string(),
                     price: 0,
                     menu_id: menu.key().clone(),
                 };
-                match DatabaseRecord::create(dish, &pool).await {
+                match DatabaseRecord::create(dish, &connection).await {
                     Ok(_) => return Err("Hook should have called validations".to_string()),
                     Err(_) => (),
                 };
-                menu.reload_mut(&pool).await.unwrap();
+                menu.reload_mut(&connection).await.unwrap();
                 assert_eq!(menu.dish_count, 0);
                 assert!(menu.last_dish_updated.is_none());
                 Ok(())
@@ -168,19 +168,19 @@ mod write {
                 async(all(not(feature = "blocking")), tokio::test)
             )]
             async fn succeeds_without_hook() -> Result<(), String> {
-                let pool = common::setup_db().await;
-                let mut menu = init_menu(&pool).await;
+                let connection = common::setup_db().await;
+                let mut menu = init_menu(&connection).await;
                 let dish = Dish {
                     name: "dish".to_string(),
                     description: "description".to_string(),
                     price: 0,
                     menu_id: menu.key().clone(),
                 };
-                match DatabaseRecord::force_create(dish, &pool).await {
+                match DatabaseRecord::force_create(dish, &connection).await {
                     Ok(_) => (),
                     Err(_) => return Err("Hook should not have been called".to_string()),
                 };
-                menu.reload_mut(&pool).await.unwrap();
+                menu.reload_mut(&connection).await.unwrap();
                 // Hooks were not called
                 assert_eq!(menu.dish_count, 0);
                 assert!(menu.last_dish_updated.is_none());
@@ -192,17 +192,17 @@ mod write {
                 async(all(not(feature = "blocking")), tokio::test)
             )]
             async fn before_save_hook() -> Result<(), String> {
-                let pool = common::setup_db().await;
-                let mut menu = init_menu(&pool).await;
+                let connection = common::setup_db().await;
+                let mut menu = init_menu(&connection).await;
                 let dish = init_dish(menu.key());
-                let mut doc = DatabaseRecord::create(dish, &pool).await.unwrap();
+                let mut doc = DatabaseRecord::create(dish, &connection).await.unwrap();
                 doc.name = String::from("wrong");
                 doc.price = 0;
-                match doc.save(&pool).await {
+                match doc.save(&connection).await {
                     Ok(_) => return Err("Hook should have called validations".to_string()),
                     Err(_) => (),
                 };
-                menu.reload_mut(&pool).await.unwrap();
+                menu.reload_mut(&connection).await.unwrap();
                 assert_eq!(menu.dish_count, 1);
                 assert_ne!(&menu.last_dish_updated.as_ref().unwrap().name, "wrong");
                 Ok(())
@@ -219,8 +219,8 @@ mod fmt {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn database_record_can_be_displayed() {
-        let pool = common::setup_db().await;
-        let menu = init_menu(&pool).await;
+        let connection = common::setup_db().await;
+        let menu = init_menu(&connection).await;
         let db_record = DatabaseRecord::create(
             Dish {
                 name: "Pizza".to_string(),
@@ -228,7 +228,7 @@ mod fmt {
                 price: 10,
                 menu_id: menu.key().clone(),
             },
-            &pool,
+            &connection,
         )
         .await
         .unwrap();
@@ -247,8 +247,8 @@ mod read {
     use aragog::error::{ArangoError, ArangoHttpError};
 
     #[maybe_async::maybe_async]
-    async fn create_dishes(pool: &DatabaseConnectionPool) -> DatabaseRecord<Dish> {
-        let menu = init_menu(pool).await;
+    async fn create_dishes(connection: &DatabaseConnection) -> DatabaseRecord<Dish> {
+        let menu = init_menu(connection).await;
         Dish::create(
             Dish {
                 name: "Pizza".to_string(),
@@ -256,7 +256,7 @@ mod read {
                 price: 10,
                 menu_id: menu.key().clone(),
             },
-            pool,
+            connection,
         )
         .await
         .unwrap();
@@ -267,7 +267,7 @@ mod read {
                 price: 6,
                 menu_id: menu.key().clone(),
             },
-            pool,
+            connection,
         )
         .await
         .unwrap();
@@ -278,11 +278,11 @@ mod read {
                 price: 10,
                 menu_id: menu.key().clone(),
             },
-            pool,
+            connection,
         )
         .await
         .unwrap();
-        DatabaseRecord::create(init_dish(menu.key()), pool)
+        DatabaseRecord::create(init_dish(menu.key()), connection)
             .await
             .unwrap()
     }
@@ -292,10 +292,10 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn find() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        let dish_record = create_dishes(&pool).await;
+        let connection = common::setup_db().await;
+        let dish_record = create_dishes(&connection).await;
 
-        let found_record = Dish::find(dish_record.key(), &pool).await.unwrap();
+        let found_record = Dish::find(dish_record.key(), &connection).await.unwrap();
         common::expect_assert_eq(dish_record.record, found_record.record)?;
         Ok(())
     }
@@ -306,9 +306,9 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn find_can_fail() {
-        let pool = common::setup_db().await;
-        create_dishes(&pool).await;
-        Dish::find("wrong_key", &pool).await.unwrap();
+        let connection = common::setup_db().await;
+        create_dishes(&connection).await;
+        Dish::find("wrong_key", &connection).await.unwrap();
     }
 
     #[maybe_async::test(
@@ -316,9 +316,9 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn find_can_fail_with_correct_error() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        create_dishes(&pool).await;
-        let res = Dish::find("wrong_key", &pool).await;
+        let connection = common::setup_db().await;
+        create_dishes(&connection).await;
+        let res = Dish::find("wrong_key", &connection).await;
         if let Err(error) = res {
             assert_eq!(error.to_string(), "Dish wrong_key not found".to_string());
             if let ServiceError::NotFound { item, id, source } = error {
@@ -342,14 +342,14 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn query_uniq() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        let dish_record = create_dishes(&pool).await;
+        let connection = common::setup_db().await;
+        let dish_record = create_dishes(&connection).await;
         let query = Dish::query().filter(
             Filter::new(Comparison::field("name").equals_str("Quiche"))
                 .and(Comparison::field("price").equals(7)),
         );
 
-        let found_record = Dish::get(query, &pool).await.unwrap().uniq().unwrap();
+        let found_record = Dish::get(query, &connection).await.unwrap().uniq().unwrap();
         common::expect_assert_eq(dish_record.record, found_record.record)?;
         Ok(())
     }
@@ -360,11 +360,11 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn query_uniq_can_fail() {
-        let pool = common::setup_db().await;
+        let connection = common::setup_db().await;
         let query =
             Dish::query().filter(Filter::new(Comparison::field("name").equals_str("Quiche")));
 
-        Dish::get(query, &pool).await.unwrap().uniq().unwrap();
+        Dish::get(query, &connection).await.unwrap().uniq().unwrap();
     }
 
     #[should_panic(expected = "NotFound")]
@@ -373,11 +373,11 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn query_uniq_can_fail_on_multiple_found() {
-        let pool = common::setup_db().await;
-        create_dishes(&pool).await;
+        let connection = common::setup_db().await;
+        create_dishes(&connection).await;
         let query = Dish::query().filter(Filter::new(Comparison::field("price").equals(10)));
 
-        Dish::get(query, &pool).await.unwrap().uniq().unwrap();
+        Dish::get(query, &connection).await.unwrap().uniq().unwrap();
     }
 
     #[maybe_async::test(
@@ -385,14 +385,14 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn query() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        let dish_record = create_dishes(&pool).await;
+        let connection = common::setup_db().await;
+        let dish_record = create_dishes(&connection).await;
         let query = Dish::query().filter(
             Filter::new(Comparison::field("name").equals_str("Quiche"))
                 .and(Comparison::field("price").equals(7)),
         );
 
-        let found_records = Dish::get(query, &pool).await.unwrap().documents;
+        let found_records = Dish::get(query, &connection).await.unwrap().documents;
         common::expect_assert_eq(found_records.len(), 1)?;
         common::expect_assert_eq(dish_record.record, found_records[0].record.clone())?;
         Ok(())
@@ -403,10 +403,10 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn query_can_return_empty_vec() {
-        let pool = common::setup_db().await;
+        let connection = common::setup_db().await;
         let query =
             Dish::query().filter(Filter::new(Comparison::field("name").equals_str("Quiche")));
-        let found_records = Dish::get(query, &pool).await.unwrap();
+        let found_records = Dish::get(query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 0).unwrap();
     }
 
@@ -415,36 +415,36 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn query_on_multiple_found() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        create_dishes(&pool).await;
+        let connection = common::setup_db().await;
+        create_dishes(&connection).await;
         // Can return multiple
         let query = Dish::query().filter(Filter::new(Comparison::field("price").equals(10)));
-        let found_records = Dish::get(query, &pool).await.unwrap();
+        let found_records = Dish::get(query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 2)?;
 
         // Limit features
         let query = Dish::query()
             .filter(Filter::new(Comparison::field("price").equals(10)))
             .limit(1, None);
-        let found_records = Dish::get(query, &pool).await.unwrap();
+        let found_records = Dish::get(query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 1)?;
 
         let query = Dish::query();
-        let found_records = Dish::get(query, &pool).await.unwrap();
+        let found_records = Dish::get(query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 4)?;
 
         let query = Dish::query().limit(2, Some(3));
-        let found_records = Dish::get(query, &pool).await.unwrap();
+        let found_records = Dish::get(query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 1)?;
 
         // Sorting
         let query = Dish::query().sort("name", None);
-        let found_records = Dish::get(query, &pool).await.unwrap().documents;
+        let found_records = Dish::get(query, &connection).await.unwrap().documents;
         for (i, value) in ["Pasta", "Pizza", "Quiche", "Steak"].iter().enumerate() {
             common::expect_assert_eq(*value, &found_records[i].name)?;
         }
         let query = Dish::query().sort("price", None).sort("name", None);
-        let found_records = Dish::get(query, &pool).await.unwrap().documents;
+        let found_records = Dish::get(query, &connection).await.unwrap().documents;
         for (i, value) in ["Pasta", "Quiche", "Pizza", "Steak"].iter().enumerate() {
             common::expect_assert_eq(*value, &found_records[i].name)?;
         }
@@ -456,14 +456,14 @@ mod read {
         async(all(not(feature = "blocking")), tokio::test)
     )]
     async fn exists() -> Result<(), String> {
-        let pool = common::setup_db().await;
-        create_dishes(&pool).await;
+        let connection = common::setup_db().await;
+        create_dishes(&connection).await;
         let query = Dish::query().filter(
             Filter::new(Comparison::field("name").equals_str("Quiche"))
                 .and(Comparison::field("price").equals(7)),
         );
 
-        let res = Dish::exists(query, &pool).await;
+        let res = Dish::exists(query, &connection).await;
         common::expect_assert_eq(res, true)?;
         Ok(())
     }
@@ -481,8 +481,8 @@ mod read {
                 async(all(not(feature = "blocking")), tokio::test)
             )]
             async fn from_record() -> Result<(), String> {
-                let pool = common::setup_db().await;
-                let dish = create_dishes(&pool).await;
+                let connection = common::setup_db().await;
+                let dish = create_dishes(&connection).await;
                 let query = dish.outbound_query(2, 5, "edges");
                 common::expect_assert_eq(
                     query.to_aql(),
@@ -502,8 +502,8 @@ mod read {
                 async(all(not(feature = "blocking")), tokio::test)
             )]
             async fn explicit() -> Result<(), String> {
-                let pool = common::setup_db().await;
-                let dish = create_dishes(&pool).await;
+                let connection = common::setup_db().await;
+                let dish = create_dishes(&connection).await;
                 let query = Query::outbound(2, 5, "edges", dish.id());
                 common::expect_assert_eq(
                     query.to_aql(),
@@ -523,8 +523,8 @@ mod read {
                 async(all(not(feature = "blocking")), tokio::test)
             )]
             async fn complex_query() -> Result<(), String> {
-                let pool = common::setup_db().await;
-                let dish = create_dishes(&pool).await;
+                let connection = common::setup_db().await;
+                let dish = create_dishes(&connection).await;
                 let query = dish
                     .outbound_query(2, 5, "edges")
                     .filter(compare!(field "price").greater_than(10).into())

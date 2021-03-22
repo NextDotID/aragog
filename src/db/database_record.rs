@@ -44,7 +44,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// This method should be used for very specific cases, prefer using `delete` instead.
     /// If you want global operation options (always wait for sync, always ignore hooks, etc)
-    /// configure your [`DatabaseConnectionPool`] with `with_operation_options` to have a customs set
+    /// configure your [`DatabaseConnection`] with `with_operation_options` to have a customs set
     /// of default options.
     ///
     /// # Hooks
@@ -55,7 +55,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments
     ///
     /// * `record` - The document to create, it will be returned exactly as the `DatabaseRecord<T>` record
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     /// * `options` - Operation options to apply
     ///
     /// # Returns
@@ -65,7 +65,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// A [`ServiceError`] is returned if the operation or the hooks failed.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
-    /// [`DatabaseConnectionPool`]: struct.DatabaseConnectionPool.html
+    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
     #[maybe_async::maybe_async]
     pub async fn create_with_options<D>(
         mut record: T,
@@ -99,7 +99,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments
     ///
     /// * `record` - The document to create, it will be returned exactly as the `DatabaseRecord<T>` record
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -133,7 +133,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments
     ///
     /// * `record` - The document to create, it will be returned exactly as the `DatabaseRecord<T>` record
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -164,7 +164,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// This method should be used for very specific cases, prefer using `save` instead.
     /// If you want global operation options (always wait for sync, always ignore hooks, etc)
-    /// configure your [`DatabaseConnectionPool`] with `with_operation_options` to have a customs set
+    /// configure your [`DatabaseConnection`] with `with_operation_options` to have a customs set
     /// of default options.
     ///
     /// # Hooks
@@ -174,7 +174,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Arguments:
     ///
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     /// * `options` - Operation options to apply
     ///
     /// # Returns
@@ -183,7 +183,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// A [`ServiceError`] is returned if the operation or the hooks failed.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
-    /// [`DatabaseConnectionPool`]: struct.DatabaseConnectionPool.html
+    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
     #[maybe_async::maybe_async]
     pub async fn save_with_options<D>(
         &mut self,
@@ -221,7 +221,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Arguments:
     ///
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -253,7 +253,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Arguments:
     ///
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -283,7 +283,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// This method should be used for very specific cases, prefer using `delete` instead.
     /// If you want global operation options (always wait for sync, always ignore hooks, etc)
-    /// configure your [`DatabaseConnectionPool`] with `with_operation_options` to have a customs set
+    /// configure your [`DatabaseConnection`] with `with_operation_options` to have a customs set
     /// of default options
     ///
     /// # Hooks
@@ -293,7 +293,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Arguments:
     ///
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -301,7 +301,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// A [`ServiceError`] is returned if the operation or the hooks failed.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
-    /// [`DatabaseConnectionPool`]: struct.DatabaseConnectionPool.html
+    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
     #[maybe_async::maybe_async]
     pub async fn delete_with_options<D>(
         &mut self,
@@ -338,7 +338,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Arguments:
     ///
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -371,7 +371,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Arguments:
     ///
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -402,7 +402,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Example
     /// ```rust no_run
-    /// # use aragog::{DatabaseRecord, EdgeRecord, Record, DatabaseConnectionPool};
+    /// # use aragog::{DatabaseRecord, EdgeRecord, Record, DatabaseConnection};
     /// # use serde::{Serialize, Deserialize};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
@@ -415,7 +415,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// }
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
     /// let record_a = User::find("123", &db_accessor).await.unwrap();
     /// let record_b = User::find("234", &db_accessor).await.unwrap();
     ///
@@ -447,7 +447,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments:
     ///
     /// * `key` - the unique record key as a string slice
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -471,7 +471,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Arguments
     ///
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -519,7 +519,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments:
     ///
     /// * `query` - The `Query` to match
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Note
     ///
@@ -537,14 +537,14 @@ impl<T: Record> DatabaseRecord<T> {
     /// ```rust no_run
     /// # use aragog::query::{Comparison, Filter};
     /// # use serde::{Serialize, Deserialize};
-    /// # use aragog::{DatabaseConnectionPool, Record, DatabaseRecord};
+    /// # use aragog::{DatabaseConnection, Record, DatabaseRecord};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
     /// # struct User {}
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
     /// let query = User::query().filter(Filter::new(Comparison::field("username").equals_str("MichelDu93"))
     ///     .and(Comparison::field("age").greater_than(10)));
     ///
@@ -570,7 +570,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments:
     ///
     /// * `query` - The AQL request string
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
@@ -587,14 +587,14 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// ```rust no_run
     /// # use serde::{Serialize, Deserialize};
-    /// # use aragog::{DatabaseConnectionPool, Record, DatabaseRecord};
+    /// # use aragog::{DatabaseConnection, Record, DatabaseRecord};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
     /// # struct User {}
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
     /// let query = r#"FOR i in User FILTER i.username == "MichelDu93" && i.age > 10 return i"#;
     ///
     /// DatabaseRecord::<User>::aql_get(query, &db_accessor).await.unwrap();
@@ -628,14 +628,14 @@ impl<T: Record> DatabaseRecord<T> {
     /// ```rust no_run
     /// # use serde::{Serialize, Deserialize};
     /// # use aragog::query::Query;
-    /// # use aragog::{DatabaseConnectionPool, Record};
+    /// # use aragog::{DatabaseConnection, Record};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
     /// # struct User {}
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
     /// let record = User::find("123", &db_accessor).await.unwrap();
     /// // Both statements are equivalent
     /// let q = record.outbound_query(1, 2, "ChildOf");
@@ -658,14 +658,14 @@ impl<T: Record> DatabaseRecord<T> {
     /// ```rust no_run
     /// # use serde::{Serialize, Deserialize};
     /// # use aragog::query::Query;
-    /// # use aragog::{DatabaseConnectionPool, Record};
+    /// # use aragog::{DatabaseConnection, Record};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
     /// # struct User {}
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
     /// #
     /// let record = User::find("123", &db_accessor).await.unwrap();
     /// // Both statements are equivalent
@@ -689,14 +689,14 @@ impl<T: Record> DatabaseRecord<T> {
     /// ```rust no_run
     /// # use serde::{Serialize, Deserialize};
     /// # use aragog::query::Query;
-    /// # use aragog::{DatabaseConnectionPool, Record};
+    /// # use aragog::{DatabaseConnection, Record};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
     /// # struct User {}
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
     /// let record = User::find("123", &db_accessor).await.unwrap();
     /// // Both statements are equivalent
     /// let q = record.outbound_graph(1, 2, "SomeGraph");
@@ -719,14 +719,14 @@ impl<T: Record> DatabaseRecord<T> {
     /// ```rust no_run
     /// # use serde::{Serialize, Deserialize};
     /// # use aragog::query::Query;
-    /// # use aragog::{DatabaseConnectionPool, Record};
+    /// # use aragog::{DatabaseConnection, Record};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
     /// # struct User {}
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
     /// let record = User::find("123", &db_accessor).await.unwrap();
     /// // Both statements are equivalent
     /// let q = record.inbound_graph(1, 2, "SomeGraph");
@@ -742,7 +742,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments:
     ///
     /// * `query` - The `Query` to match
-    /// * `db_accessor` - database connection pool reference
+    /// * `db_accessor` - database connection reference
     ///
     /// # Note
     ///
@@ -756,7 +756,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// ```rust no_run
     /// # use serde::{Serialize, Deserialize};
-    /// # use aragog::{DatabaseConnectionPool, Record};
+    /// # use aragog::{DatabaseConnection, Record};
     /// # use aragog::query::{Query, Comparison, Filter};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
@@ -764,7 +764,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnectionPool::builder().build().await.unwrap();
+    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
     /// let query = User::query().filter(
     ///     Filter::new(Comparison::field("username").equals_str("MichelDu93"))
     ///         .and(Comparison::field("age").greater_than(10)));

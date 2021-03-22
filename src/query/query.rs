@@ -590,11 +590,11 @@ impl Query {
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`get`]: struct.DatabaseRecord.html#method.get
     #[maybe_async::maybe_async]
-    pub async fn call<D>(self, db_pool: &D) -> Result<JsonQueryResult, ServiceError>
+    pub async fn call<D>(self, db_accessor: &D) -> Result<JsonQueryResult, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        db_pool.aql_get(&self.to_aql()).await
+        db_accessor.aql_get(&self.to_aql()).await
     }
 }
 

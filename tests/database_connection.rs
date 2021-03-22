@@ -3,7 +3,7 @@ extern crate aragog;
 use serde::{Deserialize, Serialize};
 
 use aragog::{
-    AuthMode, DatabaseAccess, DatabaseConnectionPool, DatabaseRecord, OperationOptions, Record,
+    AuthMode, DatabaseAccess, DatabaseConnection, DatabaseRecord, OperationOptions, Record,
     ServiceError,
 };
 use common::*;
@@ -30,7 +30,7 @@ impl Dish {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn works_with_correct_parameters() {
-    DatabaseConnectionPool::builder()
+    DatabaseConnection::builder()
         .with_credentials(
             &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
@@ -49,7 +49,7 @@ async fn works_with_correct_parameters() {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn fails_with_wrong_parameters() {
-    match DatabaseConnectionPool::builder()
+    match DatabaseConnection::builder()
         .with_credentials(
             &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
@@ -69,7 +69,7 @@ async fn fails_with_wrong_parameters() {
         },
     }
     // TODO: Remove comments when https://github.com/fMeow/arangors/issues/69 is closed
-    // match DatabaseConnectionPool::builder()
+    // match DatabaseConnection::builder()
     //     .with_credentials(
     //         &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
     //         &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
@@ -94,7 +94,7 @@ async fn fails_with_wrong_parameters() {
     async(all(not(feature = "blocking")), tokio::test)
 )]
 async fn operation_options() {
-    let pool = DatabaseConnectionPool::builder()
+    let connection = DatabaseConnection::builder()
         .with_credentials(
             &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
@@ -111,7 +111,7 @@ async fn operation_options() {
         .build()
         .await
         .unwrap();
-    let options = pool.operation_options();
+    let options = connection.operation_options();
     assert_eq!(options.wait_for_sync, Some(true));
     assert_eq!(options.ignore_revs, true);
     assert_eq!(options.ignore_hooks, true);
@@ -121,7 +121,7 @@ async fn operation_options() {
             name: "Cordon Bleu".to_string(),
             price: 7,
         },
-        &pool,
+        &connection,
     )
     .await
     .unwrap();
@@ -131,7 +131,7 @@ async fn operation_options() {
             name: "Cordon Bleu".to_string(),
             price: 7,
         },
-        &pool,
+        &connection,
         OperationOptions::default(),
     )
     .await

@@ -36,13 +36,13 @@ mod safe_execute {
             dish_doc: &Dish,
         ) -> TransactionOutput<Vec<DatabaseRecord<User>>> {
             transaction
-                .safe_execute(|pool| async move {
+                .safe_execute(|connection| async move {
                     let res = vec![
-                        DatabaseRecord::create(user_doc.clone(), &pool).await?,
-                        DatabaseRecord::create(user_doc.clone(), &pool).await?,
-                        DatabaseRecord::create(user_doc.clone(), &pool).await?,
+                        DatabaseRecord::create(user_doc.clone(), &connection).await?,
+                        DatabaseRecord::create(user_doc.clone(), &connection).await?,
+                        DatabaseRecord::create(user_doc.clone(), &connection).await?,
                     ];
-                    DatabaseRecord::create(dish_doc.clone(), &pool).await?;
+                    DatabaseRecord::create(dish_doc.clone(), &connection).await?;
                     Ok(res)
                 })
                 .await
@@ -56,13 +56,13 @@ mod safe_execute {
             dish_doc: &Dish,
         ) -> TransactionOutput<Vec<DatabaseRecord<User>>> {
             transaction
-                .safe_execute(|pool| {
+                .safe_execute(|connection| {
                     let res = vec![
-                        DatabaseRecord::create(user_doc.clone(), &pool)?,
-                        DatabaseRecord::create(user_doc.clone(), &pool)?,
-                        DatabaseRecord::create(user_doc.clone(), &pool)?,
+                        DatabaseRecord::create(user_doc.clone(), &connection)?,
+                        DatabaseRecord::create(user_doc.clone(), &connection)?,
+                        DatabaseRecord::create(user_doc.clone(), &connection)?,
                     ];
-                    DatabaseRecord::create(dish_doc.clone(), &pool)?;
+                    DatabaseRecord::create(dish_doc.clone(), &connection)?;
                     Ok(res)
                 })
                 .unwrap()
@@ -73,7 +73,7 @@ mod safe_execute {
             async(all(not(feature = "blocking")), tokio::test)
         )]
         async fn commit_works_on_global_transaction() {
-            let pool = common::setup_db().await;
+            let connection = common::setup_db().await;
             let user_doc = User {
                 name: "Felix".to_string(),
                 description: "LM".to_string(),
@@ -83,32 +83,32 @@ mod safe_execute {
                 name: "Pizza".to_string(),
                 price: 10,
             };
-            let count = pool
+            let count = connection
                 .get_collection("User")
                 .unwrap()
                 .record_count()
                 .await
                 .unwrap();
             assert_eq!(count, 0);
-            let count = pool
+            let count = connection
                 .get_collection("Dish")
                 .unwrap()
                 .record_count()
                 .await
                 .unwrap();
             assert_eq!(count, 0);
-            let transaction = Transaction::new(&pool).await.unwrap();
+            let transaction = Transaction::new(&connection).await.unwrap();
             let result = get_correct_result(&transaction, &user_doc, &dish_doc).await;
             assert!(result.is_committed());
             assert_eq!(result.unwrap().len(), 3);
-            let count = pool
+            let count = connection
                 .get_collection("User")
                 .unwrap()
                 .record_count()
                 .await
                 .unwrap();
             assert_eq!(count, 3);
-            let count = pool
+            let count = connection
                 .get_collection("Dish")
                 .unwrap()
                 .record_count()
@@ -122,7 +122,7 @@ mod safe_execute {
             async(all(not(feature = "blocking")), tokio::test)
         )]
         async fn commit_fails_on_restricted_transaction() {
-            let pool = common::setup_db().await;
+            let connection = common::setup_db().await;
             let user_doc = User {
                 name: "Felix".to_string(),
                 description: "LM".to_string(),
@@ -132,21 +132,21 @@ mod safe_execute {
                 name: "Pizza".to_string(),
                 price: 10,
             };
-            let count = pool
+            let count = connection
                 .get_collection("User")
                 .unwrap()
                 .record_count()
                 .await
                 .unwrap();
             assert_eq!(count, 0);
-            let count = pool
+            let count = connection
                 .get_collection("Dish")
                 .unwrap()
                 .record_count()
                 .await
                 .unwrap();
             assert_eq!(count, 0);
-            let transaction = User::transaction(&pool).await.unwrap();
+            let transaction = User::transaction(&connection).await.unwrap();
             let result = get_correct_result(&transaction, &user_doc, &dish_doc).await;
             assert!(result.is_aborted());
             match result.err().unwrap() {
@@ -159,14 +159,14 @@ mod safe_execute {
                 }
                 _ => panic!("Wrong error retured"),
             }
-            let count = pool
+            let count = connection
                 .get_collection("User")
                 .unwrap()
                 .record_count()
                 .await
                 .unwrap();
             assert_eq!(count, 0);
-            let count = pool
+            let count = connection
                 .get_collection("Dish")
                 .unwrap()
                 .record_count()
@@ -187,10 +187,10 @@ mod safe_execute {
             doc: &User,
         ) -> TransactionOutput<Vec<DatabaseRecord<User>>> {
             transaction
-                .safe_execute(|pool| async move {
-                    DatabaseRecord::create(doc.clone(), &pool).await?;
-                    DatabaseRecord::create(doc.clone(), &pool).await?;
-                    DatabaseRecord::create(doc.clone(), &pool).await?;
+                .safe_execute(|connection| async move {
+                    DatabaseRecord::create(doc.clone(), &connection).await?;
+                    DatabaseRecord::create(doc.clone(), &connection).await?;
+                    DatabaseRecord::create(doc.clone(), &connection).await?;
                     Err(ServiceError::default())
                 })
                 .await
@@ -203,10 +203,10 @@ mod safe_execute {
             doc: &User,
         ) -> TransactionOutput<Vec<DatabaseRecord<User>>> {
             transaction
-                .safe_execute(|pool| {
-                    DatabaseRecord::create(doc.clone(), &pool)?;
-                    DatabaseRecord::create(doc.clone(), &pool)?;
-                    DatabaseRecord::create(doc.clone(), &pool)?;
+                .safe_execute(|connection| {
+                    DatabaseRecord::create(doc.clone(), &connection)?;
+                    DatabaseRecord::create(doc.clone(), &connection)?;
+                    DatabaseRecord::create(doc.clone(), &connection)?;
                     Err(ServiceError::default())
                 })
                 .unwrap()
@@ -217,27 +217,27 @@ mod safe_execute {
             async(all(not(feature = "blocking")), tokio::test)
         )]
         async fn abort_works() {
-            let pool = common::setup_db().await;
+            let connection = common::setup_db().await;
             let doc = User {
                 name: "Felix".to_string(),
                 description: "LM".to_string(),
                 email: "felix.maneville@qonfucius.team".to_string(),
             };
-            let count = pool
+            let count = connection
                 .get_collection("User")
                 .unwrap()
                 .record_count()
                 .await
                 .unwrap();
             assert_eq!(count, 0);
-            let transaction = Transaction::new(&pool).await.unwrap();
+            let transaction = Transaction::new(&connection).await.unwrap();
             let result = get_failing_result(&transaction, &doc).await;
             assert!(result.is_aborted());
             assert!(match result.err().unwrap() {
                 ServiceError::InternalError { .. } => true,
                 _ => false,
             });
-            let count = pool
+            let count = connection
                 .get_collection("User")
                 .unwrap()
                 .record_count()
@@ -255,8 +255,8 @@ mod safe_execute {
             async(all(not(feature = "blocking")), tokio::test)
         )]
         async fn query_transaction_elements() -> Result<(), String> {
-            let db_pool = common::setup_db().await;
-            let transaction = Transaction::new(&db_pool).await.unwrap();
+            let db_connection = common::setup_db().await;
+            let transaction = Transaction::new(&db_connection).await.unwrap();
 
             DatabaseRecord::create(
                 User {
@@ -264,17 +264,19 @@ mod safe_execute {
                     description: "Corsaire Français".to_string(),
                     email: "lerevenantmalouin@qonfucius.team".to_string(),
                 },
-                transaction.pool(),
+                transaction.database_connection(),
             )
             .await
             .unwrap();
 
             let query =
                 User::query().filter(compare!(field "name").equals_str("Robert Surcouf").into());
-            let res = User::get(query.clone(), transaction.pool()).await.unwrap();
+            let res = User::get(query.clone(), transaction.database_connection())
+                .await
+                .unwrap();
             assert_eq!(res.len(), 0);
             transaction.commit().await.unwrap();
-            let res = User::get(query.clone(), &db_pool).await.unwrap();
+            let res = User::get(query.clone(), &db_connection).await.unwrap();
             assert_eq!(res.len(), 1);
             Ok(())
         }

@@ -4,7 +4,7 @@ extern crate env_logger;
 
 use aragog::query::{Comparison, Filter};
 use aragog::{
-    AuthMode, DatabaseAccess, DatabaseConnectionPool, DatabaseRecord, New, Record, ServiceError,
+    AuthMode, DatabaseAccess, DatabaseConnection, DatabaseRecord, New, Record, ServiceError,
     Update, Validate,
 };
 
@@ -25,7 +25,7 @@ async fn main() {
     env_logger::init();
 
     // Connect to database and generates collections and indexes
-    let db_pool = DatabaseConnectionPool::builder()
+    let db_connection = DatabaseConnection::builder()
         .with_credentials(
             &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
@@ -40,7 +40,7 @@ async fn main() {
         .unwrap();
 
     // Testing purposes
-    db_pool.truncate().await;
+    db_connection.truncate().await;
 
     // Instantiate a new dish
     let dish = Dish::new(DishDTO {
@@ -51,20 +51,20 @@ async fn main() {
     })
     .unwrap();
     // Creates a database record
-    let mut dish_record = DatabaseRecord::create(dish, &db_pool).await.unwrap();
+    let mut dish_record = DatabaseRecord::create(dish, &db_connection).await.unwrap();
 
     // New empty order
     let mut order = Order::new();
     // An empty order is not valid
     assert!(!order.is_valid());
-    match DatabaseRecord::create(order.clone(), &db_pool).await {
+    match DatabaseRecord::create(order.clone(), &db_connection).await {
         Ok(_) => panic!("Validations should have failed"),
         Err(_) => (),
     };
     // Add a dish
     order.add(&dish_record.record);
     // Creates a database record
-    let mut order_record = DatabaseRecord::create(order, &db_pool).await.unwrap();
+    let mut order_record = DatabaseRecord::create(order, &db_connection).await.unwrap();
     // Update dish
     dish_record
         .record
@@ -78,13 +78,13 @@ async fn main() {
     // Add the updated dish to the order
     order_record.add(&dish_record.record);
     // Save the order record
-    order_record.save(&db_pool).await.unwrap();
+    order_record.save(&db_connection).await.unwrap();
 
     // Checking
     assert_eq!(order_record.dishes.len(), 2);
     assert_eq!(order_record.total_price, 17);
     assert_eq!(
-        db_pool
+        db_connection
             .get_collection("Dish")
             .unwrap()
             .record_count()
@@ -95,7 +95,7 @@ async fn main() {
 
     // Making validation fail
     dish_record.price = 0;
-    match dish_record.save(&db_pool).await {
+    match dish_record.save(&db_connection).await {
         Ok(()) => panic!("Validations should have failed"),
         Err(error) => match error {
             ServiceError::ValidationError(msg) => {
@@ -128,10 +128,10 @@ async fn main() {
         money: 100,
         roles: vec!["Admin".to_string()],
     };
-    let record = DatabaseRecord::create(user, &db_pool).await.unwrap();
+    let record = DatabaseRecord::create(user, &db_connection).await.unwrap();
 
     // Find with the primary key
-    let _user_record = User::find(record.key(), &db_pool).await.unwrap();
+    let _user_record = User::find(record.key(), &db_connection).await.unwrap();
 
     // Build a query
     let query = User::query().filter(
@@ -140,10 +140,10 @@ async fn main() {
     );
     let query_b = query.clone();
     // Call the query and get safe JSON results to parse
-    let json_result = query.call(&db_pool).await.unwrap();
+    let json_result = query.call(&db_connection).await.unwrap();
     let _user_results = json_result.get_records::<User>();
     // OR Retrieve only the USer records (unsafe on graph queries)
-    let _user_results = User::get(query_b, &db_pool).await.unwrap();
+    let _user_results = User::get(query_b, &db_connection).await.unwrap();
 
     // Get an unique record (fails otherwise):
     let _user = _user_results.uniq().unwrap();

@@ -1,10 +1,10 @@
 use std::convert::TryInto;
 
 use crate::schema::{DatabaseSchema, SCHEMA_DEFAULT_FILE_NAME, SCHEMA_DEFAULT_PATH};
-use crate::{AuthMode, DatabaseConnectionPool, OperationOptions, ServiceError};
+use crate::{AuthMode, DatabaseConnection, OperationOptions, ServiceError};
 
 #[derive(Debug, Clone)]
-pub(crate) struct PoolCredentials {
+pub(crate) struct DbCredentials {
     db_host: String,
     db_name: String,
     db_user: String,
@@ -12,9 +12,9 @@ pub(crate) struct PoolCredentials {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) enum PoolCredentialsOption {
+pub(crate) enum DbCredentialsOption {
     Auto,
-    Custom(PoolCredentials),
+    Custom(DbCredentials),
 }
 
 #[derive(Debug)]
@@ -24,11 +24,11 @@ pub(crate) enum DatabaseSchemaOption {
     Custom(DatabaseSchema),
 }
 
-impl Into<PoolCredentials> for PoolCredentialsOption {
-    fn into(self) -> PoolCredentials {
+impl Into<DbCredentials> for DbCredentialsOption {
+    fn into(self) -> DbCredentials {
         match self {
             Self::Custom(cred) => cred,
-            Self::Auto => PoolCredentials {
+            Self::Auto => DbCredentials {
                 db_host: std::env::var("DB_HOST").expect("Please define DB_HOST env var."),
                 db_name: std::env::var("DB_NAME").expect("Please define DB_NAME env var."),
                 db_user: std::env::var("DB_USER").expect("Please define DB_USER env var."),
@@ -63,24 +63,24 @@ impl TryInto<DatabaseSchema> for DatabaseSchemaOption {
     }
 }
 
-/// Builder for `DatabaseConnectionPool`
-pub struct DatabaseConnectionPoolBuilder {
+/// Builder for `DatabaseConnection`
+pub struct DatabaseConnectionBuilder {
     pub(crate) apply_schema: bool,
     pub(crate) auth_mode: AuthMode,
-    pub(crate) credentials: PoolCredentialsOption,
+    pub(crate) credentials: DbCredentialsOption,
     pub(crate) schema: DatabaseSchemaOption,
     pub(crate) operation_options: OperationOptions,
 }
 
-impl DatabaseConnectionPoolBuilder {
-    /// Initializes the Database connection pool according to specified building methods.
+impl DatabaseConnectionBuilder {
+    /// Initializes the Database connection according to specified building methods.
     ///
     /// If nothing was set like in this example:
     /// ```rust
-    /// # use aragog::DatabaseConnectionPool;
+    /// # use aragog::DatabaseConnection;
     /// # #[tokio::main]
     /// # async fn main() {
-    /// let db_pool = DatabaseConnectionPool::builder()
+    /// let db_connection = DatabaseConnection::builder()
     /// # .with_schema_path("tests/schema.yaml")
     /// # .apply_schema()
     ///     .build()
@@ -102,13 +102,13 @@ impl DatabaseConnectionPoolBuilder {
     /// If the provided credentials are wrong or if the database is not running the function will panic.
     /// If any of the previous env var is not specified the function will panic with an explanation message.
     #[maybe_async::maybe_async]
-    pub async fn build(self) -> Result<DatabaseConnectionPool, ServiceError> {
+    pub async fn build(self) -> Result<DatabaseConnection, ServiceError> {
         let credentials = self.credentials();
         let auth_mode = self.auth_mode();
         let apply_schema = self.apply_schema;
         let operation_options = self.operation_options.clone();
         let schema = self.schema()?;
-        let database = DatabaseConnectionPool::connect(
+        let database = DatabaseConnection::connect(
             &credentials.db_host,
             &credentials.db_name,
             &credentials.db_user,
@@ -116,14 +116,17 @@ impl DatabaseConnectionPoolBuilder {
             auth_mode,
         )
         .await?;
-        DatabaseConnectionPool::new(database, schema, apply_schema, operation_options).await
+        DatabaseConnection::new(database, schema, apply_schema, operation_options).await
     }
 
     /// Specifies a custom authentication mode for ArangoDB connection.
     ///
     /// If not specified `AuthMode::Basic` will be used.
     pub fn with_auth_mode(mut self, mode: AuthMode) -> Self {
-        log::debug!("[Pool builder] Auth mode {:?} will be used", mode);
+        log::debug!(
+            "[Database Connection Builder] Auth mode {:?} will be used",
+            mode
+        );
         self.auth_mode = mode;
         self
     }
@@ -144,10 +147,10 @@ impl DatabaseConnectionPoolBuilder {
         db_password: &str,
     ) -> Self {
         log::debug!(
-            "[Pool builder] Custom credentials for ArangoDB host {} will be used",
+            "[Database Connection Builder] Custom credentials for ArangoDB host {} will be used",
             db_host
         );
-        self.credentials = PoolCredentialsOption::Custom(PoolCredentials {
+        self.credentials = DbCredentialsOption::Custom(DbCredentials {
             db_host: String::from(db_host),
             db_name: String::from(db_name),
             db_user: String::from(db_user),
@@ -160,7 +163,7 @@ impl DatabaseConnectionPoolBuilder {
     ///
     /// If not specified,`SCHEMA_PATH` env var will be used or the default value: `./src/config/db/schema.yaml`
     pub fn with_schema(mut self, schema: DatabaseSchema) -> Self {
-        log::debug!("[Pool builder] Custom schema will be used");
+        log::debug!("[Database Connection Builder] Custom schema will be used");
         self.schema = DatabaseSchemaOption::Custom(schema);
         self
     }
@@ -170,7 +173,7 @@ impl DatabaseConnectionPoolBuilder {
     ///
     /// Use it when you use your own custom schema and no `aragog_cli` migrations.
     pub fn apply_schema(mut self) -> Self {
-        log::debug!("[Pool builder] Schema will be silently applied");
+        log::debug!("[Database Connection Builder] Schema will be silently applied");
         self.apply_schema = true;
         self
     }
@@ -179,7 +182,10 @@ impl DatabaseConnectionPoolBuilder {
     ///
     /// If not specified,`SCHEMA_PATH` env var will be used or the default value: `./src/config/db/schema.yaml`
     pub fn with_schema_path(mut self, path: &str) -> Self {
-        log::debug!("[Pool builder] Schema from {} will be used", path);
+        log::debug!(
+            "[Database Connection Builder] Schema from {} will be used",
+            path
+        );
         self.schema = DatabaseSchemaOption::Path(String::from(path));
         self
     }
@@ -196,14 +202,14 @@ impl DatabaseConnectionPoolBuilder {
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     pub fn with_operation_options(mut self, options: OperationOptions) -> Self {
         log::debug!(
-            "[Pool builder] custom operation options will be used: {:?}",
+            "[Database Connection Builder] custom operation options will be used: {:?}",
             options
         );
         self.operation_options = options;
         self
     }
 
-    fn credentials(&self) -> PoolCredentials {
+    fn credentials(&self) -> DbCredentials {
         self.credentials.clone().into()
     }
 

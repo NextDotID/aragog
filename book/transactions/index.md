@@ -4,16 +4,16 @@
 
 ## Creating a transaction
 
-To initiate a transaction we need to use the `DatabaseConnectionPool`, as the transaction will create an equivalent `DatabaseAccess` object:
-The `TransactionPool`, that can be used instead of the classic pool to use the transactional features.
+To initiate a transaction we need to use the `DatabaseConnection`, as the transaction will create an equivalent `DatabaseAccess` object:
+The `TransactionDatabaseConnection`, that can be used instead of the classic connection to use the transactional features.
 
 Example:
 ```rust
-// We build the pool
-let database_pool = DatabaseConnectionPool::builder()
+// We build the connection
+let database_connection = DatabaseConnection::builder()
          .build().await.unwrap();
 // We instantiate a new transaction
-let transaction = Transaction::new(&database_pool).await.unwrap();
+let transaction = Transaction::new(&database_connection).await.unwrap();
 ```
 
 ## Transaction states
@@ -24,23 +24,23 @@ An ArangoDB transaction has three states:
 - *Aborted*
 
 After successfully initializing a `Transaction` Object, a *Running* transaction is created.
-We can now use its pool:
+We can now use its connection:
 
 Example:
 ````rust
-let database_pool = DatabaseConnectionPool::builder()
+let database_pool = DatabaseConnection::builder()
          .build().await.unwrap();
 // Instantiate a new transaction
 let transaction = Transaction::new(&database_pool).await.unwrap();
 // Retrieve the pool
-let transaction_pool = transaction.pool();
+let transaction_connection = transaction.database_connection();
 // We use the transaction pool instead of the classic pool
 DatabaseRecord::create(
     Dish {
         name: "Pizza".to_string(),
         price: 10,
     },
-    transaction_pool
+    transaction_connection
 ).await.unwrap();
 // We commit the transaction
 transaction.commit().await.unwrap();

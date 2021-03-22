@@ -39,15 +39,15 @@ let parent = Person {
     first_name: String::from("Charles-Ange"),
     last_name: String::from("Surcouf"),
 };
-let parent_record= DatabaseRecord::create(parent, &db_pool).await.unwrap();
+let parent_record= DatabaseRecord::create(parent, &db_connection).await.unwrap();
 let child = Person {
     first_name: String::from("Robert"),
     last_name: String::from("Surcouf")
 };
-let child_record= DatabaseRecord::create(child, &db_pool).await.unwrap();
+let child_record= DatabaseRecord::create(child, &db_connection).await.unwrap();
 
 // This function will create the Edge Document liking the two person documents
-let child_of_record = DatabaseRecord::link(&parent_record, &child_record, &db_pool, |_from, _to| {
+let child_of_record = DatabaseRecord::link(&parent_record, &child_record, &db_connection, |_from, _to| {
     ChildOf {
         _from,
         _to,
