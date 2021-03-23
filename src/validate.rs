@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::{EdgeRecord, ServiceError};
+use crate::ServiceError;
 use std::fmt::Display;
 
 /// The `Validate` trait of the Aragog library.
@@ -427,26 +427,6 @@ pub trait Validate {
             return false;
         }
         true
-    }
-
-    /// Validation method for `EdgeRecord` to use on [`Validate`] implementation.
-    /// Verifies that both `_from` and `_to` fields have correct format.
-    fn validate_edge_fields(&self, errors: &mut Vec<String>)
-    where
-        Self: EdgeRecord,
-    {
-        let array = [("_from", self._from()), ("_to", self._to())];
-        for (name, field) in array.iter() {
-            let split = field.split('/').collect::<Vec<&str>>();
-            if split.len() != 2 {
-                errors.push(format!(r#"{} "{}" has wrong format"#, name, field));
-            }
-            let left_part = split.first().unwrap();
-            Self::validate_min_len(name, left_part, 2, errors);
-            let right_part = split.last().unwrap();
-            Self::validate_min_len(name, right_part, 2, errors);
-            Self::validate_numeric_string(name, right_part, errors);
-        }
     }
 }
 

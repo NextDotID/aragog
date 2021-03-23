@@ -401,44 +401,53 @@ impl<T: Record> DatabaseRecord<T> {
     /// This function will launch `T` hooks `before_create` and `after_create`.
     ///
     /// # Example
-    /// ```rust no_run
+    /// ```rust
     /// # use aragog::{DatabaseRecord, EdgeRecord, Record, DatabaseConnection};
     /// # use serde::{Serialize, Deserialize};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
     /// # struct User {}
-    /// #[derive(Clone, EdgeRecord, Record, Serialize, Deserialize)]
+    /// #[derive(Clone, Record, Serialize, Deserialize)]
     /// struct Edge {
-    ///     _from: String,
-    ///     _to: String,
     ///     description: String,
     /// }
+    ///
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
-    /// let record_a = User::find("123", &db_accessor).await.unwrap();
-    /// let record_b = User::find("234", &db_accessor).await.unwrap();
+    /// # let db_accessor = DatabaseConnection::builder()
+    /// #     .with_schema_path("tests/schema.yaml")
+    /// #     .apply_schema()
+    /// #     .build().await.unwrap();
+    /// # db_accessor.truncate();
+    /// let user_a = DatabaseRecord::create(User { }, &db_accessor).await.unwrap();
+    /// let user_b = DatabaseRecord::create(User { }, &db_accessor).await.unwrap();
     ///
-    /// let edge = DatabaseRecord::link(&record_a, &record_b, &db_accessor, |_from, _to| {
-    ///     Edge { _from, _to, description: "description".to_string() }
-    /// }).await.unwrap();
+    /// let edge = DatabaseRecord::link(&user_a, &user_b, &db_accessor,
+    ///     Edge { description: "description".to_string() }
+    /// ).await.unwrap();
+    /// assert_eq!(edge.id_from(), user_a.id());
+    /// assert_eq!(edge.id_to(), user_b.id());
+    /// assert_eq!(&edge.description, "description");
     /// # }
     /// ```
     #[maybe_async::maybe_async]
-    pub async fn link<A, B, D, E>(
+    pub async fn link<A, B, D>(
         from_record: &DatabaseRecord<A>,
         to_record: &DatabaseRecord<B>,
         db_accessor: &D,
-        edge_record: E,
-    ) -> Result<DatabaseRecord<T>, ServiceError>
+        edge_record: T,
+    ) -> Result<DatabaseRecord<EdgeRecord<T>>, ServiceError>
     where
         A: Record,
         B: Record,
         D: DatabaseAccess + ?Sized,
-        E: FnOnce(String, String) -> T,
-        T: EdgeRecord,
+        T: Record + Send,
     {
-        let edge = edge_record(from_record.id.clone(), to_record.id.clone());
+        let edge = EdgeRecord::new(
+            from_record.id().clone(),
+            to_record.id().clone(),
+            edge_record,
+        )?;
         DatabaseRecord::create(edge, db_accessor).await
     }
 
@@ -534,18 +543,26 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Example
     ///
-    /// ```rust no_run
+    /// ```rust
     /// # use aragog::query::{Comparison, Filter};
     /// # use serde::{Serialize, Deserialize};
     /// # use aragog::{DatabaseConnection, Record, DatabaseRecord};
     /// #
     /// # #[derive(Record, Clone, Serialize, Deserialize)]
-    /// # struct User {}
+    /// # struct User {
+    /// #    username: String,
+    /// #    age: u16,
+    /// # }
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
-    /// let query = User::query().filter(Filter::new(Comparison::field("username").equals_str("MichelDu93"))
+    /// # let db_accessor = DatabaseConnection::builder()
+    /// #     .with_schema_path("tests/schema.yaml")
+    /// #     .apply_schema()
+    /// #     .build().await.unwrap();
+    /// # db_accessor.truncate();
+    /// # DatabaseRecord::create(User {username: "RobertSurcouf".to_string() ,age: 18 }, &db_accessor).await.unwrap();
+    /// let query = User::query().filter(Filter::new(Comparison::field("username").equals_str("RobertSurcouf"))
     ///     .and(Comparison::field("age").greater_than(10)));
     ///
     /// // Both lines are equivalent:
@@ -585,7 +602,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Example
     ///
-    /// ```rust no_run
+    /// ```rust
     /// # use serde::{Serialize, Deserialize};
     /// # use aragog::{DatabaseConnection, Record, DatabaseRecord};
     /// #
@@ -594,8 +611,12 @@ impl<T: Record> DatabaseRecord<T> {
     /// #
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
-    /// let query = r#"FOR i in User FILTER i.username == "MichelDu93" && i.age > 10 return i"#;
+    /// # let db_accessor = DatabaseConnection::builder()
+    /// #     .with_schema_path("tests/schema.yaml")
+    /// #     .apply_schema()
+    /// #     .build().await.unwrap();
+    /// # db_accessor.truncate();
+    /// let query = r#"FOR i in User FILTER i.username == "RoertSurcouf" && i.age > 10 return i"#;
     ///
     /// DatabaseRecord::<User>::aql_get(query, &db_accessor).await.unwrap();
     /// # }

@@ -28,13 +28,13 @@ We can now use its connection:
 
 Example:
 ````rust
-let database_pool = DatabaseConnection::builder()
+let database_connection = DatabaseConnection::builder()
          .build().await.unwrap();
 // Instantiate a new transaction
-let transaction = Transaction::new(&database_pool).await.unwrap();
-// Retrieve the pool
+let transaction = Transaction::new(&database_connection).await.unwrap();
+// Retrieve the connection
 let transaction_connection = transaction.database_connection();
-// We use the transaction pool instead of the classic pool
+// We use the transaction connection instead of the classic connection
 DatabaseRecord::create(
     Dish {
         name: "Pizza".to_string(),
