@@ -230,6 +230,18 @@ mod macros {
             pub vec_string: Vec<String>,
             #[validate_each(min_length = 1, max_length = 10, length = 5, regex("//"))]
             pub vec_str: Vec<&'static str>,
+
+            // Options
+            #[validate(is_some, is_none)]
+            pub string_option: Option<String>,
+            #[validate(is_some, is_none)]
+            pub numeric_option: Option<i32>,
+
+            // Options Vector
+            #[validate_each(is_some, is_none)]
+            pub vec_string_option: Vec<Option<String>>,
+            #[validate_each(is_some, is_none)]
+            pub vec_numeric_option: Vec<Option<i32>>,
         }
     }
 
