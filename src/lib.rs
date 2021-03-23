@@ -157,11 +157,8 @@
 //!     pub name: String,
 //! }
 //!
-//! #[derive(Serialize, Deserialize, Clone, Record, EdgeRecord)]
-//! pub struct PartOf {
-//!     pub _from: String,
-//!     pub _to: String,
-//! }
+//! #[derive(Serialize, Deserialize, Clone, Record)]
+//! pub struct PartOf { }
 //!
 //! #[tokio::main]
 //! async fn main() {
@@ -176,13 +173,13 @@
 //!         name: "Order 1".to_string(),
 //!     }, &database_connection).await.unwrap();
 //!
-//!     let edge = DatabaseRecord::link(&dish, &order, &database_connection, |_from, _to| {
-//!         PartOf { _from, _to }
+//!     let edge = DatabaseRecord::link(&dish, &order, &database_connection, {
+//!         PartOf { }
 //!     }).await.unwrap();
-//!     assert_eq!(edge._from(), dish.id());
-//!     assert_eq!(edge._to(), order.id());
-//!     assert_eq!(&edge._from_key(), dish.key());
-//!     assert_eq!(&edge._to_key(), order.key());
+//!     assert_eq!(edge.id_from(), dish.id());
+//!     assert_eq!(edge.id_to(), order.id());
+//!     assert_eq!(&edge.key_from(), dish.key());
+//!     assert_eq!(&edge.key_to(), order.key());
 //! }
 //! ```
 //!

@@ -1,165 +1,203 @@
-use crate::Record;
+use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError, Validate};
+use serde::{Deserialize, Serialize};
+use std::ops::{Deref, DerefMut};
 
-/// Trait for structures that can be stored in Database as a ArangoDB EdgeCollection.
-/// The trait must be implemented to be used as a edge record in [`DatabaseRecord`].
+/// Struct wrapping an edge document, with the `from` and `to` fields correctly set.
 ///
-/// # How to use
+/// The document of type `T` mut implement [`Record`] and `EdgeRecord` also implements it.
 ///
-/// ## Declaration
+/// # Note
 ///
-/// A structure deriving from `EdgeRecord` **MUST** contain two string fields:
-/// * `_from` - The id of the source document
-/// * `_to` - The id of the target document
-/// Or the compilation will fail.
+/// `EdgeRecord` implements `Deref` and `DerefMut` into `T`
 ///
-/// On creation or save these two fields must be valid ArangoDB `Object ID` formatted as:
-/// > `CollectionName/DocumentKey`
-///
-/// (Example: "User/123")
-/// >
-/// ## Creation
-///
-/// To create a edge between two existing [`DatabaseRecord`] you can use the following process:
-///
-/// ```rust no_run
-/// # use aragog::{DatabaseRecord, EdgeRecord, Record, DatabaseConnection};
-/// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
-/// #
-/// #[derive(Clone, Record, Serialize, Deserialize)]
-/// struct Character {}
-///
-/// #[derive(Clone, EdgeRecord, Record, Serialize, Deserialize)]
-/// struct Edge {
-///     _from: String,
-///     _to: String,
-///     description: String,
-/// }
-/// # #[tokio::main]
-/// # async fn main() {
-/// # let db_accessor = DatabaseConnection::builder().build().await.unwrap();
-///
-/// let record_a = Character::find("123", &db_accessor).await.unwrap();
-/// let record_b = Character::find("234", &db_accessor).await.unwrap();
-///
-/// let edge_record = DatabaseRecord::link(&record_a, &record_b, &db_accessor, |_from, _to| {
-///     Edge { _from, _to, description: "description".to_string() }
-/// }).await.unwrap();
-/// # }
-/// ```
-///
-/// [`DatabaseRecord`]: struct.DatabaseRecord.html
-pub trait EdgeRecord: Record {
-    /// Retrieves the struct `_from` field
-    fn _from(&self) -> &String;
+/// [`Record`]: trait.Record.html
+#[derive(Serialize, Deserialize, Clone)]
+pub struct EdgeRecord<T> {
+    /// The `_from` field of ArangoDB edge documents
+    #[serde(rename(serialize = "_from", deserialize = "_from"))]
+    from: String,
+    /// The `to` field of ArangoDB edge documents
+    #[serde(rename(serialize = "_to", deserialize = "_to"))]
+    to: String,
+    /// The main document data, must implement [`Record`].
+    ///
+    /// Note: The data is flattened on save, so you won't have any field named `data` in your database.
+    /// [`Record`]: trait.Record.html
+    #[serde(flatten)]
+    pub data: T,
+}
 
-    /// Retrieves the struct `_to` field
-    fn _to(&self) -> &String;
-
-    /// Parses the `_from()` returned `id` and returns the document `key`
+impl<T: Record> EdgeRecord<T> {
+    /// Manually instantiates an Edge record
     ///
-    /// # Panic
+    /// # Arguments
     ///
-    /// The method will panic if the stored `id` is not formatted correctly (`String`/`String`)
+    /// * `id_from` - The **from** document `id`
+    /// * `id_to` - The **to** document `id`
+    /// * `data` - The main document data
     ///
-    /// # Example
-    ///```rust
-    /// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
-    /// use aragog::{EdgeRecord, Record, Validate, DatabaseRecord};
+    /// # Failure
     ///
-    /// #[derive(EdgeRecord, Record, Clone, Serialize, Deserialize, Validate)]
-    /// struct EdgeModel {
-    ///     pub _from: String,
-    ///     pub _to: String,
-    /// }
-    ///
-    /// let edge = EdgeModel {
-    ///    _from: "User/123".to_string(),
-    ///    _to: "Client/345".to_string(),
-    /// };
-    /// assert_eq!(edge._from_key(), "123".to_string());
-    /// ```
-    fn _from_key(&self) -> String {
-        self._from().split('/').last().unwrap().to_string()
+    /// This function validates the format of the id fields which can result in an error.
+    pub fn new(id_from: String, id_to: String, data: T) -> Result<Self, ServiceError> {
+        let res = Self {
+            from: id_from,
+            to: id_to,
+            data,
+        };
+        res.validate()?;
+        Ok(res)
     }
 
-    /// Parses the `_to()` returned `id` and returns the document `key`
-    ///
-    /// # Panic
-    ///
-    /// The method will panic if the stored `id` is not formatted correctly (`String`/`String`)
-    ///
-    /// # Example
-    ///```rust
-    /// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
-    /// use aragog::{EdgeRecord, Record, Validate, DatabaseRecord};
-    ///
-    /// #[derive(EdgeRecord, Record, Clone, Serialize, Deserialize, Validate)]
-    /// struct EdgeModel {
-    ///     pub _from: String,
-    ///     pub _to: String,
-    /// }
-    ///
-    /// let edge = EdgeModel {
-    ///    _from: "User/123".to_string(),
-    ///    _to: "Client/345".to_string(),
-    /// };
-    /// assert_eq!(edge._to_key(), "345".to_string());
-    /// ```
-    fn _to_key(&self) -> String {
-        self._to().split('/').last().unwrap().to_string()
+    /// Retrieves the `from` document from the database
+    #[maybe_async::maybe_async]
+    pub async fn from_record<D, R>(&self, db_access: &D) -> Result<DatabaseRecord<R>, ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+        R: Record,
+    {
+        DatabaseRecord::find(self.key_from().as_str(), db_access).await
     }
 
-    /// Parses the `_to()` returned `id` and returns the document collection name
-    ///
-    /// # Panic
-    ///
-    /// The method will panic if the stored `id` is not formatted correctly (`String`/`String`)
-    ///
-    /// # Example
-    ///```rust
-    /// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
-    /// use aragog::{EdgeRecord, Record, Validate, DatabaseRecord};
-    ///
-    /// #[derive(EdgeRecord, Record, Clone, Serialize, Deserialize, Validate)]
-    /// struct EdgeModel {
-    ///     pub _from: String,
-    ///     pub _to: String,
-    /// }
-    ///
-    /// let edge = EdgeModel {
-    ///    _from: "User/123".to_string(),
-    ///    _to: "Client/345".to_string(),
-    /// };
-    /// assert_eq!(edge._to_collection_name(), "Client".to_string());
-    /// ```
-    fn _to_collection_name(&self) -> String {
-        self._to().split('/').next().unwrap().to_string()
+    /// Retrieves the `to` document from the database
+    #[maybe_async::maybe_async]
+    pub async fn to_record<D, R>(&self, db_access: &D) -> Result<DatabaseRecord<R>, ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+        R: Record,
+    {
+        DatabaseRecord::find(self.key_to().as_str(), db_access).await
     }
 
-    /// Parses the `_from()` returned `id` and returns the document collection name
+    /// Retrieves the document `_from` field, storing the target documents `id`.
+    pub fn id_from(&self) -> &String {
+        &self.from
+    }
+
+    /// Retrieves the document `_to` field, storing the target documents `id`.
+    pub fn id_to(&self) -> &String {
+        &self.to
+    }
+
+    /// Parses the `from` value to retrieve only the `_key` part.
     ///
     /// # Panic
     ///
-    /// The method will panic if the stored `id` is not formatted correctly (`String`/`String`)
+    /// This method may panic if the `from` value is not formatted correctly.
+    pub fn key_from(&self) -> String {
+        self.id_from().split('/').last().unwrap().to_string()
+    }
+
+    /// Parses the `to` value to retrieve only the `_key` part.
     ///
-    /// # Example
-    ///```rust
-    /// # use serde::{Serialize, Deserialize, de::DeserializeOwned};
-    /// use aragog::{EdgeRecord, Record, Validate, DatabaseRecord};
+    /// # Panic
     ///
-    /// #[derive(EdgeRecord, Record, Clone, Serialize, Deserialize, Validate)]
-    /// struct EdgeModel {
-    ///     pub _from: String,
-    ///     pub _to: String,
-    /// }
+    /// This method may panic if the `to` value is not formatted correctly.
+    pub fn key_to(&self) -> String {
+        self.id_to().split('/').last().unwrap().to_string()
+    }
+
+    /// Parses the `from` value to retrieve only the collection name part.
     ///
-    /// let edge = EdgeModel {
-    ///    _from: "User/123".to_string(),
-    ///    _to: "Client/345".to_string(),
-    /// };
-    /// assert_eq!(edge._from_collection_name(), "User".to_string());
-    /// ```
-    fn _from_collection_name(&self) -> String {
-        self._from().split('/').next().unwrap().to_string()
+    /// # Panic
+    ///
+    /// This method may panic if the `to` value is not formatted correctly.
+    pub fn to_collection_name(&self) -> String {
+        self.id_to().split('/').next().unwrap().to_string()
+    }
+
+    /// Parses the `to` value to retrieve only the collection name part.
+    ///
+    /// # Panic
+    ///
+    /// This method may panic if the `from` value is not formatted correctly.
+    pub fn from_collection_name(&self) -> String {
+        self.id_from().split('/').next().unwrap().to_string()
+    }
+
+    fn validate_edge_fields(&self, errors: &mut Vec<String>) {
+        let array = [("from", self.id_from()), ("to", self.id_to())];
+        for (name, field) in array.iter() {
+            let split = field.split('/').collect::<Vec<&str>>();
+            if split.len() != 2 {
+                errors.push(format!(r#"{} "{}" has wrong format"#, name, field));
+            }
+            let left_part = split.first().unwrap();
+            Self::validate_min_len(name, left_part, 2, errors);
+            let right_part = split.last().unwrap();
+            Self::validate_min_len(name, right_part, 2, errors);
+            Self::validate_numeric_string(name, right_part, errors);
+        }
+    }
+}
+
+impl<T: Record> Validate for EdgeRecord<T> {
+    fn validations(&self, errors: &mut Vec<String>) {
+        self.validate_edge_fields(errors);
+    }
+}
+
+#[maybe_async::maybe_async]
+impl<T: Record + Send> Record for EdgeRecord<T> {
+    fn collection_name() -> &'static str {
+        T::collection_name()
+    }
+
+    async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        self.validate()?;
+        self.data.before_create_hook(db_accessor).await
+    }
+
+    async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        self.data.before_save_hook(db_accessor).await
+    }
+
+    async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        self.data.before_delete_hook(db_accessor).await
+    }
+
+    async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        self.data.after_create_hook(db_accessor).await
+    }
+
+    async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        self.validate()?;
+        self.data.after_save_hook(db_accessor).await
+    }
+
+    async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        self.data.after_delete_hook(db_accessor).await
+    }
+}
+
+impl<T: Record> Deref for EdgeRecord<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+
+impl<T: Record> DerefMut for EdgeRecord<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.data
     }
 }

@@ -12,8 +12,8 @@ const DEFAULT_DB_NAME: &str = "aragog_test";
 const DEFAULT_DB_USER: &str = "test";
 const DEFAULT_DB_PWD: &str = "test";
 
-fn create_child(_from: String, _to: String) -> ChildOf {
-    ChildOf { _from, _to }
+fn create_child() -> ChildOf {
+    ChildOf {}
 }
 
 #[tokio::main]
@@ -157,59 +157,59 @@ async fn main() {
 
     //    Robb -> Ned
     //    Robb -> Catelyn
-    DatabaseRecord::link(&robb, &ned, &db_connection, create_child)
+    DatabaseRecord::link(&robb, &ned, &db_connection, create_child())
         .await
         .unwrap();
-    DatabaseRecord::link(&robb, &catelyn, &db_connection, create_child)
+    DatabaseRecord::link(&robb, &catelyn, &db_connection, create_child())
         .await
         .unwrap();
     //    Sansa -> Ned
     //    Sansa -> Catelyn
-    DatabaseRecord::link(&sansa, &ned, &db_connection, create_child)
+    DatabaseRecord::link(&sansa, &ned, &db_connection, create_child())
         .await
         .unwrap();
-    DatabaseRecord::link(&sansa, &catelyn, &db_connection, create_child)
+    DatabaseRecord::link(&sansa, &catelyn, &db_connection, create_child())
         .await
         .unwrap();
     //     Arya -> Ned
     //     Arya -> Catelyn
-    DatabaseRecord::link(&arya, &ned, &db_connection, create_child)
+    DatabaseRecord::link(&arya, &ned, &db_connection, create_child())
         .await
         .unwrap();
-    DatabaseRecord::link(&arya, &catelyn, &db_connection, create_child)
+    DatabaseRecord::link(&arya, &catelyn, &db_connection, create_child())
         .await
         .unwrap();
     //     Bran -> Ned
     //     Bran -> Catelyn
-    DatabaseRecord::link(&bran, &ned, &db_connection, create_child)
+    DatabaseRecord::link(&bran, &ned, &db_connection, create_child())
         .await
         .unwrap();
-    DatabaseRecord::link(&bran, &catelyn, &db_connection, create_child)
+    DatabaseRecord::link(&bran, &catelyn, &db_connection, create_child())
         .await
         .unwrap();
     //      Jon -> Ned
-    DatabaseRecord::link(&john, &ned, &db_connection, create_child)
+    DatabaseRecord::link(&john, &ned, &db_connection, create_child())
         .await
         .unwrap();
 
     //    Jaime -> Tywin
-    DatabaseRecord::link(&jaime, &tywin, &db_connection, create_child)
+    DatabaseRecord::link(&jaime, &tywin, &db_connection, create_child())
         .await
         .unwrap();
     //   Cersei -> Tywin
-    DatabaseRecord::link(&cersei, &tywin, &db_connection, create_child)
+    DatabaseRecord::link(&cersei, &tywin, &db_connection, create_child())
         .await
         .unwrap();
     //   Tyrion -> Tywin
-    DatabaseRecord::link(&tyrion, &tywin, &db_connection, create_child)
+    DatabaseRecord::link(&tyrion, &tywin, &db_connection, create_child())
         .await
         .unwrap();
     //  Joffrey -> Jaime
     //  Joffrey -> Cersei
-    DatabaseRecord::link(&joffrey, &cersei, &db_connection, create_child)
+    DatabaseRecord::link(&joffrey, &cersei, &db_connection, create_child())
         .await
         .unwrap();
-    DatabaseRecord::link(&joffrey, &jaime, &db_connection, create_child)
+    DatabaseRecord::link(&joffrey, &jaime, &db_connection, create_child())
         .await
         .unwrap();
 

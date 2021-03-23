@@ -517,7 +517,7 @@ mod query {
 mod call {
     use serde::{Deserialize, Serialize};
 
-    use aragog::{DatabaseConnection, DatabaseRecord, EdgeRecord, Record};
+    use aragog::{DatabaseConnection, DatabaseRecord, Record};
 
     use super::*;
 
@@ -531,14 +531,11 @@ mod call {
         pub name: String,
     }
 
-    #[derive(Clone, Serialize, Deserialize, Record, EdgeRecord)]
-    pub struct PartOf {
-        pub _from: String,
-        pub _to: String,
-    }
+    #[derive(Clone, Serialize, Deserialize, Record)]
+    pub struct PartOf {}
 
-    fn linker(_from: String, _to: String) -> PartOf {
-        PartOf { _from, _to }
+    fn linker() -> PartOf {
+        PartOf {}
     }
 
     #[maybe_async::maybe_async]
@@ -610,33 +607,33 @@ mod call {
         .unwrap();
 
         // Menu 1
-        DatabaseRecord::link(&p1, &m1, db_connection, linker)
+        DatabaseRecord::link(&p1, &m1, db_connection, linker())
             .await
             .unwrap();
-        DatabaseRecord::link(&wi, &m1, db_connection, linker)
+        DatabaseRecord::link(&wi, &m1, db_connection, linker())
             .await
             .unwrap();
-        DatabaseRecord::link(&ic, &m1, db_connection, linker)
+        DatabaseRecord::link(&ic, &m1, db_connection, linker())
             .await
             .unwrap();
         // Menu 2
-        DatabaseRecord::link(&p2, &m2, db_connection, linker)
+        DatabaseRecord::link(&p2, &m2, db_connection, linker())
             .await
             .unwrap();
-        DatabaseRecord::link(&wi, &m2, db_connection, linker)
+        DatabaseRecord::link(&wi, &m2, db_connection, linker())
             .await
             .unwrap();
-        DatabaseRecord::link(&ic, &m2, db_connection, linker)
+        DatabaseRecord::link(&ic, &m2, db_connection, linker())
             .await
             .unwrap();
         // Menu 3
-        DatabaseRecord::link(&pa, &m3, db_connection, linker)
+        DatabaseRecord::link(&pa, &m3, db_connection, linker())
             .await
             .unwrap();
-        DatabaseRecord::link(&wi, &m3, db_connection, linker)
+        DatabaseRecord::link(&wi, &m3, db_connection, linker())
             .await
             .unwrap();
-        DatabaseRecord::link(&ic, &m3, db_connection, linker)
+        DatabaseRecord::link(&ic, &m3, db_connection, linker())
             .await
             .unwrap();
     }

@@ -6,25 +6,25 @@ To avoid remembering to commit and manually handling when to abort a transaction
 The safe execution allows to execute multiple operations in a block and make sure the transaction is either *committed* or *aborted*.
 
  ```rust
-let database_pool = DatabaseConnection::builder()
+let database_connection = DatabaseConnection::builder()
 .build().await.unwrap();
 // Instantiate a new transaction
-let transaction = Transaction::new(&database_pool).await.unwrap();
+let transaction = Transaction::new(&database_connection).await.unwrap();
 // Safely execute operations:
-let output = transaction.safe_execute(|transaction_pool| async move {
-    // We use the provided `transaction_pool` instead of the classic pool
+let output = transaction.safe_execute(|transaction_connection| async move {
+    // We use the provided `transaction_connection` instead of the classic connection
     DatabaseRecord::create(Dish {
         name: "Pizza".to_string(),
         price: 10,
-    }, &transaction_pool).await?;
+    }, &transaction_connection).await?;
     DatabaseRecord::create(Dish {
         name: "Pasta".to_string(),
         price: 8,
-    }, &transaction_pool).await?;
+    }, &transaction_connection).await?;
     DatabaseRecord::create(Dish {
         name: "Sandwich".to_string(),
         price: 5,
-    }, &transaction_pool).await?;
+    }, &transaction_connection).await?;
     // You can return any type of data here
     Ok(())
 }).await.unwrap();

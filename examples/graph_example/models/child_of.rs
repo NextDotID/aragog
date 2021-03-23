@@ -1,10 +1,5 @@
-use aragog::{EdgeRecord, Record, Validate};
+use aragog::Record;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize, EdgeRecord, Record, Validate)]
-#[before_write(func = "validate")]
-#[validate(func = "validate_edge_fields")]
-pub struct ChildOf {
-    pub _from: String,
-    pub _to: String,
-}
+#[derive(Clone, Serialize, Deserialize, Record)]
+pub struct ChildOf {}
