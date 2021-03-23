@@ -45,6 +45,12 @@ pub enum Operation {
     CallValidations {
         field: String,
     },
+    IsSome {
+        field: String,
+    },
+    IsNone {
+        field: String,
+    },
 }
 
 impl ParseOperation for Operation {
@@ -96,6 +102,16 @@ impl ParseOperation for Operation {
                 let field = Self::expect_field(path, field)?;
                 Self::CallValidations { field }
             }
+            "is_some" => {
+                Self::expect_no_value(value)?;
+                let field = Self::expect_field(path, field)?;
+                Self::IsSome { field }
+            }
+            "is_none" => {
+                Self::expect_no_value(value)?;
+                let field = Self::expect_field(path, field)?;
+                Self::IsNone { field }
+            }
             "func" => {
                 let lit = Self::expect_literal_value(path, value)?;
                 let func = expect_str_lit(&lit)?;
@@ -137,6 +153,8 @@ impl Display for Operation {
                 Operation::LesserOrEqual { .. } => "lesser_or_equal",
                 Operation::Function { .. } => "func",
                 Operation::CallValidations { .. } => "call_validations",
+                Operation::IsSome { .. } => "is_some",
+                Operation::IsNone { .. } => "is_none",
             }
         )
     }
@@ -219,6 +237,18 @@ impl Operation {
                 let field_token = Self::field_token(&field, custom_token, false);
                 quote! {
                     #field_token.validations(errors);
+                }
+            }
+            Self::IsSome { field } => {
+                let field_token = Self::field_token(&field, custom_token, false);
+                quote! {
+                    Self::validate_field_presence(#field, &#field_token, errors);
+                }
+            }
+            Self::IsNone { field } => {
+                let field_token = Self::field_token(&field, custom_token, false);
+                quote! {
+                    Self::validate_field_absence(#field, &#field_token, errors);
                 }
             }
             Self::Function { func, field } => {
