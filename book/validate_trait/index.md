@@ -59,8 +59,14 @@ The current available field attribute validation operation macros (can be chaine
     - `greater_than(VAL)` validated the field is greater than *VAL*
     - `greater_or_equal(VAL)` validated the field is greater or equal to *VAL*
     - `lesser_than(VAL)` validated the field is lesser than *VAL*
-    - `lesser_or_equal(VAL)` validated the field is lesser or equal to*VAL*
+    - `lesser_or_equal(VAL)` validated the field is lesser or equal to *VAL*
+- Vector fields or ordered iterable types
+    - `max_count(VAL)` validates the field has a maximal number of elements of *VAL*
+    - `min_count(VAL)` validates the field has a minimal number of elements of *VAL*
+    - `count(VAL)` validates the field has a number of elements of *VAL* 
 - Other
+    - `is_some(VAL)` validates the field contains a *VAL*
+    - `is_none` validates the field does not contain a value
     - `func(FUNC)` calls the *FUNC* method (see [Extra Validations](#extra-validations))
     - `call_validations` calls the validations of the field allowing to propagate the validation calls.
   The field must be an type implementing `Validate`

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod common;
 
-#[derive(Serialize, Deserialize, Clone, Validate)]
+#[derive(Serialize, Deserialize, Validate)]
 #[validate(func("custom_validations"))]
 pub struct Dish {
     #[validate(min_length = 5)]
@@ -13,6 +13,8 @@ pub struct Dish {
     pub reference: String,
     #[validate(greater_than(0))]
     pub price: u16,
+    #[validate(min_count(5), max_count(10))]
+    pub grouped_tickets: Vec<u8>,
 }
 
 impl Dish {
@@ -37,6 +39,7 @@ fn can_succeed() {
         description: Some("Tomate, Jambon, Oeuf, Mozzarella".to_string()),
         reference: "0102030405".to_string(),
         price: 5,
+        grouped_tickets: vec![1, 2, 3, 4, 5, 6],
     };
     dish.validate().unwrap();
 }
@@ -49,6 +52,20 @@ fn can_fail() {
         description: Some("wrong".to_string()),
         reference: "ABC".to_string(),
         price: 0,
+        grouped_tickets: vec![1, 2, 3, 4, 5, 6],
+    };
+    dish.validate().unwrap();
+}
+
+#[should_panic(expected = "ValidationError")]
+#[test]
+fn can_fail_with_grouped_tickets() {
+    let dish = Dish {
+        name: "Pizza Regina".to_string(),
+        description: Some("Tomate, Jambon, Oeuf, Mozzarella".to_string()),
+        reference: "0102030405".to_string(),
+        price: 5,
+        grouped_tickets: vec![1, 2, 3],
     };
     dish.validate().unwrap();
 }
@@ -60,12 +77,12 @@ fn can_fail_and_provide_message() -> Result<(), String> {
         description: Some("wrong".to_string()),
         reference: "ABC".to_string(),
         price: 0,
+        grouped_tickets: vec![1, 2, 3],
     };
     match dish.validate() {
         Ok(()) => Err(String::from("Should have failed validations")),
         Err(error) => match error {
             ServiceError::ValidationError(str) => {
-                println!("{}", str);
                 common::expect_assert(str.contains(r#"name 'Piza' is too short, min length: 5"#))?;
                 common::expect_assert(
                     str.contains(r#"description 'wrong' is too short, min length: 15"#),
@@ -75,6 +92,9 @@ fn can_fail_and_provide_message() -> Result<(), String> {
                     r#"reference 'ABC' has wrong length, please specify 10 characters"#,
                 ))?;
                 common::expect_assert(str.contains(r#"price '0' must be greater than 0"#))?;
+                common::expect_assert(
+                    str.contains(r#"grouped_tickets doesn't have enough elements, min count: 5"#),
+                )?;
                 Ok(())
             }
             _ => Err(String::from("Validations failed but wrong error returned")),
@@ -98,8 +118,10 @@ mod macros {
             pub float64: f64,
 
             // Float vectors
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(greater_than(- 10.0), greater_or_equal(- 9.0), lesser_than(10.0), lesser_or_equal(9.0))]
             pub vec_float32: Vec<f32>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(greater_than(- 10.0), greater_or_equal(- 9.0), lesser_than(10.0), lesser_or_equal(9.0))]
             pub vec_float64: Vec<f64>,
 
@@ -118,16 +140,22 @@ mod macros {
             pub int128: i128,
 
             // Int vectors
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(greater_than(- 10), greater_or_equal(- 9), lesser_than(10), lesser_or_equal(9))]
             pub vec_int8: Vec<i8>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(greater_than(- 10), greater_or_equal(- 9), lesser_than(10), lesser_or_equal(9))]
             pub vec_int_size: Vec<isize>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(greater_than(- 10), greater_or_equal(- 9), lesser_than(10), lesser_or_equal(9))]
             pub vec_int16: Vec<i16>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(greater_than(- 10), greater_or_equal(- 9), lesser_than(10), lesser_or_equal(9))]
             pub vec_int32: Vec<i32>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(greater_than(- 10), greater_or_equal(- 9), lesser_than(10), lesser_or_equal(9))]
             pub vec_int64: Vec<i64>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(greater_than(- 10), greater_or_equal(- 9), lesser_than(10), lesser_or_equal(9))]
             pub vec_int128: Vec<i128>,
 
@@ -176,6 +204,7 @@ mod macros {
             pub uint128: u128,
 
             // UInt vectors
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(
                 greater_than(0),
                 greater_or_equal(1),
@@ -183,6 +212,7 @@ mod macros {
                 lesser_or_equal(9)
             )]
             pub vec_uint8: Vec<u8>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(
                 greater_than(0),
                 greater_or_equal(1),
@@ -190,6 +220,7 @@ mod macros {
                 lesser_or_equal(9)
             )]
             pub vec_uint_size: Vec<usize>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(
                 greater_than(0),
                 greater_or_equal(1),
@@ -197,6 +228,7 @@ mod macros {
                 lesser_or_equal(9)
             )]
             pub vec_uint16: Vec<u16>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(
                 greater_than(0),
                 greater_or_equal(1),
@@ -204,6 +236,7 @@ mod macros {
                 lesser_or_equal(9)
             )]
             pub vec_uint32: Vec<u32>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(
                 greater_than(0),
                 greater_or_equal(1),
@@ -211,6 +244,7 @@ mod macros {
                 lesser_or_equal(9)
             )]
             pub vec_uint64: Vec<u64>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(
                 greater_than(0),
                 greater_or_equal(1),
@@ -226,8 +260,10 @@ mod macros {
             pub str: &'static str,
 
             // String vectors
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(min_length = 1, max_length = 10, length = 5, regex("//"))]
             pub vec_string: Vec<String>,
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             #[validate_each(min_length = 1, max_length = 10, length = 5, regex("//"))]
             pub vec_str: Vec<&'static str>,
 
@@ -324,6 +360,91 @@ mod macros {
                         assert_eq!(msg, "Case2 is invalid".to_string())
                     }
                     _ => panic!("Wrong error returned for Case2"),
+                },
+            }
+        }
+    }
+
+    mod iter_validation {
+        use super::*;
+
+        #[derive(Validate)]
+        pub struct IterValidator {
+            #[validate(min_count = 2, max_count = 5)]
+            list: Vec<usize>,
+            #[validate(count = 5)]
+            exact_list: Vec<usize>,
+        }
+
+        #[test]
+        fn can_pass() {
+            let it = IterValidator {
+                list: vec![1, 2, 3, 4, 5],
+                exact_list: vec![1, 2, 3, 4, 5],
+            };
+
+            it.validate().unwrap();
+        }
+
+        #[test]
+        fn can_fail_min_count() -> Result<(), String> {
+            let it = IterValidator {
+                list: vec![1],
+                exact_list: vec![1, 2, 3, 4, 5],
+            };
+
+            match it.validate() {
+                Ok(()) => Err(String::from("Should have failed validations")),
+                Err(error) => match error {
+                    ServiceError::ValidationError(str) => {
+                        common::expect_assert(
+                            str.contains(r#"list doesn't have enough elements, min count: 2"#),
+                        )?;
+                        Ok(())
+                    }
+                    _ => Err(String::from("Validations failed but wrong error returned")),
+                },
+            }
+        }
+
+        #[test]
+        fn can_fail_max_count() -> Result<(), String> {
+            let it = IterValidator {
+                list: vec![1, 2, 3, 4, 5, 6],
+                exact_list: vec![1, 2, 3, 4, 5],
+            };
+
+            match it.validate() {
+                Ok(()) => Err(String::from("Should have failed validations")),
+                Err(error) => match error {
+                    ServiceError::ValidationError(str) => {
+                        common::expect_assert(
+                            str.contains(r#"list has too many elements, max count: 5"#),
+                        )?;
+                        Ok(())
+                    }
+                    _ => Err(String::from("Validations failed but wrong error returned")),
+                },
+            }
+        }
+
+        #[test]
+        fn can_fail_count() -> Result<(), String> {
+            let it = IterValidator {
+                list: vec![1, 2, 3],
+                exact_list: vec![1, 2],
+            };
+
+            match it.validate() {
+                Ok(()) => Err(String::from("Should have failed validations")),
+                Err(error) => match error {
+                    ServiceError::ValidationError(str) => {
+                        common::expect_assert(str.contains(
+                            r#"exact_list has a wrong number of elements, expected count: 5"#,
+                        ))?;
+                        Ok(())
+                    }
+                    _ => Err(String::from("Validations failed but wrong error returned")),
                 },
             }
         }

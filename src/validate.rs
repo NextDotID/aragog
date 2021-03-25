@@ -2,6 +2,7 @@ use regex::Regex;
 
 use crate::ServiceError;
 use std::fmt::Display;
+use std::slice;
 
 /// The `Validate` trait of the Aragog library.
 /// This trait provides the possibility to validate an instance or its fields formats or logic. Its main use
@@ -248,6 +249,114 @@ pub trait Validate {
             errors.push(format!(
                 "{} '{}' has wrong length, please specify {} characters",
                 field_path, str, len
+            ));
+            return false;
+        }
+        true
+    }
+
+    /// Validates the maximum number of elements in `field_value`.
+    /// Usually used as a helper function for implementations of [`Validate`] trait.
+    ///
+    /// # Arguments
+    ///
+    /// * `field_path` - the string slice representing the field name or path for clear errors
+    /// * `field_value` - the [`Iter`] field value to validate
+    /// * `max_count` - The maximum count of `field_value` elements
+    /// * `errors` - a mutable reference to a vector of String to be filled with error messages like provided
+    /// in [`Validate`]::[`validations`]
+    ///
+    /// # Returns
+    ///
+    /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
+    /// new error message is added to `errors`
+    ///
+    /// [`Validate`]: trait.Validate.html
+    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`Iter`]: std::slice::Iter
+    #[allow(dead_code)]
+    fn validate_max_count<T>(
+        field_path: &str,
+        field_value: slice::Iter<T>,
+        max_count: usize,
+        errors: &mut Vec<String>,
+    ) -> bool {
+        if field_value.count() > max_count {
+            errors.push(format!(
+                "{} has too many elements, max count: {}",
+                field_path, max_count
+            ));
+            return false;
+        }
+        true
+    }
+
+    /// Validates the minimum number of elements in `field_value`.
+    /// Usually used as a helper function for implementations of [`Validate`] trait.
+    ///
+    /// # Arguments
+    ///
+    /// * `field_path` - the string slice representing the field name or path for clear errors
+    /// * `field_value` - the [`Iter`] field value to validate
+    /// * `min_count` - The minimum count of `field_value` elements
+    /// * `errors` - a mutable reference to a vector of String to be filled with error messages like provided
+    /// in [`Validate`]::[`validations`]
+    ///
+    /// # Returns
+    ///
+    /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
+    /// new error message is added to `errors`
+    ///
+    /// [`Validate`]: trait.Validate.html
+    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`Iter`]: std::slice::Iter
+    #[allow(dead_code)]
+    fn validate_min_count<T>(
+        field_path: &str,
+        field_value: slice::Iter<T>,
+        min_count: usize,
+        errors: &mut Vec<String>,
+    ) -> bool {
+        if field_value.count() < min_count {
+            errors.push(format!(
+                "{} doesn't have enough elements, min count: {}",
+                field_path, min_count
+            ));
+            return false;
+        }
+        true
+    }
+
+    /// Validates the exact number of elements in `field_value`.
+    /// Usually used as a helper function for implementations of [`Validate`] trait.
+    ///
+    /// # Arguments
+    ///
+    /// * `field_path` - the string slice representing the field name or path for clear errors
+    /// * `field_value` - the [`Iter`] field value to validate
+    /// * `count` - The expected exact count of `field_value` elements
+    /// * `errors` - a mutable reference to a vector of String to be filled with error messages like provided
+    /// in [`Validate`]::[`validations`]
+    ///
+    /// # Returns
+    ///
+    /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
+    /// new error message is added to `errors`
+    ///
+    /// [`Validate`]: trait.Validate.html
+    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`Iter`]: std::slice::Iter
+    #[allow(dead_code)]
+    fn validate_count<T>(
+        field_path: &str,
+        field_value: slice::Iter<T>,
+        count: usize,
+        errors: &mut Vec<String>,
+    ) -> bool {
+        if field_value.count() != count {
+            errors.push(format!(
+                "{} has a wrong number of elements, expected count: {}",
+                field_path, count
             ));
             return false;
         }

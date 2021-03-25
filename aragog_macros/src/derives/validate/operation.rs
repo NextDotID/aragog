@@ -18,6 +18,18 @@ pub enum Operation {
         value: usize,
         field: String,
     },
+    MinCount {
+        value: usize,
+        field: String,
+    },
+    MaxCount {
+        value: usize,
+        field: String,
+    },
+    Count {
+        value: usize,
+        field: String,
+    },
     Regex {
         value: String,
         field: String,
@@ -71,6 +83,21 @@ impl ParseOperation for Operation {
                 let value = expect_usize_lit(&Self::expect_literal_value(path, value)?)?;
                 let field = Self::expect_field(path, field)?;
                 Self::Length { value, field }
+            }
+            "min_count" => {
+                let value = expect_usize_lit(&Self::expect_literal_value(path, value)?)?;
+                let field = Self::expect_field(path, field)?;
+                Self::MinCount { value, field }
+            }
+            "max_count" => {
+                let value = expect_usize_lit(&Self::expect_literal_value(path, value)?)?;
+                let field = Self::expect_field(path, field)?;
+                Self::MaxCount { value, field }
+            }
+            "count" => {
+                let value = expect_usize_lit(&Self::expect_literal_value(path, value)?)?;
+                let field = Self::expect_field(path, field)?;
+                Self::Count { value, field }
             }
             "regex" => {
                 let value = expect_str_lit(&Self::expect_literal_value(path, value)?)?;
@@ -146,6 +173,9 @@ impl Display for Operation {
                 Operation::MinLength { .. } => "min_length",
                 Operation::MaxLength { .. } => "max_length",
                 Operation::Length { .. } => "length",
+                Operation::MinCount { .. } => "min_count",
+                Operation::MaxCount { .. } => "max_count",
+                Operation::Count { .. } => "count",
                 Operation::Regex { .. } => "regex",
                 Operation::GreaterThan { .. } => "greater_than",
                 Operation::LesserThan { .. } => "lesser_than",
@@ -201,6 +231,24 @@ impl Operation {
                 let field_token = Self::field_token(&field, custom_token, false);
                 quote! {
                     Self::validate_len(#field, &#field_token, #value, errors);
+                }
+            }
+            Self::MinCount { value, field } => {
+                let field_token = Self::field_token(&field, custom_token, false);
+                quote! {
+                    Self::validate_min_count(#field, #field_token.iter(), #value, errors);
+                }
+            }
+            Self::MaxCount { value, field } => {
+                let field_token = Self::field_token(&field, custom_token, false);
+                quote! {
+                    Self::validate_max_count(#field, #field_token.iter(), #value, errors);
+                }
+            }
+            Self::Count { value, field } => {
+                let field_token = Self::field_token(&field, custom_token, false);
+                quote! {
+                    Self::validate_count(#field, #field_token.iter(), #value, errors);
                 }
             }
             Self::Regex { value, field } => {
