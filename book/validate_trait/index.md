@@ -64,9 +64,10 @@ The current available field attribute validation operation macros (can be chaine
     - `max_count(VAL)` validates the field has a maximal number of elements of *VAL*
     - `min_count(VAL)` validates the field has a minimal number of elements of *VAL*
     - `count(VAL)` validates the field has a number of elements of *VAL* 
+    > Note: These operations use the `Iterator::count` method which might be expensive 
 - Other
-    - `is_some(VAL)` validates the field contains a *VAL*
-    - `is_none` validates the field does not contain a value
+    - `is_some` validates the `Option` field contains a value
+    - `is_none` validates the `Option` field does not contain a value
     - `func(FUNC)` calls the *FUNC* method (see [Extra Validations](#extra-validations))
     - `call_validations` calls the validations of the field allowing to propagate the validation calls.
   The field must be an type implementing `Validate`

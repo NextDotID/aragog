@@ -275,8 +275,10 @@ mod macros {
 
             // Options Vector
             #[validate_each(is_some, is_none)]
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             pub vec_string_option: Vec<Option<String>>,
             #[validate_each(is_some, is_none)]
+            #[validate(min_count = 1, max_count = 5, count = 1)]
             pub vec_numeric_option: Vec<Option<i32>>,
         }
     }
