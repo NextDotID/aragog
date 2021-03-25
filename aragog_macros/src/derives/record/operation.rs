@@ -11,7 +11,7 @@ const FORBIDDEN_FUNCTIONS: [&str; 6] = [
     "after_delete_hook",
 ];
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum HookOperation {
     Func(String),
     IsAsync(bool),

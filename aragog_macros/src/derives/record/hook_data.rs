@@ -3,7 +3,7 @@ use syn::Ident;
 
 use crate::to_tokenstream::ToTokenStream;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct HookData {
     pub func: Option<String>,
     pub database_access: Option<bool>,

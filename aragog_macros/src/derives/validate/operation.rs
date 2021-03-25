@@ -4,7 +4,7 @@ use proc_macro2::{Span, TokenStream};
 use std::fmt::{self, Display, Formatter};
 use syn::{spanned::Spanned, Ident, Path};
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum Operation {
     MinLength {
         value: usize,

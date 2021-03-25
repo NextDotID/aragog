@@ -7,14 +7,14 @@ use crate::parse_attribute::ParseAttribute;
 use crate::to_tokenstream::ToTokenStream;
 use crate::toolbox::expect_field_name;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum ValidateCommandType {
     Validate,
     ValidateField { field: String },
     ValidateFieldEach { field: String },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ValidateCommand {
     operations: Vec<Operation>,
     command_type: ValidateCommandType,

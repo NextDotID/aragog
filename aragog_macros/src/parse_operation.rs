@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::{spanned::Spanned, Lit, Meta, NestedMeta, Path};
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum OperationValue {
     Lit(Lit),
     Path(Path),

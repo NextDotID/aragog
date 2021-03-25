@@ -3,7 +3,7 @@ use crate::derives::record::hook_data::HookData;
 use crate::to_tokenstream::ToTokenStream;
 use proc_macro2::TokenStream;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct HooksContainer {
     pub before_create: Vec<HookData>,
     pub before_save: Vec<HookData>,

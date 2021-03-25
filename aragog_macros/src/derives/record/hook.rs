@@ -7,7 +7,7 @@ use crate::toolbox::expect_no_field_name;
 use proc_macro2::Span;
 use syn::spanned::Spanned;
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub enum HookType {
     BeforeAll,
     BeforeWrite,
@@ -21,7 +21,7 @@ pub enum HookType {
     AfterDelete,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Hook {
     pub hook_type: HookType,
     pub hook_data: HookData,
