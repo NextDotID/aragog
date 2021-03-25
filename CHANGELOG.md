@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.12.0
+
+* Bumped `aragog_macros` to `0.6` (see its [CHANGELOG](aragog_macros/CHANGELOG.md))
+* (**BREAKING**) Renaming:
+  - `DatabaseConnectionPool` is now `DatabaseConnection`
+  - `TransactionPool` is now `TransactionDatabaseConnection`
+* (**BREAKING**) Dropped `EdgeRecord` trait, which is now a **struct** wrapping any `Record` of an ArangoDB *Edge Collection* (see [book section](book/edge_record_struct/index.md))
+* Added new structure `OperationOptions` allowing to customize behavior regarding:
+  - ArangoDB revision system
+  - Hooks
+  - Wait for database synchronization
+  
+  These custom options bring new methods in `DatabaseRecord` (see the [book section](book/record_trait/index.md):
+  - `create_with_options`
+  - `save_with_options`
+  - `delete_with_options`
+
+  And can be set globally on the `DatabaseConnection` on start. (see the [book section](book/init/db_connection.md))
+* (**BREAKING**) Removed the `password_hashing` feature, irrelevant in this library and the `argonautica` crate not being maintained.
+* Deprecated `Transaction::pool()` method, prefer the new `Transaction::database_connection()` method.
+* **Aragog** now forbids unsafe code and denies compilation warning
+* Various documentation, tests and clippy related improvements
+
 ## 0.11.1
 
 * bumped `aragog_macro` dependency to 0.5.0

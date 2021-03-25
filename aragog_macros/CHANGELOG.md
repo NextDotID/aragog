@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.6.0
+
+* Added a `README`
+* Complete rework of derive macro attribute parsing and error handling
+* (**BREAKING**) Removed `EdgeRecord` derive macro
+* (**BREAKING**) `Record` derive macro attributes (hooks) no longer use the `hook` keyword:
+  - `#[hook(before_save(func = "func"))]` becomes `#[before_create(func = "func")]`
+* (**BREAKING**) `Validate` derive macro forbids the following functions to avoid conflict and recursion:
+  - `validations`
+* (**BREAKING**) `Record` derive macro forbids the following functions to avoid conflict and recursion:
+  - `before_create_hook`
+  - `before_save_hook`
+  - `before_delete_hook`
+  - `before_write_hook`
+  - `before_all_hook`
+  - `after_create_hook`
+  - `after_save_hook`
+  - `after_delete_hook`
+  - `after_write_hook`
+  - `after_all_hook`
+* Added new `Validate` derive macro attribute `validate_each` allowing to perform validation operation on an iterator.
+* Added the following `Validate` derive macro validation operations:
+  - `is_some` and `is_none` for `Option<>` fields.
+  - `call_validations` for validation propagation on fields which type implements `aragog::Validate`
+  - `max_count`, `min_count`, `count` to validate the number of elements in a `Vec<>`
+* (**FIX**) The following validation operations now correctly support types that can't be safely cast to `i32`:
+  - All numeric types are handled
+  - All types implementing `PartiaOrd` are handled
+  - Custom types implementing `PartialOrd` like custom structs or enums are handled
+  
 ## 0.5.0
 
 * `Record` hooks implementation matches the new `?Sized` requirements of aragog 0.11.0
