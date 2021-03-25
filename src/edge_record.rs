@@ -22,6 +22,7 @@ pub struct EdgeRecord<T> {
     /// The main document data, must implement [`Record`].
     ///
     /// Note: The data is flattened on save, so you won't have any field named `data` in your database.
+    ///
     /// [`Record`]: trait.Record.html
     #[serde(flatten)]
     pub data: T,
