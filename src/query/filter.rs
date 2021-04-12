@@ -4,8 +4,8 @@ use crate::query::Comparison;
 
 #[derive(Clone, Debug)]
 enum Operator {
-    AND,
-    OR,
+    And,
+    Or,
 }
 
 impl Display for Operator {
@@ -14,8 +14,8 @@ impl Display for Operator {
             f,
             "{}",
             match self {
-                Self::AND => "&&",
-                Self::OR => "||",
+                Self::And => "&&",
+                Self::Or => "||",
             }
         )
     }
@@ -60,7 +60,7 @@ impl Filter {
     ///
     pub fn and(mut self, comparison: Comparison) -> Self {
         self.comparisons.push(comparison);
-        self.operators.push(Operator::AND);
+        self.operators.push(Operator::And);
         self
     }
 
@@ -76,7 +76,7 @@ impl Filter {
     ///
     pub fn or(mut self, comparison: Comparison) -> Self {
         self.comparisons.push(comparison);
-        self.operators.push(Operator::OR);
+        self.operators.push(Operator::Or);
         self
     }
 

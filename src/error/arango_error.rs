@@ -307,7 +307,7 @@ pub enum ArangoError {
     ///
     /// Will be raised when storage engine encounters an I/O error.
     #[error("1305 - ERROR_ARANGO_IO_ERROR")]
-    ArangoIOError,
+    ArangoIoError,
     /// 1400 - ERROR_REPLICATION_NO_RESPONSE
     ///
     /// Will be raised when the replication applier does not receive any or an incomplete response from the master.
@@ -941,7 +941,7 @@ impl ArangoError {
             1302 => Self::ArangoTryAgain,
             1303 => Self::ArangoBusy,
             1304 => Self::ArangoMergeInProgress,
-            1305 => Self::ArangoIOError,
+            1305 => Self::ArangoIoError,
             1400 => Self::ReplicationNoResponse,
             1401 => Self::ReplicationInvalidResponse,
             1402 => Self::ReplicationMasterError,

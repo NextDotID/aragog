@@ -157,11 +157,9 @@ impl DatabaseConnection {
             schema.version.unwrap_or(0)
         );
         let mut collections = HashMap::new();
-        for collection in schema.collections.iter() {
-            collections.insert(
-                collection.name.clone(),
-                DatabaseCollection::from(collection.get(&database).await?),
-            );
+        for collection in schema.collections.into_iter() {
+            let coll = collection.get(&database).await?;
+            collections.insert(collection.name, DatabaseCollection::from(coll));
         }
         Ok(collections)
     }
