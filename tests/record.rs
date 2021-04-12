@@ -547,6 +547,37 @@ mod read {
     }
 }
 
+mod enum_record {
+    use super::*;
+
+    #[derive(Clone, Debug, Serialize, Deserialize, Record)]
+    enum Dish {
+        Adult {
+            price: u16,
+            alcohol: bool,
+            name: String,
+        },
+        Child {
+            price: u16,
+            name: String,
+        },
+    }
+
+    #[maybe_async::test(
+        feature = "blocking",
+        async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn can_be_create() {
+        let conn = common::setup_db().await;
+        let dish = Dish::Adult {
+            price: 20,
+            alcohol: true,
+            name: "Baba au rhum".to_string(),
+        };
+        DatabaseRecord::create(dish, &conn).await.unwrap();
+    }
+}
+
 mod all_macros {
     use super::*;
 

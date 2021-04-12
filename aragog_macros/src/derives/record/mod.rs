@@ -3,8 +3,6 @@ use crate::derives::record::hooks_container::HooksContainer;
 use crate::parse_attribute::ParseAttribute;
 use crate::to_tokenstream::ToTokenStream;
 use proc_macro::TokenStream;
-use std::borrow::Borrow;
-use syn::Data;
 
 mod hook;
 mod hook_data;
@@ -13,11 +11,6 @@ mod operation;
 
 pub fn impl_record_macro(ast: &syn::DeriveInput) -> TokenStream {
     let target_name = &ast.ident;
-
-    match ast.data.borrow() {
-        Data::Struct(_elem) => {}
-        _ => emit_call_site_error!("Only Structs can derive `Record`"),
-    }
 
     let mut hooks = Vec::new();
     for attr in ast.attrs.iter() {

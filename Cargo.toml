@@ -27,7 +27,7 @@ minimal_traits = []
 
 [dependencies]
 # ArangoDB driver
-arangors = { version = "~0.4.6", default-features = false, features = ["rocksdb"] }
+arangors = { version = ">0.4.6", default-features = false, features = ["rocksdb"] }
 # Used for string validation toolbox, not used otherwise
 regex = "1.4"
 # Record trait has async methods
@@ -61,8 +61,8 @@ chrono = { version = "0.4", features = ["serde"] }
 env_logger = "0.8"
 
 [dev-dependencies.tokio]
-version = "0.2"
-features = [ "macros", "rt-core" ]
+version = "1.4"
+features = [ "macros", "rt", "rt-multi-thread"]
 
 [badges.maintenance]
 status = "actively-developed"

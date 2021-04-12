@@ -1,9 +1,7 @@
-use arangors::{Collection, Document};
-
+use crate::db::database_record_dto::DatabaseRecordDto;
 use crate::error::ArangoHttpError;
 use crate::{DatabaseAccess, DatabaseRecord, OperationOptions, Record, ServiceError};
-use arangors::client::reqwest::ReqwestClient;
-use std::convert::TryFrom;
+use std::convert::TryInto;
 
 #[maybe_async::maybe_async]
 pub async fn update_record<T, D>(
@@ -23,24 +21,7 @@ where
         Ok(resp) => resp,
         Err(error) => return Err(ServiceError::from(error)),
     };
-    DatabaseRecord::try_from(response)
-}
-
-#[maybe_async::maybe_async]
-pub async fn create_document<T>(
-    obj: T,
-    collection: &Collection<ReqwestClient>,
-    options: OperationOptions,
-) -> Result<DatabaseRecord<T>, ServiceError>
-where
-    T: Record,
-{
-    log::debug!("Creating new {} document", collection.name());
-    let response = match collection.create_document(obj, options.into()).await {
-        Ok(resp) => resp,
-        Err(error) => return Err(ServiceError::from(error)),
-    };
-    DatabaseRecord::try_from(response)
+    response.try_into()
 }
 
 #[maybe_async::maybe_async]
@@ -55,7 +36,13 @@ where
     D: DatabaseAccess + ?Sized,
 {
     let collection = db_accessor.get_collection(collection_name)?;
-    create_document(obj, collection, options).await
+    log::debug!("Creating new {} document", collection.name());
+    let dto = DatabaseRecordDto::new(obj);
+    let response = match collection.create_document(dto, options.into()).await {
+        Ok(resp) => resp,
+        Err(error) => return Err(ServiceError::from(error)),
+    };
+    response.try_into()
 }
 
 #[maybe_async::maybe_async]
@@ -70,7 +57,7 @@ where
 {
     log::debug!("Retrieving {} {} from database", collection_name, key);
     let collection = db_accessor.get_collection(collection_name)?;
-    let record: Document<T> = match collection.document(key).await {
+    let record = match collection.document(key).await {
         Ok(doc) => doc,
         Err(error) => {
             let err = ServiceError::from(error);

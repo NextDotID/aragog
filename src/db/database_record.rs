@@ -1,4 +1,3 @@
-use arangors::document::response::DocumentResponse;
 use arangors::{AqlQuery, Document};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -7,7 +6,6 @@ use std::fmt::{self, Display, Formatter};
 use crate::db::database_service;
 use crate::query::{Query, RecordQueryResult};
 use crate::{DatabaseAccess, EdgeRecord, OperationOptions, Record, ServiceError};
-use std::convert::TryFrom;
 use std::ops::{Deref, DerefMut};
 
 /// Struct representing database stored documents.
@@ -23,13 +21,13 @@ use std::ops::{Deref, DerefMut};
 pub struct DatabaseRecord<T> {
     /// The Document unique and indexed `_key`
     #[serde(rename(serialize = "_key", deserialize = "_key"))]
-    key: String,
+    pub(crate) key: String,
     /// The Document unique and indexed `_id`
     #[serde(rename(serialize = "_id", deserialize = "_id"))]
-    id: String,
+    pub(crate) id: String,
     /// The Document revision `_rev`
     #[serde(rename(serialize = "_rev", deserialize = "_rev"))]
-    rev: String,
+    pub(crate) rev: String,
     /// The deserialized stored document
     #[serde(flatten)]
     pub record: T,
@@ -843,58 +841,6 @@ impl<T: Record> From<Document<T>> for DatabaseRecord<T> {
     }
 }
 
-impl<T: Record> TryFrom<DocumentResponse<DatabaseRecord<T>>> for DatabaseRecord<T> {
-    type Error = ServiceError;
-
-    fn try_from(value: DocumentResponse<DatabaseRecord<T>>) -> Result<Self, Self::Error> {
-        match value {
-            DocumentResponse::Silent => Err(ServiceError::InternalError {
-                message: Some(String::from("Received unexpected silent document response")),
-            }),
-            DocumentResponse::Response { new, header, .. } => match new {
-                Some(value) => Ok(value),
-                None => Err(ServiceError::InternalError {
-                    message: Some(format!(
-                        "Expected ArangoDB to return the new {} document",
-                        header._id
-                    )),
-                }),
-            },
-        }
-    }
-}
-
-impl<T: Record> TryFrom<DocumentResponse<T>> for DatabaseRecord<T> {
-    type Error = ServiceError;
-
-    fn try_from(value: DocumentResponse<T>) -> Result<Self, Self::Error> {
-        match value {
-            DocumentResponse::Silent => Err(ServiceError::InternalError {
-                message: Some(String::from("Received unexpected silent document response")),
-            }),
-            DocumentResponse::Response { header, new, .. } => {
-                let doc: T = match new {
-                    Some(value) => value,
-                    None => {
-                        return Err(ServiceError::InternalError {
-                            message: Some(format!(
-                                "Expected ArangoDB to return the new {} document",
-                                header._id
-                            )),
-                        });
-                    }
-                };
-                Ok(DatabaseRecord {
-                    key: header._key.clone(),
-                    id: header._id.clone(),
-                    rev: header._rev,
-                    record: doc,
-                })
-            }
-        }
-    }
-}
-
 impl<T: Record> Display for DatabaseRecord<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{} {} Database Record", T::collection_name(), self.key())
@@ -912,5 +858,112 @@ impl<T: Record> Deref for DatabaseRecord<T> {
 impl<T: Record> DerefMut for DatabaseRecord<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.record
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn struct_serialize_deserialize() {
+        #[derive(Serialize, Deserialize, Clone)]
+        struct Doc {
+            a: String,
+            b: u16,
+            c: Vec<bool>,
+        }
+
+        let db_record = DatabaseRecord {
+            key: "key".to_string(),
+            id: "id".to_string(),
+            rev: "rev".to_string(),
+            record: Doc {
+                a: "a".to_string(),
+                b: 10,
+                c: vec![false, true, false],
+            },
+        };
+        let json = serde_json::to_string(&db_record).unwrap();
+        let parsed_record: DatabaseRecord<Doc> = serde_json::from_str(&json).unwrap();
+        assert_eq!(&parsed_record.key, &db_record.key);
+        assert_eq!(&parsed_record.id, &db_record.id);
+        assert_eq!(&parsed_record.rev, &db_record.rev);
+        assert_eq!(parsed_record.record.a, db_record.record.a);
+        assert_eq!(parsed_record.record.b, db_record.record.b);
+        assert_eq!(parsed_record.record.c, db_record.record.c);
+    }
+
+    #[test]
+    fn struct_with_enum_serialize_deserialize() {
+        #[derive(Serialize, Deserialize, Clone)]
+        struct Doc {
+            doc: DocEnum,
+        }
+
+        #[derive(Serialize, Deserialize, Clone)]
+        enum DocEnum {
+            A { a: String, b: u16, c: Vec<bool> },
+            B { a: bool, b: f64 },
+        }
+
+        let db_record = DatabaseRecord {
+            key: "key".to_string(),
+            id: "id".to_string(),
+            rev: "rev".to_string(),
+            record: Doc {
+                doc: DocEnum::A {
+                    a: "a".to_string(),
+                    b: 10,
+                    c: vec![false, true, false],
+                },
+            },
+        };
+        let json = serde_json::to_string(&db_record).unwrap();
+        let parsed_record: DatabaseRecord<Doc> = serde_json::from_str(&json).unwrap();
+        assert_eq!(&parsed_record.key, &db_record.key);
+        assert_eq!(&parsed_record.id, &db_record.id);
+        assert_eq!(&parsed_record.rev, &db_record.rev);
+        match parsed_record.record.doc {
+            DocEnum::A { a, b, c } => {
+                assert_eq!(&a, "a");
+                assert_eq!(b, 10);
+                assert_eq!(c, vec![false, true, false]);
+            }
+            DocEnum::B { .. } => panic!("Wrong enum variant"),
+        }
+    }
+
+    #[test]
+    fn enum_serialize_deserialize() {
+        #[derive(Serialize, Deserialize, Clone)]
+        enum DocEnum {
+            A { a: String, b: u16, c: Vec<bool> },
+            B { a: bool, b: f64 },
+        }
+
+        let db_record = DatabaseRecord {
+            key: "key".to_string(),
+            id: "id".to_string(),
+            rev: "rev".to_string(),
+            record: DocEnum::A {
+                a: "a".to_string(),
+                b: 10,
+                c: vec![false, true, false],
+            },
+        };
+        let json = serde_json::to_string(&db_record).unwrap();
+        let parsed_record: DatabaseRecord<DocEnum> = serde_json::from_str(&json).unwrap();
+        assert_eq!(&parsed_record.key, &db_record.key);
+        assert_eq!(&parsed_record.id, &db_record.id);
+        assert_eq!(&parsed_record.rev, &db_record.rev);
+        match parsed_record.record {
+            DocEnum::A { a, b, c } => {
+                assert_eq!(&a, "a");
+                assert_eq!(b, 10);
+                assert_eq!(c, vec![false, true, false]);
+            }
+            DocEnum::B { .. } => panic!("Wrong enum variant"),
+        }
     }
 }
