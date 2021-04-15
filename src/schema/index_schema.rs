@@ -45,9 +45,7 @@ impl SchemaDatabaseOperation for IndexSchema {
         silent: bool,
     ) -> Result<Option<Self::PoolType>, ClientError> {
         log::debug!("Creating index {}", &self.name);
-        let duplicate = serde_json::to_string(self).unwrap();
-        let duplicate: Self = serde_json::from_str(&duplicate).unwrap();
-        let index = duplicate.into();
+        let index = self.clone().into();
         Self::handle_pool_result(
             database.create_index(&self.collection, &index).await,
             silent,

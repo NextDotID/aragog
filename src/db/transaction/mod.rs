@@ -75,7 +75,7 @@ mod transaction_output;
 /// On the other hand all `READ` operations as `find`, `get`, etc should all work even with `AQL` queries.
 ///
 /// [`DatabaseConnection`]: ../struct.DatabaseConnection.html
-// TODO: Add #[derive(Debug)] when arangors supports it
+#[derive(Debug)]
 pub struct Transaction {
     accessor: TransactionLayer<ReqwestClient>,
     database_connection: TransactionDatabaseConnection,

@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+* `schema::IndexSchema` and `schema::GraphSchema` are cloned on application
+* Enums can now derive `Record`
+* Bumped `tokio` dev dependency to `1.4` with `"rt", "rt-multi-thread"` features
+
+### Fixed
+
+* Clippy fixes
+
 ## 0.12.0
 
 * Bumped `aragog_macros` to `0.6` (see its [CHANGELOG](aragog_macros/CHANGELOG.md))

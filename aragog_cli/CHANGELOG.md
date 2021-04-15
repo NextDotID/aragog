@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* `arangors` dependency bumped to `>=0.4.7`
+
 ## 0.2.12
 
 * `aragog` dependency from 0.9 to 0.10

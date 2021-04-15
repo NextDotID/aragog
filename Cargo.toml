@@ -27,7 +27,7 @@ minimal_traits = []
 
 [dependencies]
 # ArangoDB driver
-arangors = { version = ">0.4.6", default-features = false, features = ["rocksdb"] }
+arangors = { version = ">=0.4.7", default-features = false, features = ["rocksdb"] }
 # Used for string validation toolbox, not used otherwise
 regex = "1.4"
 # Record trait has async methods
