@@ -131,6 +131,10 @@ impl DatabaseConnection {
         self.collections.keys().cloned().collect()
     }
 
+    pub(crate) fn collections(&self) -> Vec<&DatabaseCollection> {
+        self.collections.values().collect()
+    }
+
     /// **DESTRUCTIVE OPERATION**
     ///
     /// This will truncate all collections in the database, the collection will still exist but

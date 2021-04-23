@@ -75,13 +75,12 @@ impl TransactionBuilder {
             )
             .await?;
         log::trace!("Initialized ArangoDB transaction {}", accessor.id());
-        // TODO: Change this for direct Collection<> transition when `arangors` supports it
         let mut collections = HashMap::new();
-        for collections_name in db_connection.collections_names().iter() {
-            let collection = accessor.collection(collections_name).await?;
+        for collection in db_connection.collections().into_iter() {
+            let inner_collection = collection.clone_with_transaction(accessor.id().clone())?;
             collections.insert(
-                collections_name.clone(),
-                DatabaseCollection::from(collection),
+                collection.name().to_string(),
+                DatabaseCollection::from(inner_collection),
             );
         }
         //

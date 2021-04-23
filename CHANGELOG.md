@@ -6,7 +6,10 @@
 
 * `schema::IndexSchema` and `schema::GraphSchema` are cloned on application
 * Enums can now derive `Record`
-* Bumped `tokio` dev dependency to `1.4` with `"rt", "rt-multi-thread"` features
+* Bumped `tokio` dev dependency to `1.5` with `"rt", "rt-multi-thread"` features
+* (Perf) Transaction building clones the collection accessors with the transaction id header instead
+of requesting them.
+* Added test on authentication failure with `AuthMode::Jwt`  
 
 ### Fixed
 

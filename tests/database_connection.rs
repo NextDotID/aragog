@@ -68,25 +68,26 @@ async fn fails_with_wrong_parameters() {
             _ => panic!("wrong error"),
         },
     }
-    // TODO: Remove comments when https://github.com/fMeow/arangors/issues/69 is closed
-    // match DatabaseConnection::builder()
-    //     .with_credentials(
-    //         &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
-    //         &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
-    //         "fake_user",
-    //         "fake_password",
-    //     )
-    //     .with_schema_path("./tests/schema.yaml")
-    //     .with_auth_mode(AuthMode::Jwt)
-    //     .apply_schema()
-    //     .build()
-    //     .await {
-    //     Ok(_) => panic!("should have failed"),
-    //     Err(e) => match e {
-    //         ServiceError::ArangoError(db_error) => assert_eq!(db_error.http_error.http_code(), 401),
-    //         _ => panic!("wrong error")
-    //     }
-    // }
+
+    match DatabaseConnection::builder()
+        .with_credentials(
+            &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
+            &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
+            "fake_user",
+            "fake_password",
+        )
+        .with_schema_path("./tests/schema.yaml")
+        .with_auth_mode(AuthMode::Jwt)
+        .apply_schema()
+        .build()
+        .await
+    {
+        Ok(_) => panic!("should have failed"),
+        Err(e) => match e {
+            ServiceError::ArangoError(db_error) => assert_eq!(db_error.http_error.http_code(), 401),
+            _ => panic!("wrong error"),
+        },
+    }
 }
 
 #[maybe_async::test(
