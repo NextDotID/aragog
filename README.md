@@ -40,14 +40,8 @@ The crate also provides a powerful [AQL][AQL] querying tool allowing complex and
 
 A simple lightweight ODM for [ArangoDB][ArangoDB] based on [arangors][arangors].
 
-Special thanks to [fMeow][fMeow] creator of [arangors][arangors] and [inzanez][inzanez]
-
 [arangors]: https://docs.rs/arangors
 [argonautica]: https://github.com/bcmyers/argonautica
 [ArangoDB]: https://www.arangodb.com/
-[actix]: https://actix.rs/ "Actix Homepage"
-[paperclip]: https://github.com/wafflespeanut/paperclip "Paperclip Github"
 [CLI]: https://crates.io/crates/aragog_cli
-[fMeow]: https://github.com/fMeow/
-[inzanez]: https://github.com/inzanez/
 [AQL]: https://www.arangodb.com/docs/stable/aql/ "AQL"

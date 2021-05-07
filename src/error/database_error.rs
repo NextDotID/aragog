@@ -1,10 +1,10 @@
 use crate::error::{ArangoError, ArangoHttpError};
 use arangors::ArangoError as DriverError;
+use std::error::Error;
 use std::fmt::{self, Display, Formatter};
-use thiserror::Error;
 
 /// Mapped Arango db error response
-#[derive(Debug, Clone, Error)]
+#[derive(Debug, Clone)]
 pub struct DatabaseError {
     /// The mapped Arango HTTP Error
     pub http_error: ArangoHttpError,
@@ -25,6 +25,8 @@ impl Display for DatabaseError {
         )
     }
 }
+
+impl Error for DatabaseError {}
 
 impl From<DriverError> for DatabaseError {
     fn from(error: DriverError) -> Self {

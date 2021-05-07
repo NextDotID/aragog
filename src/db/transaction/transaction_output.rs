@@ -73,9 +73,9 @@ impl<T> TransactionOutput<T> {
     }
 }
 
-impl<T> Into<Result<T, ServiceError>> for TransactionOutput<T> {
-    fn into(self) -> Result<T, ServiceError> {
-        match self {
+impl<T> From<TransactionOutput<T>> for Result<T, ServiceError> {
+    fn from(output: TransactionOutput<T>) -> Self {
+        match output {
             TransactionOutput::Committed(v) => Ok(v),
             TransactionOutput::Aborted(err) => Err(err),
         }

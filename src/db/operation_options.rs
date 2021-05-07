@@ -48,18 +48,18 @@ impl Default for OperationOptions {
     }
 }
 
-impl Into<InsertOptions> for OperationOptions {
-    fn into(self) -> InsertOptions {
+impl From<OperationOptions> for InsertOptions {
+    fn from(option: OperationOptions) -> Self {
         // TODO: remove this builder pattern whe arangors resolves https://github.com/fMeow/arangors/issues/71
-        if let Some(value) = self.wait_for_sync {
-            InsertOptions::builder()
+        if let Some(value) = option.wait_for_sync {
+            Self::builder()
                 .wait_for_sync(value)
                 .return_new(true) // TODO: allow customization on this option
                 .return_old(false)
                 .silent(false)
                 .build()
         } else {
-            InsertOptions::builder()
+            Self::builder()
                 .return_new(true) // TODO: allow customization on this option
                 .return_old(false)
                 .silent(false)
@@ -68,22 +68,22 @@ impl Into<InsertOptions> for OperationOptions {
     }
 }
 
-impl Into<UpdateOptions> for OperationOptions {
-    fn into(self) -> UpdateOptions {
+impl From<OperationOptions> for UpdateOptions {
+    fn from(option: OperationOptions) -> Self {
         // TODO: remove this builder pattern whe arangors resolves https://github.com/fMeow/arangors/issues/71
-        if let Some(value) = self.wait_for_sync {
-            UpdateOptions::builder()
+        if let Some(value) = option.wait_for_sync {
+            Self::builder()
                 .keep_null(true)
                 .wait_for_sync(value)
-                .ignore_revs(self.ignore_revs)
+                .ignore_revs(option.ignore_revs)
                 .return_new(true) // TODO: allow customization on this option
                 .return_old(false)
                 .silent(false)
                 .build()
         } else {
-            UpdateOptions::builder()
+            Self::builder()
                 .keep_null(true)
-                .ignore_revs(self.ignore_revs)
+                .ignore_revs(option.ignore_revs)
                 .return_new(true) // TODO: allow customization on this option
                 .return_old(false)
                 .silent(false)
@@ -92,17 +92,17 @@ impl Into<UpdateOptions> for OperationOptions {
     }
 }
 
-impl Into<RemoveOptions> for OperationOptions {
-    fn into(self) -> RemoveOptions {
+impl From<OperationOptions> for RemoveOptions {
+    fn from(option: OperationOptions) -> Self {
         // TODO: remove this builder pattern whe arangors resolves https://github.com/fMeow/arangors/issues/71
-        if let Some(value) = self.wait_for_sync {
-            RemoveOptions::builder()
+        if let Some(value) = option.wait_for_sync {
+            Self::builder()
                 .wait_for_sync(value)
                 .return_old(false)
                 .silent(true) // On deletion we don't need meta data
                 .build()
         } else {
-            RemoveOptions::builder()
+            Self::builder()
                 .return_old(false)
                 .silent(true) // On deletion we don't need meta data
                 .build()

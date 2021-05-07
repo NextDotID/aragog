@@ -59,7 +59,7 @@ impl TransactionBuilder {
     ) -> Result<Transaction, ServiceError> {
         let collection_names = self
             .collections
-            .unwrap_or(db_connection.collections_names());
+            .unwrap_or_else(|| db_connection.collections_names());
         let accessor = db_connection
             .database()
             .begin_transaction(
@@ -88,7 +88,7 @@ impl TransactionBuilder {
         let database = db_connection.database().clone();
         let operation_options = self
             .operation_options
-            .unwrap_or(db_connection.operation_options());
+            .unwrap_or_else(|| db_connection.operation_options());
         Ok(Transaction {
             accessor,
             database_connection: TransactionDatabaseConnection {
