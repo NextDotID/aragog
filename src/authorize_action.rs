@@ -59,7 +59,7 @@ pub trait AuthorizeAction<T: Record> {
         if self.is_action_authorized(action, target) {
             return Ok(());
         }
-        Err(ServiceError::Forbidden)
+        Err(ServiceError::Forbidden(None))
     }
 
     /// Returns true if the object is authorized to do `action` on `target`

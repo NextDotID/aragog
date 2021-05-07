@@ -9,9 +9,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GraphSchema(pub Graph);
 
-impl Into<Graph> for GraphSchema {
-    fn into(self) -> Graph {
-        self.0
+impl From<GraphSchema> for Graph {
+    fn from(schema: GraphSchema) -> Self {
+        schema.0
     }
 }
 

@@ -2,7 +2,8 @@ use std::fmt::Display;
 
 use num::Num;
 
-use crate::query::{string_array_from_array, string_array_from_array_str, Filter};
+use crate::query::utils::{string_array_from_array, string_array_from_array_str};
+use crate::query::Filter;
 
 /// Macro to simplify the [`Comparison`] construction:
 ///
@@ -532,6 +533,7 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Users FILTER a.username == null return a");
     /// ```
+    #[allow(clippy::wrong_self_convention)]
     pub fn is_null(self) -> Comparison {
         Comparison {
             is_field: self.is_field,
@@ -573,6 +575,7 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Users FILTER a.is_authorized == true return a");
     /// ```
+    #[allow(clippy::wrong_self_convention)]
     pub fn is_true(self) -> Comparison {
         Comparison {
             is_field: self.is_field,
@@ -594,6 +597,7 @@ impl ComparisonBuilder {
     /// let query = Query::new("Users").filter(Filter::new(query_item));
     /// assert_eq!(query.to_aql(), "FOR a in Users FILTER a.is_authorized == false return a");
     /// ```
+    #[allow(clippy::wrong_self_convention)]
     pub fn is_false(self) -> Comparison {
         Comparison {
             is_field: self.is_field,

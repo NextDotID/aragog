@@ -6,14 +6,25 @@
 
 * `schema::IndexSchema` and `schema::GraphSchema` are cloned on application
 * Enums can now derive `Record`
-* Bumped `tokio` dev dependency to `1.5` with `"rt", "rt-multi-thread"` features
 * (Perf) Transaction building clones the collection accessors with the transaction id header instead
 of requesting them.
 * Added test on authentication failure with `AuthMode::Jwt`  
+* `arangors` 0.4.8
 
 ### Fixed
 
-* Clippy fixes
+* Clippy fixes.
+* `ServiceError` sources were not correctly set. 
+
+### Removed
+
+* `actix` feature removed
+* `open-api` feature removed
+
+### Added
+
+* optional source to `ServiceError::Unauthorized` and `ServiceError::Forbidden`
+* `ServiceError::Conflict`
 
 ## 0.12.0
 

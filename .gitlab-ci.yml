@@ -55,12 +55,6 @@ test:doc:
   script:
     - cargo test --doc -- --test-threads=1
 
-test:actix:
-  image: rust:latest
-  <<: *test_template
-  script:
-    - cargo test --features "actix" --tests -- --test-threads=1
-
 test:blocking:
   image: rust:latest
   <<: *test_template
@@ -105,7 +99,7 @@ rustdoc:
   script:
     - cargo --version
     - rm -rf public
-    - cargo rustdoc -p $PKG_NAME --features "actix"
+    - cargo rustdoc -p $PKG_NAME
     - mv target/doc public
   artifacts:
     paths:

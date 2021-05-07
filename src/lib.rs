@@ -33,7 +33,7 @@
 //!     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
 //!     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
 //!     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
-//! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error (can be used for the actix framework)
+//! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error
 //! * Transactional operations
 //!
 //! For detailed explanations on theses feature, read the [book](https://gitlab.com/qonfucius/aragog/-/tree/master/book) ([published version](https://qonfucius.gitlab.io/aragog/))
@@ -465,8 +465,6 @@
 //! [argonautica]: https://github.com/bcmyers/argonautica
 //! [ArangoDB]: https://www.arangodb.com/
 //! [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
-//! [actix]: https://actix.rs/ "Actix Homepage"
-//! [paperclip]: https://github.com/wafflespeanut/paperclip "Paperclip Github"
 //! [ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html
 //! [CLI]: https://crates.io/crates/aragog_cli
 //! [edge_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#edges

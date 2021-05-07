@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-* `arangors` dependency bumped to `>=0.4.7`
+* `arangors` dependency bumped to `=0.4.8`
 
 ## 0.2.12
 

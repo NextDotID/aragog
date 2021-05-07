@@ -1,6 +1,6 @@
 [package]
 name = "aragog"
-version = "0.12.0"
+version = "0.13.0"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -21,8 +21,6 @@ async = ["arangors/reqwest_async"]
 blocking = ["arangors/blocking", "arangors/reqwest_blocking", "maybe-async/is_sync", "aragog-macros/blocking"]
 entreprise = ["arangors/enterprise"]
 derive = ["aragog-macros"]
-actix = ["actix-web"]
-open-api = ["paperclip"]
 minimal_traits = []
 
 [dependencies]
@@ -48,10 +46,6 @@ maybe-async = "0.2"
 # Optional crates
 # The aragog derive macros
 aragog-macros = { path = "aragog_macros", version = "0.6", optional = true }
-# Actix web compatibility
-actix-web = { version = "3.3", optional = true, default-features = false }
-# Open API V2 Compatibility
-paperclip = { version = "0.5", optional = true, features = ["actix"] }
 
 [dev-dependencies]
 # We add the "feature" option to avoid serde version conflict somehow

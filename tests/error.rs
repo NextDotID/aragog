@@ -1,4 +1,6 @@
+use aragog::error::{ArangoError, ArangoHttpError, DatabaseError};
 use aragog::ServiceError;
+use std::error::Error;
 
 #[test]
 fn error_default() {
@@ -8,50 +10,55 @@ fn error_default() {
     );
 }
 
-#[cfg(feature = "actix")]
-mod actix_http_errors {
-    use actix_web::ResponseError;
+#[test]
+fn error_sources() {
+    let db_error = DatabaseError {
+        http_error: ArangoHttpError::BadParameter,
+        arango_error: ArangoError::ArangoIllegalState,
+        message: "".to_string(),
+    };
 
-    use aragog::ServiceError;
-
-    #[test]
-    fn actix_web_status_codes() {
-        assert_eq!(
-            ServiceError::InternalError { message: None }
-                .status_code()
-                .as_str(),
-            ServiceError::InternalError { message: None }.http_code()
-        );
-        assert_eq!(
-            ServiceError::UnprocessableEntity {
-                source: Box::new(ServiceError::default())
-            }
-            .status_code()
-            .as_str(),
-            ServiceError::UnprocessableEntity {
-                source: Box::new(ServiceError::default())
-            }
-            .http_code()
-        );
-        assert_eq!(
-            ServiceError::Unauthorized.status_code().as_str(),
-            ServiceError::Unauthorized.http_code()
-        );
-        assert_eq!(
-            ServiceError::Forbidden.status_code().as_str(),
-            ServiceError::Forbidden.http_code()
-        );
-        let err = ServiceError::NotFound {
-            id: "".to_string(),
-            item: "".to_string(),
-            source: None,
-        };
-        assert_eq!(err.status_code().as_str(), err.http_code());
-        assert_eq!(
-            ServiceError::ValidationError(String::default())
-                .status_code()
-                .as_str(),
-            ServiceError::ValidationError(String::default()).http_code()
-        );
+    assert!(ServiceError::ValidationError(String::new())
+        .source()
+        .is_none());
+    assert!(ServiceError::NotFound {
+        item: "".to_string(),
+        id: "".to_string(),
+        source: None
     }
+    .source()
+    .is_none());
+    assert!(ServiceError::NotFound {
+        item: "".to_string(),
+        id: "".to_string(),
+        source: Some(db_error.clone())
+    }
+    .source()
+    .is_some());
+    assert!(ServiceError::ArangoError(db_error.clone())
+        .source()
+        .is_some());
+    assert!(ServiceError::Conflict(db_error.clone()).source().is_some());
+    assert!(ServiceError::Forbidden(Some(db_error.clone()))
+        .source()
+        .is_some());
+    assert!(ServiceError::Unauthorized(Some(db_error.clone()))
+        .source()
+        .is_some());
+    assert!(ServiceError::Forbidden(None).source().is_none());
+    assert!(ServiceError::Unauthorized(None).source().is_none());
+    assert!(ServiceError::UnprocessableEntity {
+        source: Box::new(db_error.clone())
+    }
+    .source()
+    .is_some());
+    assert!(ServiceError::InternalError { message: None }
+        .source()
+        .is_none());
+    assert!(ServiceError::InitError {
+        item: "".to_string(),
+        message: "".to_string()
+    }
+    .source()
+    .is_none());
 }

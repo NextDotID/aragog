@@ -1,4 +1,4 @@
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 
 use crate::schema::{DatabaseSchema, SCHEMA_DEFAULT_FILE_NAME, SCHEMA_DEFAULT_PATH};
 use crate::{AuthMode, DatabaseConnection, OperationOptions, ServiceError};
@@ -24,11 +24,11 @@ pub(crate) enum DatabaseSchemaOption {
     Custom(DatabaseSchema),
 }
 
-impl Into<DbCredentials> for DbCredentialsOption {
-    fn into(self) -> DbCredentials {
-        match self {
-            Self::Custom(cred) => cred,
-            Self::Auto => DbCredentials {
+impl From<DbCredentialsOption> for DbCredentials {
+    fn from(option: DbCredentialsOption) -> Self {
+        match option {
+            DbCredentialsOption::Custom(cred) => cred,
+            DbCredentialsOption::Auto => Self {
                 db_host: std::env::var("DB_HOST").expect("Please define DB_HOST env var."),
                 db_name: std::env::var("DB_NAME").expect("Please define DB_NAME env var."),
                 db_user: std::env::var("DB_USER").expect("Please define DB_USER env var."),
@@ -39,14 +39,14 @@ impl Into<DbCredentials> for DbCredentialsOption {
     }
 }
 
-impl TryInto<DatabaseSchema> for DatabaseSchemaOption {
+impl TryFrom<DatabaseSchemaOption> for DatabaseSchema {
     type Error = ServiceError;
 
-    fn try_into(self) -> Result<DatabaseSchema, Self::Error> {
-        match self {
-            Self::Custom(schema) => Ok(schema),
-            Self::Path(path) => DatabaseSchema::load(&path),
-            Self::Auto => {
+    fn try_from(option: DatabaseSchemaOption) -> Result<Self, Self::Error> {
+        match option {
+            DatabaseSchemaOption::Custom(schema) => Ok(schema),
+            DatabaseSchemaOption::Path(path) => Self::load(&path),
+            DatabaseSchemaOption::Auto => {
                 let schema_path = match std::env::var("SCHEMA_PATH") {
                     Ok(path) => path,
                     Err(_err) => {
@@ -57,7 +57,7 @@ impl TryInto<DatabaseSchema> for DatabaseSchemaOption {
                         SCHEMA_DEFAULT_PATH.to_string()
                     }
                 };
-                DatabaseSchema::load(&format!("{}/{}", schema_path, SCHEMA_DEFAULT_FILE_NAME))
+                Self::load(&format!("{}/{}", schema_path, SCHEMA_DEFAULT_FILE_NAME))
             }
         }
     }

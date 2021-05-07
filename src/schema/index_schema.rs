@@ -18,12 +18,12 @@ pub struct IndexSchema {
     pub settings: IndexSettings,
 }
 
-impl Into<Index> for IndexSchema {
-    fn into(self) -> Index {
-        Index::builder()
-            .name(self.name)
-            .fields(self.fields)
-            .settings(self.settings)
+impl From<IndexSchema> for Index {
+    fn from(schema: IndexSchema) -> Self {
+        Self::builder()
+            .name(schema.name)
+            .fields(schema.fields)
+            .settings(schema.settings)
             .build()
     }
 }

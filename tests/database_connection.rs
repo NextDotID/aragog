@@ -64,7 +64,9 @@ async fn fails_with_wrong_parameters() {
     {
         Ok(_) => panic!("should have failed"),
         Err(e) => match e {
-            ServiceError::ArangoError(db_error) => assert_eq!(db_error.http_error.http_code(), 401),
+            ServiceError::Unauthorized(db_error) => {
+                assert_eq!(db_error.unwrap().http_error.http_code(), 401)
+            }
             _ => panic!("wrong error"),
         },
     }
@@ -84,7 +86,9 @@ async fn fails_with_wrong_parameters() {
     {
         Ok(_) => panic!("should have failed"),
         Err(e) => match e {
-            ServiceError::ArangoError(db_error) => assert_eq!(db_error.http_error.http_code(), 401),
+            ServiceError::Unauthorized(db_error) => {
+                assert_eq!(db_error.unwrap().http_error.http_code(), 401)
+            }
             _ => panic!("wrong error"),
         },
     }
