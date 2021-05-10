@@ -66,8 +66,8 @@ impl ParseAttribute for ValidateCommand {
 }
 
 impl ValidateCommand {
-    fn field_ident(field: &String) -> Ident {
-        Ident::new(field.as_str(), Span::call_site())
+    fn field_ident(field: &str) -> Ident {
+        Ident::new(field, Span::call_site())
     }
 
     fn field_each_token() -> TokenStream {
@@ -75,7 +75,7 @@ impl ValidateCommand {
         let res = quote! {
             #ident
         };
-        res.into()
+        res
     }
 }
 
@@ -102,6 +102,6 @@ impl ToTokenStream for ValidateCommand {
                }
             };
         }
-        quote.into()
+        quote
     }
 }

@@ -191,21 +191,21 @@ impl Display for Operation {
 }
 
 impl Operation {
+    //noinspection RsTypeCheck
     fn field_token(
-        field: &String,
+        field: &str,
         custom_token_stream: Option<TokenStream>,
         no_ref: bool,
     ) -> TokenStream {
         match custom_token_stream {
             None => {
-                let field_ident = Ident::new(&field, Span::call_site());
+                let field_ident = Ident::new(field, Span::call_site());
                 let res = quote! { self.#field_ident };
                 res
             }
             Some(token) => {
                 if no_ref {
-                    let q = quote! { *#token };
-                    q.into()
+                    quote! { *#token }
                 } else {
                     token
                 }
@@ -213,8 +213,9 @@ impl Operation {
         }
     }
 
+    //noinspection RsTypeCheck
     pub(crate) fn token_stream(self, custom_token: Option<TokenStream>) -> TokenStream {
-        let stream = match self {
+        match self {
             Self::MinLength { value, field } => {
                 let field_token = Self::field_token(&field, custom_token, false);
                 quote! {
@@ -313,7 +314,6 @@ impl Operation {
                     },
                 }
             }
-        };
-        stream
+        }
     }
 }

@@ -18,8 +18,8 @@ pub fn impl_validate_macro(ast: &syn::DeriveInput) -> TokenStream {
         ValidateCommand::parse_attribute(attr, None, &mut commands);
     }
     match ast.data.borrow() {
-        Data::Struct(data) => match data.fields.borrow() {
-            Fields::Named(named_fields) => {
+        Data::Struct(data) => {
+            if let Fields::Named(named_fields) = data.fields.borrow() {
                 // We parse the field attributes
                 for field in named_fields.named.iter() {
                     for attr in field.attrs.iter() {
@@ -27,8 +27,7 @@ pub fn impl_validate_macro(ast: &syn::DeriveInput) -> TokenStream {
                     }
                 }
             }
-            _ => {}
-        },
+        }
         Data::Enum(data) => {
             for variant in data.variants.iter() {
                 if !variant.attrs.is_empty() {

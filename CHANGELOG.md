@@ -5,7 +5,6 @@
 ### Changed
 
 * `schema::IndexSchema` and `schema::GraphSchema` are cloned on application
-* Enums can now derive `Record`
 * (Perf) Transaction building clones the collection accessors with the transaction id header instead
 of requesting them.
 * Added test on authentication failure with `AuthMode::Jwt`  
@@ -18,13 +17,14 @@ of requesting them.
 
 ### Removed
 
-* `actix` feature removed
-* `open-api` feature removed
+* (**BREAKING**) `actix` feature removed
+* (**BREAKING**) `open-api` feature removed
 
 ### Added
 
 * optional source to `ServiceError::Unauthorized` and `ServiceError::Forbidden`
 * `ServiceError::Conflict`
+* Enums can now derive `Record`
 
 ## 0.12.0
 

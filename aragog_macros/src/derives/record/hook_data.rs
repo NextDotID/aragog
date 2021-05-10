@@ -57,14 +57,13 @@ impl ToTokenStream for HookData {
                 self.#func_ident()
             },
         };
-        let res = match is_async {
+        match is_async {
             true => quote! {
                 #func.await?;
             },
             false => quote! {
               #func?;
             },
-        };
-        res.into()
+        }
     }
 }

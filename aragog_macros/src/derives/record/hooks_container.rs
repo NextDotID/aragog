@@ -72,7 +72,7 @@ impl ToTokenStream for Vec<HookData> {
                 #item_quote
             }
         }
-        quote.into()
+        quote
     }
 }
 
@@ -172,6 +172,6 @@ impl ToTokenStream for HooksContainer {
                 Ok(())
             }
         };
-        gen.into()
+        gen
     }
 }
