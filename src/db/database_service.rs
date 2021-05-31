@@ -1,6 +1,8 @@
 use crate::db::database_record_dto::DatabaseRecordDto;
 use crate::error::ArangoHttpError;
+use crate::query::{QueryCursor, QueryResult};
 use crate::{DatabaseAccess, DatabaseRecord, OperationOptions, Record, ServiceError};
+use arangors::{AqlOptions, AqlQuery};
 use std::convert::TryInto;
 
 #[maybe_async::maybe_async]
@@ -96,4 +98,55 @@ where
         Ok(_result) => Ok(()),
         Err(error) => Err(ServiceError::from(error)),
     }
+}
+
+#[maybe_async::maybe_async]
+pub async fn query_records<T, D>(db_accessor: &D, aql: &str) -> Result<QueryResult<T>, ServiceError>
+where
+    T: Record,
+    D: DatabaseAccess + ?Sized,
+{
+    log::debug!(
+        "Querying {} records through AQL: `{}`",
+        T::collection_name(),
+        aql
+    );
+    let query_result = match db_accessor.database().aql_str(aql).await {
+        Ok(value) => value,
+        Err(error) => return Err(ServiceError::from(error)),
+    };
+    Ok(query_result.into())
+}
+
+#[maybe_async::maybe_async]
+pub async fn query_records_in_batches<T, D>(
+    db_accessor: &D,
+    aql: &str,
+    batch_size: u32,
+) -> Result<QueryCursor<T>, ServiceError>
+where
+    T: Record,
+    D: DatabaseAccess + ?Sized,
+{
+    log::debug!(
+        "Querying {} records through AQL with {} batch size: `{}`",
+        T::collection_name(),
+        batch_size,
+        aql
+    );
+    let query = AqlQuery::builder()
+        .query(aql)
+        .count(true)
+        .batch_size(batch_size)
+        .options(AqlOptions::builder().full_count(true).build())
+        .build();
+    let cursor = match db_accessor.database().aql_query_batch(query).await {
+        Ok(value) => value,
+        Err(error) => return Err(ServiceError::from(error)),
+    };
+    Ok(QueryCursor::new(
+        cursor,
+        db_accessor.database().clone(),
+        aql.to_string(),
+    ))
 }

@@ -1,4 +1,4 @@
-use crate::query::{Query, RecordQueryResult};
+use crate::query::{Query, QueryResult};
 use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 
 /// The `Link` trait of the Aragog library.
@@ -53,7 +53,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
 /// # }
 /// ```
 #[maybe_async::must_be_async]
-pub trait Link<T: Record>: Sized {
+pub trait Link<T: Record + Send>: Sized {
     /// Defines the query to execute to find the `T` models linked to `Self`
     ///
     /// # Example
@@ -83,7 +83,7 @@ pub trait Link<T: Record>: Sized {
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
     #[cfg(feature = "async")]
-    async fn linked_models<D>(&self, db_access: &D) -> Result<RecordQueryResult<T>, ServiceError>
+    async fn linked_models<D>(&self, db_access: &D) -> Result<QueryResult<T>, ServiceError>
     where
         Self: Sized,
         D: DatabaseAccess + ?Sized,
@@ -94,7 +94,7 @@ pub trait Link<T: Record>: Sized {
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
     #[cfg(not(feature = "async"))]
-    fn linked_models<D>(&self, db_access: &D) -> Result<RecordQueryResult<T>, ServiceError>
+    fn linked_models<D>(&self, db_access: &D) -> Result<QueryResult<T>, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {

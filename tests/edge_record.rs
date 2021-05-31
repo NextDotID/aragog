@@ -223,7 +223,7 @@ fn edge_validated_format() -> Result<(), String> {
             description: "part of".to_string(),
         },
     );
-    common::expect_assert(!edge.is_ok())?;
+    common::expect_assert(edge.is_err())?;
     let edge = EdgeRecord::new(
         "Dish//123".to_string(),
         "Dish/234".to_string(),
@@ -231,7 +231,7 @@ fn edge_validated_format() -> Result<(), String> {
             description: "part of".to_string(),
         },
     );
-    common::expect_assert(!edge.is_ok())?;
+    common::expect_assert(edge.is_err())?;
     let edge = EdgeRecord::new(
         "Dish/dish".to_string(),
         "Dish/234".to_string(),
@@ -239,7 +239,7 @@ fn edge_validated_format() -> Result<(), String> {
             description: "part of".to_string(),
         },
     );
-    common::expect_assert(!edge.is_ok())?;
+    common::expect_assert(edge.is_err())?;
     let edge = EdgeRecord::new(
         "/123".to_string(),
         "Dish/234".to_string(),
@@ -247,6 +247,6 @@ fn edge_validated_format() -> Result<(), String> {
             description: "part of".to_string(),
         },
     );
-    common::expect_assert(!edge.is_ok())?;
+    common::expect_assert(edge.is_err())?;
     Ok(())
 }

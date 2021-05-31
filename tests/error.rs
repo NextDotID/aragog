@@ -48,7 +48,7 @@ fn error_sources() {
     assert!(ServiceError::Forbidden(None).source().is_none());
     assert!(ServiceError::Unauthorized(None).source().is_none());
     assert!(ServiceError::UnprocessableEntity {
-        source: Box::new(db_error.clone())
+        source: Box::new(db_error)
     }
     .source()
     .is_some());

@@ -2,18 +2,20 @@ use crate::query::graph_query::{GraphQueryData, GraphQueryDirection};
 use crate::query::operations::{AqlOperation, OperationContainer};
 use crate::query::query_id_helper::get_str_identifier;
 use crate::query::utils::{string_from_array, OptionalQueryString};
-use crate::{DatabaseAccess, ServiceError};
+use crate::undefined_record::UndefinedRecord;
+use crate::{DatabaseAccess, Record, ServiceError};
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
 pub use {
     comparison::Comparison, comparison::ComparisonBuilder, filter::Filter,
-    query_result::JsonQueryResult, query_result::RecordQueryResult,
+    query_cursor::QueryCursor, query_result::QueryResult,
 };
 
 mod comparison;
 mod filter;
 mod graph_query;
 mod operations;
+mod query_cursor;
 mod query_id_helper;
 mod query_result;
 mod utils;
@@ -412,6 +414,7 @@ impl Query {
     pub fn join_any(self, min: u16, max: u16, named_graph: bool, query: Query) -> Self {
         self.join(min, max, query, GraphQueryDirection::Any, named_graph)
     }
+
     /// Allow the current traversing `Query` to filter the traversed collections and avoid potentian deadlocks.
     ///
     /// # Arguments
@@ -590,17 +593,80 @@ impl Query {
     }
 
     /// Finds all documents in database matching the current `Query`.
-    /// This will return a wrapper for `serde_json`::`Value`
-    /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`get`]
+    /// This will return a wrapper for `serde_json`::`Value` as an `UndefinedRecord`
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`get`]: struct.DatabaseRecord.html#method.get
+    /// # Note
+    /// Simple wrapper for [`DatabaseAccess`]::[`query`].
+    /// Useful for queries returning various collection records.
+    ///
+    /// [`DatabaseAccess`]: trait.DatabaseAccess.html
+    /// [`query`]: trait.DatabaseAccess.html#method.query
     #[maybe_async::maybe_async]
-    pub async fn call<D>(self, db_accessor: &D) -> Result<JsonQueryResult, ServiceError>
+    pub async fn raw_call<D>(
+        self,
+        db_accessor: &D,
+    ) -> Result<QueryResult<UndefinedRecord>, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        db_accessor.aql_get(&self.to_aql()).await
+        db_accessor.query(self).await
+    }
+
+    /// Finds all records in database matching the current `Query`.
+    ///
+    /// # Note
+    /// Simple wrapper for [`Record`]::[`get`]
+    ///
+    /// [`Record`]: trait.Record.html
+    /// [`get`]: trait.Record.html#method.get
+    #[maybe_async::maybe_async]
+    pub async fn call<D, T>(self, db_accessor: &D) -> Result<QueryResult<T>, ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+        T: Record + Send,
+    {
+        T::get(self, db_accessor).await
+    }
+
+    /// Finds all documents in database matching the current `Query` using batches.
+    /// This will return a wrapper for `serde_json`::`Value` as an `UndefinedRecord` inside a cursor.
+    ///
+    /// # Note
+    /// Simple wrapper for [`DatabaseAccess`]::[`query_in_batches`].
+    /// Useful for queries returning various collection records.
+    ///
+    /// [`DatabaseAccess`]: trait.DatabaseAccess.html
+    /// [`query_in_batches`]: trait.DatabaseAccess.html#method.query_in_batches
+    #[maybe_async::maybe_async]
+    pub async fn raw_call_in_batches<D>(
+        self,
+        db_accessor: &D,
+        batch_size: u32,
+    ) -> Result<QueryCursor<UndefinedRecord>, ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        db_accessor.query_in_batches(self, batch_size).await
+    }
+
+    /// Finds all records in database matching the current `Query` using batches.
+    ///
+    /// # Note
+    /// Simple wrapper for [`Record`]::[`get_in_batches`]
+    ///
+    /// [`Record`]: trait.Record.html
+    /// [`get_in_batches`]: trait.DatabaseAccess.html#method.get_in_batches
+    #[maybe_async::maybe_async]
+    pub async fn call_in_batches<D, T>(
+        self,
+        db_accessor: &D,
+        batch_size: u32,
+    ) -> Result<QueryCursor<T>, ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+        T: Record + Send,
+    {
+        T::get_in_batches(self, db_accessor, batch_size).await
     }
 }
 

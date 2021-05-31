@@ -290,7 +290,7 @@
 //! extern crate aragog;
 //! # use aragog::{Record, DatabaseConnection, DatabaseRecord, AuthMode};
 //! # use serde::{Serialize, Deserialize};
-//! # use aragog::query::{Query, Comparison, Filter};
+//! # use aragog::query::{Query, Comparison, Filter, QueryResult};
 //! # use tokio;
 //! #
 //! # #[derive(Serialize, Deserialize, Clone, Record)]
@@ -302,7 +302,7 @@
 //! # }
 //! # #[tokio::main]
 //! # async fn main() {
-//! # let database_connection = DatabaseConnection::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
+//! let database_connection = DatabaseConnection::builder().with_schema_path("tests/schema.yaml").apply_schema().build().await.unwrap();
 //! # database_connection.truncate().await;
 //! # let mut user = User {
 //! #     username: String::from("LeRevenant1234"),
@@ -321,11 +321,10 @@
 //!
 //! // Find all users with multiple conditions
 //! let query = User::query().filter(compare!(field "last_name").like("%Surc%").and(compare!(field "age").in_array(&[15,16,17,18])));
-//! let clone_query = query.clone();
 //! // This syntax is valid...
-//! let user_records = User::get(query, &database_connection).await.unwrap();
+//! let user_records :QueryResult<User> = User::get(query.clone(), &database_connection).await.unwrap();
 //! // ... This one too
-//! let user_records = clone_query.call(&database_connection).await.unwrap().get_records::<User>();
+//! let user_records :QueryResult<User> = query.call(&database_connection).await.unwrap();
 //! # }
 //! ```
 //! #### Query Object
@@ -476,6 +475,7 @@
 #![forbid(missing_docs)]
 #![forbid(unsafe_code)]
 #![deny(warnings)]
+#![warn(rustdoc::broken_intra_doc_links)]
 
 pub extern crate async_trait;
 
@@ -500,7 +500,8 @@ pub use {
     db::database_access::DatabaseAccess, db::database_connection::AuthMode,
     db::database_connection::DatabaseConnection, db::database_record::DatabaseRecord,
     db::operation_options::OperationOptions, db::transaction, edge_record::EdgeRecord,
-    error::ServiceError, foreign_link::ForeignLink, link::Link, record::Record, validate::Validate,
+    error::ServiceError, foreign_link::ForeignLink, link::Link, record::Record,
+    undefined_record::UndefinedRecord, validate::Validate,
 };
 
 #[cfg(not(feature = "minimal_traits"))]
@@ -523,3 +524,4 @@ pub mod query;
 /// Database schema construction utility, available for advanced development.
 /// For classic usage use the `aragog_cli` and its migration engine to generate your schema
 pub mod schema;
+mod undefined_record;

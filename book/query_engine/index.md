@@ -6,26 +6,84 @@ You can retrieve document from the database two ways:
 
 `aragog` provides an AQL query builder system, allowing safer queries than direct string literals.
 
-The example below show different ways to retrieve records, look at each function documentation for more exhaustive explanations.
+For a created object like the following:
 
-**Example**
  ```rust
- // User creation
- let record = DatabaseRecord::create(user, &database_connection).await.unwrap();
+#[derive(Serialize, Deserialize, Record, Clone)]
+struct User {
+    first_name: String,
+    last_name: String,
+    age: u16,
+}
 
- // Find with the primary key or...
- let user_record = User::find(record.key(), &database_connection).await.unwrap();
- // .. Generate a query and...
- let query = User::query().filter(Filter::new(Comparison::field("last_name").equals_str("Surcouf")).and(Comparison::field("age").greater_than(15)));
- // get the only record (fails if no or multiple records)
- let user_record = User::get(query, &database_connection).await.unwrap().uniq().unwrap();
+let user = User {
+    first_name: "Robert".to_string(),
+    last_name: "Surcouf".to_string(),
+    age: 25,
+};
+DatabaseRecord::create(user, &database_connection).await.unwrap();
+```
 
- // Find all users with multiple conditions
- let query = User::query().filter(Filter::new(Comparison::field("last_name").like("%Surc%")).and(Comparison::field("age").in_array(&[15,16,17,18])));
- let clone_query = query.clone(); // we clone the query
+You can define a query:
 
- // This syntax is valid...
- let user_records = User::get(query, &database_connection).await.unwrap();
- // ... This one too
- let user_records = clone_query.call(&database_connection).await.unwrap().get_records::<User>();
- ```
+```rust
+let query = User::query()
+    .filter(Filter::new(
+        Comparison::field("last_name").equals_str("Surcouf"))
+        .and(Comparison::field("age").greater_than(15))
+    );
+```
+
+## Typed querying
+
+Typed querying will allow only **one** type of document to be retrieved, in this case *User* collection documents.
+
+> In case of corrupted documents they may not be returned, see safe querying for resilient querying
+
+- Through `Record::get`:
+```rust
+ let result = User::get(query, &database_connection).await.unwrap();
+```
+
+- Through `DatabaseRecord::get` (requires type):
+```rust
+ let result :QueryResult<User> = DatabaseRecord::get(query, &database_connection).await.unwrap();
+```
+
+- Through `Query::call` (requires type):
+```rust
+ let result :QueryResult<User> = query.call(&database_connection).await.unwrap()
+```
+
+## Safe querying
+
+safe querying will allow **multiple** types of document to be retrieved as json objects (`UndefinedRecord`) and then dynamically parsed.
+
+> This version may be slightly slower, but you have a guarantee to retrieve all documents
+
+- Through `Query::raw_call`:
+```rust
+ let result = query.raw_call(&database_connection).await.unwrap()
+```
+
+- Through `DatabaseAccess::query` (requires type):
+```rust
+ let result = database_connection.query(query).await.unwrap();
+```
+
+The `QueryResult<UndefinedRecord>` provides a `get_records` method to dynamically retrieve custom `Record` types.
+
+## Batch calls
+
+Each and every query variant shown above have a **batched** version:
+
+- `Record::get` => `Record::get_in_batches`
+- `DatabaseRecord::get` => `DatabaseRecord::get_in_batches`
+- `Query::call` => `Query::call_in_batches`
+- `Query::raw_call` => `Query::raw_call_in_batches`
+- `DatabaseAccess::query` => `DatabaseAccess::query_in_batches`
+
+They will return a `QueryCursor` instead of a `QueryResult` allowing to customize the number of returned document and easy iteration through the returned batches.
+
+> If you use the `blocking` feature, `QueryCursor` has an `Iterator` implementation.
+> Otherwise use the `next_batch` method

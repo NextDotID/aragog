@@ -27,10 +27,10 @@ async fn main() {
     // Connect to database and generates collections and indexes
     let db_connection = DatabaseConnection::builder()
         .with_credentials(
-            &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
-            &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
-            &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
-            &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
+            &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
+            &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
+            &std::env::var("DB_USER").unwrap_or_else(|_| DEFAULT_DB_USER.to_string()),
+            &std::env::var("DB_PWD").unwrap_or_else(|_| DEFAULT_DB_PWD.to_string()),
         )
         .with_auth_mode(AuthMode::default())
         .with_schema_path("examples/simple_example/schema.yaml")
@@ -57,10 +57,12 @@ async fn main() {
     let mut order = Order::new();
     // An empty order is not valid
     assert!(!order.is_valid());
-    match DatabaseRecord::create(order.clone(), &db_connection).await {
-        Ok(_) => panic!("Validations should have failed"),
-        Err(_) => (),
-    };
+    if DatabaseRecord::create(order.clone(), &db_connection)
+        .await
+        .is_ok()
+    {
+        panic!("Validations should have failed")
+    }
     // Add a dish
     order.add(&dish_record.record);
     // Creates a database record

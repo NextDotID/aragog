@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use aragog::query::{Comparison, Query, RecordQueryResult};
+use aragog::query::{Comparison, Query, QueryResult};
 use aragog::{DatabaseRecord, ForeignLink, Link, Record};
 use std::borrow::Borrow;
 
@@ -67,7 +67,7 @@ async fn relation_work() -> Result<(), String> {
     .await
     .unwrap();
 
-    let relation: RecordQueryResult<Order> = dish.linked_models(&connection).await.unwrap();
+    let relation: QueryResult<Order> = dish.linked_models(&connection).await.unwrap();
     common::expect_assert_eq(relation.uniq().unwrap().key(), order.key())?;
     Ok(())
 }

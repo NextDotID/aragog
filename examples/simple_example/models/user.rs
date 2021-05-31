@@ -20,6 +20,7 @@ pub struct User {
     pub roles: Vec<String>,
 }
 
+#[allow(dead_code)]
 pub enum DishAction {
     Order,
     Cook,

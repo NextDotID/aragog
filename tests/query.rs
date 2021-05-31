@@ -12,7 +12,7 @@ mod comparison {
     fn in_str_array() -> Result<(), String> {
         let item = Comparison::field("username").in_str_array(&["felix", "gerard"]);
         common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
+            item.to_aql("i").as_str(),
             r#"i.username IN ["felix", "gerard"]"#,
         )?;
         Ok(())
@@ -22,7 +22,7 @@ mod comparison {
     fn not_in_str_array() -> Result<(), String> {
         let item = Comparison::field("username").not_in_str_array(&["felix", "gerard"]);
         common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
+            item.to_aql("i").as_str(),
             r#"i.username NOT IN ["felix", "gerard"]"#,
         )?;
         Ok(())
@@ -31,13 +31,10 @@ mod comparison {
     #[test]
     fn in_array() -> Result<(), String> {
         let item = Comparison::field("age").in_array(&[13, 14, 15]);
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            r#"i.age IN [13, 14, 15]"#,
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), r#"i.age IN [13, 14, 15]"#)?;
         let item = Comparison::field("price").in_array(&[13.1, 14.5, 16.13]);
         common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
+            item.to_aql("i").as_str(),
             r#"i.price IN [13.1, 14.5, 16.13]"#,
         )?;
         Ok(())
@@ -46,13 +43,10 @@ mod comparison {
     #[test]
     fn not_in_array() -> Result<(), String> {
         let item = Comparison::field("age").not_in_array(&[13, 14, 15]);
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            r#"i.age NOT IN [13, 14, 15]"#,
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), r#"i.age NOT IN [13, 14, 15]"#)?;
         let item = Comparison::field("price").not_in_array(&[13.1, 14.5, 16.13]);
         common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
+            item.to_aql("i").as_str(),
             r#"i.price NOT IN [13.1, 14.5, 16.13]"#,
         )?;
         Ok(())
@@ -61,136 +55,112 @@ mod comparison {
     #[test]
     fn like() -> Result<(), String> {
         let item = Comparison::field("last_name").like("de %");
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            r#"i.last_name LIKE "de %""#,
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), r#"i.last_name LIKE "de %""#)?;
         Ok(())
     }
 
     #[test]
     fn not_like() -> Result<(), String> {
         let item = Comparison::field("last_name").not_like("de %");
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            r#"i.last_name NOT LIKE "de %""#,
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), r#"i.last_name NOT LIKE "de %""#)?;
         Ok(())
     }
 
     #[test]
     fn matches() -> Result<(), String> {
         let item = Comparison::field("last_name").matches(r#"^/[0.9]$"#);
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            r#"i.last_name =~ "^/[0.9]$""#,
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), r#"i.last_name =~ "^/[0.9]$""#)?;
         Ok(())
     }
 
     #[test]
     fn does_not_match() -> Result<(), String> {
         let item = Comparison::field("last_name").does_not_match(r#"^/[0.9]$"#);
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            r#"i.last_name !~ "^/[0.9]$""#,
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), r#"i.last_name !~ "^/[0.9]$""#)?;
         Ok(())
     }
 
     #[test]
     fn greater_than() -> Result<(), String> {
         let item = Comparison::field("age").greater_than(10);
-        common::expect_assert_eq(format!("{}", item.to_aql("i")).as_str(), "i.age > 10")?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.age > 10")?;
         Ok(())
     }
 
     #[test]
     fn greater_or_equal() -> Result<(), String> {
         let item = Comparison::field("age").greater_or_equal(10);
-        common::expect_assert_eq(format!("{}", item.to_aql("i")).as_str(), "i.age >= 10")?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.age >= 10")?;
         Ok(())
     }
 
     #[test]
     fn lesser_than() -> Result<(), String> {
         let item = Comparison::field("age").lesser_than(10);
-        common::expect_assert_eq(format!("{}", item.to_aql("i")).as_str(), "i.age < 10")?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.age < 10")?;
         Ok(())
     }
 
     #[test]
     fn lesser_or_equal() -> Result<(), String> {
         let item = Comparison::field("age").lesser_or_equal(10);
-        common::expect_assert_eq(format!("{}", item.to_aql("i")).as_str(), "i.age <= 10")?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.age <= 10")?;
         Ok(())
     }
 
     #[test]
     fn equals() -> Result<(), String> {
         let item = Comparison::field("age").equals(10);
-        common::expect_assert_eq(format!("{}", item.to_aql("i")).as_str(), "i.age == 10")?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.age == 10")?;
         Ok(())
     }
 
     #[test]
     fn different_than() -> Result<(), String> {
         let item = Comparison::field("age").different_than(10);
-        common::expect_assert_eq(format!("{}", item.to_aql("i")).as_str(), "i.age != 10")?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.age != 10")?;
         Ok(())
     }
 
     #[test]
     fn equals_str() -> Result<(), String> {
         let item = Comparison::field("name").equals_str("felix");
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            r#"i.name == "felix""#,
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), r#"i.name == "felix""#)?;
         Ok(())
     }
 
     #[test]
     fn different_than_str() -> Result<(), String> {
         let item = Comparison::field("name").different_than_str("felix");
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            r#"i.name != "felix""#,
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), r#"i.name != "felix""#)?;
         Ok(())
     }
 
     #[test]
     fn is_null() -> Result<(), String> {
         let item = Comparison::field("name").is_null();
-        common::expect_assert_eq(format!("{}", item.to_aql("i")).as_str(), "i.name == null")?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.name == null")?;
         Ok(())
     }
 
     #[test]
     fn not_null() -> Result<(), String> {
         let item = Comparison::field("name").not_null();
-        common::expect_assert_eq(format!("{}", item.to_aql("i")).as_str(), "i.name != null")?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.name != null")?;
         Ok(())
     }
 
     #[test]
     fn is_true() -> Result<(), String> {
         let item = Comparison::field("is_company").is_true();
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            "i.is_company == true",
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.is_company == true")?;
         Ok(())
     }
 
     #[test]
     fn is_false() -> Result<(), String> {
         let item = Comparison::field("is_company").is_false();
-        common::expect_assert_eq(
-            format!("{}", item.to_aql("i")).as_str(),
-            "i.is_company == false",
-        )?;
+        common::expect_assert_eq(item.to_aql("i").as_str(), "i.is_company == false")?;
         Ok(())
     }
 
@@ -200,45 +170,27 @@ mod comparison {
         #[test]
         fn all() -> Result<(), String> {
             let item = Comparison::all("emails").not_null();
-            common::expect_assert_eq(
-                format!("{}", item.to_aql("i")).as_str(),
-                "i.emails ALL != null",
-            )?;
+            common::expect_assert_eq(item.to_aql("i").as_str(), "i.emails ALL != null")?;
             let item = compare!(all "emails").not_null();
-            common::expect_assert_eq(
-                format!("{}", item.to_aql("i")).as_str(),
-                "i.emails ALL != null",
-            )?;
+            common::expect_assert_eq(item.to_aql("i").as_str(), "i.emails ALL != null")?;
             Ok(())
         }
 
         #[test]
         fn none() -> Result<(), String> {
             let item = Comparison::none("emails").is_null();
-            common::expect_assert_eq(
-                format!("{}", item.to_aql("i")).as_str(),
-                "i.emails NONE == null",
-            )?;
+            common::expect_assert_eq(item.to_aql("i").as_str(), "i.emails NONE == null")?;
             let item = compare!(none "emails").is_null();
-            common::expect_assert_eq(
-                format!("{}", item.to_aql("i")).as_str(),
-                "i.emails NONE == null",
-            )?;
+            common::expect_assert_eq(item.to_aql("i").as_str(), "i.emails NONE == null")?;
             Ok(())
         }
 
         #[test]
         fn any() -> Result<(), String> {
             let item = Comparison::any("authorizations").is_true();
-            common::expect_assert_eq(
-                format!("{}", item.to_aql("i")).as_str(),
-                "i.authorizations ANY == true",
-            )?;
+            common::expect_assert_eq(item.to_aql("i").as_str(), "i.authorizations ANY == true")?;
             let item = compare!(any "authorizations").is_true();
-            common::expect_assert_eq(
-                format!("{}", item.to_aql("i")).as_str(),
-                "i.authorizations ANY == true",
-            )?;
+            common::expect_assert_eq(item.to_aql("i").as_str(), "i.authorizations ANY == true")?;
             Ok(())
         }
     }
@@ -520,6 +472,7 @@ mod call {
     use aragog::{DatabaseConnection, DatabaseRecord, Record};
 
     use super::*;
+    use aragog::query::{QueryCursor, QueryResult};
 
     #[derive(Clone, Serialize, Deserialize, Record)]
     pub struct Dish {
@@ -642,71 +595,181 @@ mod call {
         any(feature = "blocking"),
         async(all(not(feature = "blocking")), tokio::test)
     )]
-    async fn simple_outbound_request() -> Result<(), String> {
+    async fn simple_request() -> Result<(), String> {
         let connection = common::setup_db().await;
         factory(&connection).await;
-        let query = Query::new("Dish")
-            .filter(compare!(field "name").like("Pizza%").into())
-            .join_outbound(1, 1, false, PartOf::query());
-        let res = query.call(&connection).await.unwrap();
-        common::expect_assert_eq(res.len(), 2)?;
-        let res = res.get_records::<Order>();
-        common::expect_assert_eq(res.len(), 2)?;
-        common::expect_assert_eq(
-            res.iter().map(|o| o.name.as_str()).collect(),
-            vec!["Menu Pizza", "Menu Pizza 2"],
-        )?;
-        Ok(())
-    }
+        let query = Query::new("Dish");
 
-    #[maybe_async::test(
-        any(feature = "blocking"),
-        async(all(not(feature = "blocking")), tokio::test)
-    )]
-    async fn simple_inbound_request() -> Result<(), String> {
-        let connection = common::setup_db().await;
-        factory(&connection).await;
-        let query = Query::new("Order")
-            .filter(compare!(field "name").equals_str("Menu Pizza").into())
-            .join_inbound(1, 1, false, PartOf::query());
-        let res = query.call(&connection).await.unwrap();
-        common::expect_assert_eq(res.len(), 3)?;
-        let res = res.get_records::<Dish>();
-        common::expect_assert_eq(res.len(), 3)?;
-        common::expect_assert_eq(
-            res.iter().map(|o| o.name.as_str()).collect(),
-            vec!["Pizza Mozarella", "Wine", "Ice Cream"],
-        )?;
-        Ok(())
-    }
+        let raw_result = query.clone().raw_call(&connection).await.unwrap();
+        common::expect_assert_eq(raw_result.len(), 5)?;
+        let typed_result: QueryResult<Dish> = query.call(&connection).await.unwrap();
+        common::expect_assert_eq(typed_result.len(), 5)?;
 
-    #[maybe_async::test(
-        any(feature = "blocking"),
-        async(all(not(feature = "blocking")), tokio::test)
-    )]
-    async fn outbound_then_inbound_request() -> Result<(), String> {
-        let connection = common::setup_db().await;
-        factory(&connection).await;
-        let query = Query::new("Dish").join_outbound(
-            1,
-            1,
-            false,
-            PartOf::query().join_inbound(1, 1, false, PartOf::query().distinct()),
-        );
-        let res = query.call(&connection).await.unwrap();
-        common::expect_assert_eq(res.len(), 5)?;
-        let res = res.get_records::<Dish>();
-        common::expect_assert_eq(res.len(), 5)?;
+        let raw_result = raw_result.get_records::<Dish>();
+        common::expect_assert_eq(raw_result.len(), 5)?;
+
         common::expect_assert_eq(
-            res.iter().map(|o| o.name.as_str()).collect(),
+            raw_result.iter().map(|o| o.name.as_str()).collect(),
             vec![
                 "Pizza Mozarella",
-                "Wine",
-                "Ice Cream",
                 "Pizza Regina",
+                "Ice Cream",
+                "Wine",
+                "Spaghetti",
+            ],
+        )?;
+        common::expect_assert_eq(
+            typed_result.iter().map(|o| o.name.as_str()).collect(),
+            vec![
+                "Pizza Mozarella",
+                "Pizza Regina",
+                "Ice Cream",
+                "Wine",
                 "Spaghetti",
             ],
         )?;
         Ok(())
+    }
+
+    #[maybe_async::test(
+        any(feature = "blocking"),
+        async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn batched_request() -> Result<(), String> {
+        let connection = common::setup_db().await;
+        factory(&connection).await;
+        let query = Query::new("Dish");
+        let mut raw_cursor = query
+            .clone()
+            .raw_call_in_batches(&connection, 1)
+            .await
+            .unwrap();
+        let mut typed_cursor: QueryCursor<Dish> =
+            query.call_in_batches(&connection, 1).await.unwrap();
+
+        let mut raw_res = raw_cursor.result().get_records::<Dish>();
+        while let Some(result) = raw_cursor.next_batch().await {
+            raw_res.append(&mut result.get_records::<Dish>());
+        }
+        common::expect_assert_eq(raw_res.len(), 5)?;
+
+        let mut typed_res = typed_cursor.result();
+        while let Some(mut result) = typed_cursor.next_batch().await {
+            typed_res.append(&mut result);
+        }
+        common::expect_assert_eq(typed_res.len(), 5)?;
+
+        common::expect_assert_eq(
+            raw_res.iter().map(|o| o.name.as_str()).collect(),
+            vec![
+                "Pizza Mozarella",
+                "Pizza Regina",
+                "Ice Cream",
+                "Wine",
+                "Spaghetti",
+            ],
+        )?;
+        common::expect_assert_eq(
+            typed_res.iter().map(|o| o.name.as_str()).collect(),
+            vec![
+                "Pizza Mozarella",
+                "Pizza Regina",
+                "Ice Cream",
+                "Wine",
+                "Spaghetti",
+            ],
+        )?;
+        Ok(())
+    }
+
+    #[maybe_async::test(feature = "blocking")]
+    fn cursor_iterator() -> Result<(), String> {
+        let connection = common::setup_db();
+        factory(&connection);
+        let query = Query::new("Dish");
+        let cursor = query.raw_call_in_batches(&connection, 1).unwrap();
+        let mut count = 0;
+        for _result in cursor.into_iter() {
+            count += 1;
+        }
+        common::expect_assert_eq(count, 5)?;
+        Ok(())
+    }
+
+    mod joined_queries {
+        use super::*;
+
+        #[maybe_async::test(
+            any(feature = "blocking"),
+            async(all(not(feature = "blocking")), tokio::test)
+        )]
+        async fn simple_outbound_request() -> Result<(), String> {
+            let connection = common::setup_db().await;
+            factory(&connection).await;
+            let query = Query::new("Dish")
+                .filter(compare!(field "name").like("Pizza%").into())
+                .join_outbound(1, 1, false, PartOf::query());
+            let res = query.raw_call(&connection).await.unwrap();
+            common::expect_assert_eq(res.len(), 2)?;
+            let res = res.get_records::<Order>();
+            common::expect_assert_eq(res.len(), 2)?;
+            common::expect_assert_eq(
+                res.iter().map(|o| o.name.as_str()).collect(),
+                vec!["Menu Pizza", "Menu Pizza 2"],
+            )?;
+            Ok(())
+        }
+
+        #[maybe_async::test(
+            any(feature = "blocking"),
+            async(all(not(feature = "blocking")), tokio::test)
+        )]
+        async fn simple_inbound_request() -> Result<(), String> {
+            let connection = common::setup_db().await;
+            factory(&connection).await;
+            let query = Query::new("Order")
+                .filter(compare!(field "name").equals_str("Menu Pizza").into())
+                .join_inbound(1, 1, false, PartOf::query());
+            let res = query.raw_call(&connection).await.unwrap();
+            println!("{:?}", res);
+            common::expect_assert_eq(res.len(), 3)?;
+            let res = res.get_records::<Dish>();
+            common::expect_assert_eq(res.len(), 3)?;
+            common::expect_assert_eq(
+                res.iter().map(|o| o.name.as_str()).collect(),
+                vec!["Pizza Mozarella", "Wine", "Ice Cream"],
+            )?;
+            Ok(())
+        }
+
+        #[maybe_async::test(
+            any(feature = "blocking"),
+            async(all(not(feature = "blocking")), tokio::test)
+        )]
+        async fn outbound_then_inbound_request() -> Result<(), String> {
+            let connection = common::setup_db().await;
+            factory(&connection).await;
+            let query = Query::new("Dish").join_outbound(
+                1,
+                1,
+                false,
+                PartOf::query().join_inbound(1, 1, false, PartOf::query().distinct()),
+            );
+            let res = query.raw_call(&connection).await.unwrap();
+            common::expect_assert_eq(res.len(), 5)?;
+            let res = res.get_records::<Dish>();
+            common::expect_assert_eq(res.len(), 5)?;
+            common::expect_assert_eq(
+                res.iter().map(|o| o.name.as_str()).collect(),
+                vec![
+                    "Pizza Mozarella",
+                    "Wine",
+                    "Ice Cream",
+                    "Pizza Regina",
+                    "Spaghetti",
+                ],
+            )?;
+            Ok(())
+        }
     }
 }
