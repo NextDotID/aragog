@@ -2,7 +2,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 use crate::db::transaction::Transaction;
-use crate::query::{Query, RecordQueryResult};
+use crate::query::{Query, QueryCursor, QueryResult};
 use crate::transaction::TransactionBuilder;
 use crate::{DatabaseAccess, DatabaseConnection, DatabaseRecord, ServiceError};
 
@@ -30,11 +30,27 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`get`]: struct.DatabaseRecord.html#method.get
-    async fn get<D>(query: Query, db_accessor: &D) -> Result<RecordQueryResult<Self>, ServiceError>
+    async fn get<D>(query: Query, db_accessor: &D) -> Result<QueryResult<Self>, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
         DatabaseRecord::get(query, db_accessor).await
+    }
+
+    /// Finds all documents in database matching a `Query` in batches.
+    /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`get_in_batches`]
+    ///
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`get_in_batches`]: struct.DatabaseRecord.html#method.get_in_batches
+    async fn get_in_batches<D>(
+        query: Query,
+        db_accessor: &D,
+        batch_size: u32,
+    ) -> Result<QueryCursor<Self>, ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        DatabaseRecord::get_in_batches(query, db_accessor, batch_size).await
     }
 
     /// Returns true if there are any document in database matching a `Query`.

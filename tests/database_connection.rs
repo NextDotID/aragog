@@ -32,10 +32,10 @@ impl Dish {
 async fn works_with_correct_parameters() {
     DatabaseConnection::builder()
         .with_credentials(
-            &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
-            &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
-            &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
-            &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
+            &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
+            &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
+            &std::env::var("DB_USER").unwrap_or_else(|_| DEFAULT_DB_USER.to_string()),
+            &std::env::var("DB_PWD").unwrap_or_else(|_| DEFAULT_DB_PWD.to_string()),
         )
         .with_schema_path("./tests/schema.yaml")
         .apply_schema()
@@ -51,8 +51,8 @@ async fn works_with_correct_parameters() {
 async fn fails_with_wrong_parameters() {
     match DatabaseConnection::builder()
         .with_credentials(
-            &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
-            &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
+            &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
+            &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
             "fake_user",
             "fake_password",
         )
@@ -73,8 +73,8 @@ async fn fails_with_wrong_parameters() {
 
     match DatabaseConnection::builder()
         .with_credentials(
-            &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
-            &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
+            &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
+            &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
             "fake_user",
             "fake_password",
         )
@@ -101,10 +101,10 @@ async fn fails_with_wrong_parameters() {
 async fn operation_options() {
     let connection = DatabaseConnection::builder()
         .with_credentials(
-            &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
-            &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
-            &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
-            &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
+            &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
+            &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
+            &std::env::var("DB_USER").unwrap_or_else(|_| DEFAULT_DB_USER.to_string()),
+            &std::env::var("DB_PWD").unwrap_or_else(|_| DEFAULT_DB_PWD.to_string()),
         )
         .with_schema_path("./tests/schema.yaml")
         .apply_schema()

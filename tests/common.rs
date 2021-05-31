@@ -13,10 +13,10 @@ pub const DEFAULT_DB_PWD: &str = "test";
 pub async fn setup_db() -> DatabaseConnection {
     let connection = DatabaseConnection::builder()
         .with_credentials(
-            &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
-            &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
-            &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
-            &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
+            &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
+            &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
+            &std::env::var("DB_USER").unwrap_or_else(|_| DEFAULT_DB_USER.to_string()),
+            &std::env::var("DB_PWD").unwrap_or_else(|_| DEFAULT_DB_PWD.to_string()),
         )
         .with_schema_path("./tests/schema.yaml")
         .apply_schema()
@@ -29,7 +29,7 @@ pub async fn setup_db() -> DatabaseConnection {
 
 pub fn expect_assert(expr: bool) -> Result<(), String> {
     if !expr {
-        Err(format!("Failed expectation"))
+        Err("Failed expectation".to_string())
     } else {
         Ok(())
     }

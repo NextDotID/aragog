@@ -9,6 +9,9 @@
 of requesting them.
 * Added test on authentication failure with `AuthMode::Jwt`  
 * `arangors` 0.4.8
+* (**BREAKING**) Merged `JsonQueryResult` and `RecordQueryResut` into `QueryResult`.
+* `DatabaseRecord::get` and `Record::get` now try to deserialize the ArangoDB result directly instead of ignoring potential parsing errors.
+  > To handle corrupt documents or parsing errors a `UndefinedRecord` generic struct was added (see the **Added** section)
 
 ### Fixed
 
@@ -25,6 +28,11 @@ of requesting them.
 * optional source to `ServiceError::Unauthorized` and `ServiceError::Forbidden`
 * `ServiceError::Conflict`
 * Enums can now derive `Record`
+* Batch queries (see book) :  
+  - `QueryCursor` struct
+  - query in batch methods for `DatabaseAccess`, `DatabaseRecord`, `Record` and `Query`
+  - `Query` now have a `raw_call` variant to query `UndefinedRecord` instead of typed `Record`  structs
+* `UndefinedRecord` struct wrapping `serde_json::Value` allowing safe an modular querying  
 
 ## 0.12.0
 

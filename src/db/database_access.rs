@@ -1,9 +1,10 @@
 use arangors::client::reqwest::ReqwestClient;
 use arangors::Database;
-use serde_json::Value;
 
 use crate::db::database_collection::DatabaseCollection;
-use crate::query::JsonQueryResult;
+use crate::db::database_service::{query_records, query_records_in_batches};
+use crate::query::{Query, QueryCursor, QueryResult};
+use crate::undefined_record::UndefinedRecord;
 use crate::{OperationOptions, ServiceError};
 
 /// The `DatabaseAccess` trait of the `Aragog` library.
@@ -52,16 +53,39 @@ pub trait DatabaseAccess: Sync {
     /// Retrieves the database object
     fn database(&self) -> &Database<ReqwestClient>;
 
-    /// Runs an AQL query and returns the found documents
-    async fn aql_get(&self, aql: &str) -> Result<JsonQueryResult, ServiceError> {
-        log::debug!("Executing AQL: {}", aql);
-        let query_result: Vec<Value> = match self.database().aql_str(aql).await {
-            Ok(value) => value,
-            Err(error) => {
-                log::error!("{}", error);
-                return Err(ServiceError::from(error));
-            }
-        };
-        Ok(JsonQueryResult::new(query_result))
+    /// Runs an AQL query and returns the found documents as undefined records.
+    ///
+    /// # Note
+    ///
+    /// The returned documents are simple wrappers for `serde_json`::`Value` values.
+    /// Typed `Record` can be dynamically retrieved afterwards.
+    ///
+    /// If you want a specific [`Record`] type use [`DatabaseRecord`]::[`get`] directly.
+    ///
+    /// [`Record`]: trait.Record.html
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`get`]: struct.DatabaseRecord.html#method.get
+    async fn query(&self, query: Query) -> Result<QueryResult<UndefinedRecord>, ServiceError> {
+        query_records(self, query.to_aql().as_str()).await
+    }
+
+    /// Runs an AQL query using batches and returns a cursor on the found documents as undefined records.
+    ///
+    /// # Note
+    ///
+    /// The returned documents are simple wrappers for `serde_json`::`Value` values.
+    /// Typed `Record` can be dynamically retrieved afterwards.
+    ///
+    /// If you want a specific [`Record`] type use [`DatabaseRecord`]::[`get_in_batches`] directly.
+    ///
+    /// [`Record`]: trait.Record.html
+    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`get_in_batches`]: struct.DatabaseRecord.html#method.get_in_batches
+    async fn query_in_batches(
+        &self,
+        query: Query,
+        batch_size: u32,
+    ) -> Result<QueryCursor<UndefinedRecord>, ServiceError> {
+        query_records_in_batches(self, query.to_aql().as_str(), batch_size).await
     }
 }

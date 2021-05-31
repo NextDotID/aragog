@@ -20,10 +20,10 @@ async fn main() {
     // Connect to database and generates collections and indexes
     let db_connection = DatabaseConnection::builder()
         .with_credentials(
-            &std::env::var("DB_HOST").unwrap_or(DEFAULT_DB_HOST.to_string()),
-            &std::env::var("DB_NAME").unwrap_or(DEFAULT_DB_NAME.to_string()),
-            &std::env::var("DB_USER").unwrap_or(DEFAULT_DB_USER.to_string()),
-            &std::env::var("DB_PWD").unwrap_or(DEFAULT_DB_PWD.to_string()),
+            &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
+            &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
+            &std::env::var("DB_USER").unwrap_or_else(|_| DEFAULT_DB_USER.to_string()),
+            &std::env::var("DB_PWD").unwrap_or_else(|_| DEFAULT_DB_PWD.to_string()),
         )
         .with_auth_mode(AuthMode::default())
         .with_schema_path("examples/boxed_example/schema.yaml")

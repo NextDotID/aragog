@@ -4,7 +4,8 @@ use serde_json::Value;
 use std::fmt::{self, Display, Formatter};
 
 use crate::db::database_service;
-use crate::query::{Query, RecordQueryResult};
+use crate::db::database_service::{query_records, query_records_in_batches};
+use crate::query::{Query, QueryCursor, QueryResult};
 use crate::{DatabaseAccess, EdgeRecord, OperationOptions, Record, ServiceError};
 use std::ops::{Deref, DerefMut};
 
@@ -534,7 +535,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// # Returns
     ///
-    /// On success a `QueryResult` with a vector of `Self` is returned. It is can be empty.
+    /// On success a `QueryResult` with a vector of `Self` is returned. It can be empty.
     /// On failure a [`ServiceError`] is returned:
     /// * [`NotFound`] if no document matches the condition
     /// * [`UnprocessableEntity`] on data corruption
@@ -573,11 +574,71 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn get<D>(query: Query, db_accessor: &D) -> Result<RecordQueryResult<T>, ServiceError>
+    pub async fn get<D>(query: Query, db_accessor: &D) -> Result<QueryResult<T>, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
         Self::aql_get(&query.to_aql(), db_accessor).await
+    }
+
+    /// Retrieves all records from the database matching the associated conditions in batches.
+    ///
+    /// # Arguments:
+    ///
+    /// * `query` - The `Query` to match
+    /// * `db_accessor` - database connection reference
+    /// * `batch_size`- The maximum number of documents in a batch
+    ///
+    ///
+    /// # Returns
+    ///
+    /// On success a `QueryCursor` is returned. It can be empty.
+    /// On failure a [`ServiceError`] is returned:
+    /// * [`NotFound`] if no document matches the condition
+    /// * [`UnprocessableEntity`] on data corruption
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::{Comparison, Filter};
+    /// # use serde::{Serialize, Deserialize};
+    /// # use aragog::{DatabaseConnection, Record, DatabaseRecord};
+    /// #
+    /// # #[derive(Record, Clone, Serialize, Deserialize)]
+    /// # struct User {
+    /// #    username: String,
+    /// #    age: u16,
+    /// # }
+    /// #
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// # let db_accessor = DatabaseConnection::builder()
+    /// #     .with_schema_path("tests/schema.yaml")
+    /// #     .apply_schema()
+    /// #     .build().await.unwrap();
+    /// # db_accessor.truncate();
+    /// # DatabaseRecord::create(User {username: "RobertSurcouf".to_string() ,age: 18 }, &db_accessor).await.unwrap();
+    /// let query = User::query().filter(Filter::new(Comparison::field("age").greater_than(10)));
+    ///
+    /// // Both lines are equivalent:
+    /// DatabaseRecord::<User>::get_in_batches(query.clone(), &db_accessor, 100).await.unwrap();
+    /// User::get_in_batches(query.clone(), &db_accessor, 100).await.unwrap();
+    /// # }
+    /// ```
+    ///
+    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    #[maybe_async::maybe_async]
+    pub async fn get_in_batches<D>(
+        query: Query,
+        db_accessor: &D,
+        batch_size: u32,
+    ) -> Result<QueryCursor<T>, ServiceError>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        query_records_in_batches(db_accessor, &query.to_aql(), batch_size).await
     }
 
     /// Retrieves all records from the database matching the associated conditions.
@@ -624,15 +685,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn aql_get<D>(
-        query: &str,
-        db_accessor: &D,
-    ) -> Result<RecordQueryResult<T>, ServiceError>
+    pub async fn aql_get<D>(query: &str, db_accessor: &D) -> Result<QueryResult<T>, ServiceError>
     where
         D: DatabaseAccess + ?Sized,
     {
-        let result = db_accessor.aql_get(query).await?;
-        Ok(result.into())
+        query_records(db_accessor, query).await
     }
 
     /// Creates a new outbound graph `Query` with `self` as a start vertex

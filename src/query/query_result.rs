@@ -1,36 +1,15 @@
+use crate::undefined_record::UndefinedRecord;
 use crate::{DatabaseRecord, Record, ServiceError};
-use serde_json::Value;
+use std::ops::{Deref, DerefMut};
 
-pub trait QueryResult {}
+/// Query result containing the queried documents
+#[derive(Debug, Clone)]
+pub struct QueryResult<T>(pub Vec<DatabaseRecord<T>>);
 
-/// Typed Query result
-#[derive(Debug)]
-pub struct RecordQueryResult<T: Record> {
-    /// Vector of the returned documents
-    pub documents: Vec<DatabaseRecord<T>>,
-    /// The total `documents` count
-    doc_count: usize,
-}
-
-/// Result of a succeeded [`Query`]. Contains a `Vec` of `serde_json`::`Value`.
-/// The structure has methods to retrieve typed models (`get_records`).
-///
-/// [`Query`]: struct.Query.html
-#[derive(Debug)]
-pub struct JsonQueryResult {
-    /// Vector of the returned documents
-    pub documents: Vec<Value>,
-    /// The total `documents` count
-    doc_count: usize,
-}
-
-impl<T: Record> RecordQueryResult<T> {
+impl<T: Clone + Record> QueryResult<T> {
     /// Instantiates a new `QueryResult` from a document collection
     pub fn new(documents: Vec<DatabaseRecord<T>>) -> Self {
-        Self {
-            doc_count: documents.len(),
-            documents,
-        }
+        Self(documents)
     }
 
     /// Returns the only document of the current `QueryResult`.
@@ -39,11 +18,11 @@ impl<T: Record> RecordQueryResult<T> {
     /// [`ServiceError`]: enum.ServiceError.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     pub fn uniq(self) -> Result<DatabaseRecord<T>, ServiceError> {
-        if self.is_empty() || self.doc_count > 1 {
+        if self.is_empty() || self.len() > 1 {
             log::error!(
                 "Wrong number of {} returned: {}",
                 T::collection_name(),
-                self.doc_count
+                self.len()
             );
             return Err(ServiceError::NotFound {
                 item: T::collection_name().to_string(),
@@ -51,51 +30,16 @@ impl<T: Record> RecordQueryResult<T> {
                 source: None,
             });
         }
-        Ok(self.documents.into_iter().next().unwrap())
-    }
-
-    /// Returns the first document of the current `QueryResult`.
-    /// Returns `None` if there are no documents
-    pub fn first(self) -> Option<DatabaseRecord<T>> {
-        if self.is_empty() {
-            return None;
-        }
-        Some(self.documents.into_iter().next().unwrap())
-    }
-
-    /// Returns the last document of the current `QueryResult`.
-    /// Returns `None` if there are no documents
-    pub fn last(self) -> Option<DatabaseRecord<T>> {
-        if self.is_empty() {
-            return None;
-        }
-        Some(self.documents.into_iter().nth(self.doc_count - 1).unwrap())
-    }
-
-    /// Returns the length of `documents`
-    pub fn len(&self) -> usize {
-        self.doc_count
-    }
-
-    /// Returns `true` if no documents were returned
-    pub fn is_empty(&self) -> bool {
-        self.doc_count == 0
+        Ok(self.0.into_iter().next().unwrap())
     }
 }
 
-impl JsonQueryResult {
-    /// Instantiates a new `JsonQueryResult` from a document collection
-    pub fn new(documents: Vec<Value>) -> Self {
-        Self {
-            doc_count: documents.len(),
-            documents,
-        }
-    }
-
+impl QueryResult<UndefinedRecord> {
     /// Retrieves deserialized documents from the json results. The documents not matching `T` will not be returned.
     ///
     /// # Example
     /// If you want to do a graph query that can return different models you can use this method to retrieve the serialized record:
+    ///
     /// ```rust no_run
     /// # use aragog::{query::Query, Record, DatabaseConnection};
     /// # use serde::{Serialize, Deserialize};
@@ -116,32 +60,41 @@ impl JsonQueryResult {
     /// let role_results = json_results.get_records::<Role>();
     /// # }
     /// ```
-    pub fn get_records<T: Record>(&self) -> Vec<DatabaseRecord<T>> {
+    pub fn get_records<T: Record>(&self) -> QueryResult<T> {
         let mut res = Vec::new();
-        for value in self.documents.iter() {
-            let record = serde_json::from_value(value.clone());
-            if let Ok(db_record) = record {
-                res.push(db_record);
+        for db_record in self.iter() {
+            let doc = serde_json::from_value(db_record.0.clone());
+            if let Ok(record) = doc {
+                res.push(DatabaseRecord {
+                    key: db_record.key.clone(),
+                    id: db_record.id.clone(),
+                    rev: db_record.rev.clone(),
+                    record,
+                });
             } else {
                 continue;
             }
         }
-        res
-    }
-
-    /// Returns the length of `documents`
-    pub fn len(&self) -> usize {
-        self.doc_count
-    }
-
-    /// Returns `true` if no documents were returned
-    pub fn is_empty(&self) -> bool {
-        self.doc_count == 0
+        res.into()
     }
 }
 
-impl<T: Record> From<JsonQueryResult> for RecordQueryResult<T> {
-    fn from(query_result: JsonQueryResult) -> Self {
-        Self::new(query_result.get_records())
+impl<T: Record> From<Vec<DatabaseRecord<T>>> for QueryResult<T> {
+    fn from(documents: Vec<DatabaseRecord<T>>) -> Self {
+        Self::new(documents)
+    }
+}
+
+impl<T: Record> Deref for QueryResult<T> {
+    type Target = Vec<DatabaseRecord<T>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T: Record> DerefMut for QueryResult<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }

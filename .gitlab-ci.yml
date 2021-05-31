@@ -19,11 +19,27 @@ cache: &cache_template
     <<: *cache_template
     policy: pull
 
-build:
+build::default:
   image: rust:latest
   stage: build
   script:
     - cargo build
+  cache:
+    <<: *cache_template
+
+build::blocking:
+  image: rust:latest
+  stage: build
+  script:
+    - cargo build --features "blocking" --no-default-features
+  cache:
+    <<: *cache_template
+
+build::minimal_traits:
+  image: rust:latest
+  stage: build
+  script:
+    - cargo build --features "minimal_traits"
   cache:
     <<: *cache_template
 
@@ -72,6 +88,13 @@ test:packages:
   <<: *test_template
   script:
     - cargo test --package aragog_cli --no-default-features
+
+test:clippy:
+  image: rust:latest
+  <<: *test_template
+  script:
+    - rustup component add clippy
+    - cargo clippy --all-targets -- -D warnings
 
 test:examples:
   image: rust:latest

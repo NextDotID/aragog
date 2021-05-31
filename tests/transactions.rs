@@ -37,11 +37,10 @@ mod safe_execute {
         ) -> TransactionOutput<Vec<DatabaseRecord<User>>> {
             transaction
                 .safe_execute(|connection| async move {
-                    let res = vec![
-                        DatabaseRecord::create(user_doc.clone(), &connection).await?,
-                        DatabaseRecord::create(user_doc.clone(), &connection).await?,
-                        DatabaseRecord::create(user_doc.clone(), &connection).await?,
-                    ];
+                    let mut res = vec![];
+                    res.push(DatabaseRecord::create(user_doc.clone(), &connection).await?);
+                    res.push(DatabaseRecord::create(user_doc.clone(), &connection).await?);
+                    res.push(DatabaseRecord::create(user_doc.clone(), &connection).await?);
                     DatabaseRecord::create(dish_doc.clone(), &connection).await?;
                     Ok(res)
                 })
@@ -233,10 +232,10 @@ mod safe_execute {
             let transaction = Transaction::new(&connection).await.unwrap();
             let result = get_failing_result(&transaction, &doc).await;
             assert!(result.is_aborted());
-            assert!(match result.err().unwrap() {
-                ServiceError::InternalError { .. } => true,
-                _ => false,
-            });
+            assert!(matches!(
+                result.err().unwrap(),
+                ServiceError::InternalError { .. }
+            ));
             let count = connection
                 .get_collection("User")
                 .unwrap()

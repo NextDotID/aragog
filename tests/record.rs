@@ -57,12 +57,12 @@ impl Dish {
     }
 }
 
-fn init_dish(menu_id: &String) -> Dish {
+fn init_dish(menu_id: &str) -> Dish {
     Dish {
         name: "Quiche".to_string(),
         description: "Part de quiche aux oeufs, lardons et fromage".to_string(),
         price: 7,
-        menu_id: menu_id.clone(),
+        menu_id: menu_id.to_string(),
     }
 }
 
@@ -153,10 +153,9 @@ mod write {
                     price: 0,
                     menu_id: menu.key().clone(),
                 };
-                match DatabaseRecord::create(dish, &connection).await {
-                    Ok(_) => return Err("Hook should have called validations".to_string()),
-                    Err(_) => (),
-                };
+                if DatabaseRecord::create(dish, &connection).await.is_ok() {
+                    return Err("Hook should have called validations".to_string());
+                }
                 menu.reload_mut(&connection).await.unwrap();
                 assert_eq!(menu.dish_count, 0);
                 assert!(menu.last_dish_updated.is_none());
@@ -198,10 +197,9 @@ mod write {
                 let mut doc = DatabaseRecord::create(dish, &connection).await.unwrap();
                 doc.name = String::from("wrong");
                 doc.price = 0;
-                match doc.save(&connection).await {
-                    Ok(_) => return Err("Hook should have called validations".to_string()),
-                    Err(_) => (),
-                };
+                if doc.save(&connection).await.is_ok() {
+                    return Err("Hook should have called validations".to_string());
+                }
                 menu.reload_mut(&connection).await.unwrap();
                 assert_eq!(menu.dish_count, 1);
                 assert_ne!(&menu.last_dish_updated.as_ref().unwrap().name, "wrong");
@@ -240,7 +238,7 @@ mod fmt {
 }
 
 mod read {
-    use aragog::query::{Comparison, Filter};
+    use aragog::query::{Comparison, Filter, QueryCursor};
     use aragog::ServiceError;
 
     use super::*;
@@ -330,10 +328,10 @@ mod read {
                 assert_eq!(source.arango_error, ArangoError::ArangoDocumentNotFound);
                 Ok(())
             } else {
-                Err(format!("The find should return a NotFound"))
+                Err("The find should return a NotFound".to_string())
             }
         } else {
-            Err(format!("The find should return an error"))
+            Err("The find should return an error".to_string())
         }
     }
 
@@ -392,9 +390,29 @@ mod read {
                 .and(Comparison::field("price").equals(7)),
         );
 
-        let found_records = Dish::get(query, &connection).await.unwrap().documents;
+        let found_records = Dish::get(query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 1)?;
         common::expect_assert_eq(dish_record.record, found_records[0].record.clone())?;
+        Ok(())
+    }
+
+    #[maybe_async::test(
+        feature = "blocking",
+        async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn query_on_batches() -> Result<(), String> {
+        let connection = common::setup_db().await;
+        create_dishes(&connection).await;
+        let cursor: QueryCursor<Dish> = Dish::get_in_batches(Dish::query(), &connection, 2)
+            .await
+            .unwrap();
+        common::expect_assert_eq(cursor.result().len(), 2)?;
+        common::expect_assert(cursor.has_more())?;
+        let cursor: QueryCursor<Dish> = Dish::get_in_batches(Dish::query(), &connection, 10)
+            .await
+            .unwrap();
+        common::expect_assert_eq(cursor.result().len(), 4)?;
+        common::expect_assert(!cursor.has_more())?;
         Ok(())
     }
 
@@ -439,12 +457,12 @@ mod read {
 
         // Sorting
         let query = Dish::query().sort("name", None);
-        let found_records = Dish::get(query, &connection).await.unwrap().documents;
+        let found_records = Dish::get(query, &connection).await.unwrap();
         for (i, value) in ["Pasta", "Pizza", "Quiche", "Steak"].iter().enumerate() {
             common::expect_assert_eq(*value, &found_records[i].name)?;
         }
         let query = Dish::query().sort("price", None).sort("name", None);
-        let found_records = Dish::get(query, &connection).await.unwrap().documents;
+        let found_records = Dish::get(query, &connection).await.unwrap();
         for (i, value) in ["Pasta", "Quiche", "Pizza", "Steak"].iter().enumerate() {
             common::expect_assert_eq(*value, &found_records[i].name)?;
         }
