@@ -118,8 +118,8 @@ async fn operation_options() {
         .unwrap();
     let options = connection.operation_options();
     assert_eq!(options.wait_for_sync, Some(true));
-    assert_eq!(options.ignore_revs, true);
-    assert_eq!(options.ignore_hooks, true);
+    assert!(options.ignore_revs);
+    assert!(options.ignore_hooks);
     // the hook is not launched
     DatabaseRecord::create(
         Dish {

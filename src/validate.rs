@@ -565,19 +565,21 @@ mod tests {
                 let correct_str = "0123456789";
                 let wrong_strs = ["+33122334", "01 02 03", "1.23"];
 
-                assert_eq!(
-                    TestElem::validate_numeric_string(STRING_EMPTY, correct_str, &mut errors),
-                    true
-                );
-                assert_eq!(errors.is_empty(), true);
+                assert!(TestElem::validate_numeric_string(
+                    STRING_EMPTY,
+                    correct_str,
+                    &mut errors
+                ));
+                assert!(errors.is_empty());
                 for wrong_str in wrong_strs.iter() {
-                    assert_eq!(
-                        TestElem::validate_numeric_string(STRING_EMPTY, wrong_str, &mut errors),
-                        false
-                    );
-                    assert_eq!(errors.is_empty(), false);
+                    assert!(!TestElem::validate_numeric_string(
+                        STRING_EMPTY,
+                        wrong_str,
+                        &mut errors
+                    ));
+                    assert!(!errors.is_empty());
                     errors.pop().unwrap();
-                    assert_eq!(errors.is_empty(), true);
+                    assert!(errors.is_empty());
                 }
             }
         }
@@ -598,30 +600,24 @@ mod tests {
                 ];
 
                 for correct_str in correct_strs.iter() {
-                    assert_eq!(
-                        TestElem::validate_max_len(
-                            STRING_EMPTY,
-                            &String::from(correct_str.deref()),
-                            max,
-                            &mut errors,
-                        ),
-                        true
-                    );
-                    assert_eq!(errors.is_empty(), true);
+                    assert!(TestElem::validate_max_len(
+                        STRING_EMPTY,
+                        &String::from(correct_str.deref()),
+                        max,
+                        &mut errors,
+                    ));
+                    assert!(errors.is_empty());
                 }
                 for wrong_str in wrong_strs.iter() {
-                    assert_eq!(
-                        TestElem::validate_max_len(
-                            STRING_EMPTY,
-                            &String::from(wrong_str.deref()),
-                            max,
-                            &mut errors,
-                        ),
-                        false
-                    );
-                    assert_eq!(errors.is_empty(), false);
+                    assert!(!TestElem::validate_max_len(
+                        STRING_EMPTY,
+                        &String::from(wrong_str.deref()),
+                        max,
+                        &mut errors,
+                    ));
+                    assert!(!errors.is_empty());
                     errors.pop().unwrap();
-                    assert_eq!(errors.is_empty(), true);
+                    assert!(errors.is_empty());
                 }
             }
         }
@@ -642,30 +638,24 @@ mod tests {
                 let wrong_strs = ["hello", "foo1", "bar-++", "010203040"];
 
                 for correct_str in correct_strs.iter() {
-                    assert_eq!(
-                        TestElem::validate_min_len(
-                            STRING_EMPTY,
-                            &String::from(correct_str.deref()),
-                            min,
-                            &mut errors,
-                        ),
-                        true
-                    );
-                    assert_eq!(errors.is_empty(), true);
+                    assert!(TestElem::validate_min_len(
+                        STRING_EMPTY,
+                        &String::from(correct_str.deref()),
+                        min,
+                        &mut errors,
+                    ));
+                    assert!(errors.is_empty());
                 }
                 for wrong_str in wrong_strs.iter() {
-                    assert_eq!(
-                        TestElem::validate_min_len(
-                            STRING_EMPTY,
-                            &String::from(wrong_str.deref()),
-                            min,
-                            &mut errors,
-                        ),
-                        false
-                    );
-                    assert_eq!(errors.is_empty(), false);
+                    assert!(!TestElem::validate_min_len(
+                        STRING_EMPTY,
+                        &String::from(wrong_str.deref()),
+                        min,
+                        &mut errors,
+                    ));
+                    assert!(!errors.is_empty());
                     errors.pop().unwrap();
-                    assert_eq!(errors.is_empty(), true);
+                    assert!(errors.is_empty());
                 }
             }
         }
@@ -681,30 +671,24 @@ mod tests {
                 let wrong_strs = ["hello", "foo1barbarbar", "bar-++", "01020304051123"];
 
                 for correct_str in correct_strs.iter() {
-                    assert_eq!(
-                        TestElem::validate_len(
-                            STRING_EMPTY,
-                            &String::from(correct_str.deref()),
-                            length,
-                            &mut errors,
-                        ),
-                        true
-                    );
-                    assert_eq!(errors.is_empty(), true);
+                    assert!(TestElem::validate_len(
+                        STRING_EMPTY,
+                        &String::from(correct_str.deref()),
+                        length,
+                        &mut errors,
+                    ));
+                    assert!(errors.is_empty());
                 }
                 for wrong_str in wrong_strs.iter() {
-                    assert_eq!(
-                        TestElem::validate_len(
-                            STRING_EMPTY,
-                            &String::from(wrong_str.deref()),
-                            length,
-                            &mut errors,
-                        ),
-                        false
-                    );
-                    assert_eq!(errors.is_empty(), false);
+                    assert!(!TestElem::validate_len(
+                        STRING_EMPTY,
+                        &String::from(wrong_str.deref()),
+                        length,
+                        &mut errors,
+                    ));
+                    assert!(!errors.is_empty());
                     errors.pop().unwrap();
-                    assert_eq!(errors.is_empty(), true);
+                    assert!(errors.is_empty());
                 }
             }
         }
@@ -721,27 +705,21 @@ mod tests {
                 let wrong_strs = ["abc1", "hellotherebro", "felix de_manevi11e", "a bc"];
 
                 for valid_str in valid_strs.iter() {
-                    assert_eq!(
-                        TestElem::validate_regex(
-                            STRING_EMPTY,
-                            valid_str.deref(),
-                            REGEX,
-                            &mut errors
-                        ),
-                        true
-                    );
+                    assert!(TestElem::validate_regex(
+                        STRING_EMPTY,
+                        valid_str.deref(),
+                        REGEX,
+                        &mut errors
+                    ));
                     assert!(errors.is_empty());
                 }
                 for wrong_str in wrong_strs.iter() {
-                    assert_eq!(
-                        TestElem::validate_regex(
-                            STRING_EMPTY,
-                            wrong_str.deref(),
-                            REGEX,
-                            &mut errors
-                        ),
-                        false
-                    );
+                    assert!(!TestElem::validate_regex(
+                        STRING_EMPTY,
+                        wrong_str.deref(),
+                        REGEX,
+                        &mut errors
+                    ));
                     assert!(!errors.is_empty());
                     errors.pop();
                     assert!(errors.is_empty());
