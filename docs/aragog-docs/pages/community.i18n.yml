@@ -1,0 +1,15 @@
+en:
+  community:
+    title: Community
+    description: Community
+    blocs:
+      title: Community
+      code-repository: Code Repository
+      code-repository-explanation: We have an official chat room on Gitter. If you need a quick question answered, this is the best place to do it. Also, if you are working on a project and you need any kind of advice, please feel free to ask. Someone will be there to answer most of the times. We are always happy to help.
+      chat-room: Chat Room
+      chat-room-explanation: We have an official chat room on Gitter. If you need a quick question answered, this is the best place to do it. Also, if you are working on a project and you need any kind of advice, please feel free to ask. Someone will be there to answer most of the times. We are always happy to help.
+      blog: Blog
+      blog-explanation: On the official Qongzi blog, you can find the detailed announcements for new releases, some interesting use cases and things the team writes around the code they usually write.
+      contact: Contact
+      developer: Developer
+      team-qonfucius: Team Qonfucius
