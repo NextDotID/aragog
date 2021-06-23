@@ -1,0 +1,15 @@
+en:
+  legal-notices:
+    title: Legal notices
+    description: Legal notices
+    blocs:
+      title: Legal notices
+      subtitle: In accordance with the provisions of articles 6-III and 19 of the law for Confidence in the Digital Economy, we inform you that
+      qonfucius:
+        0: "This website is edited, produced and hosted by :"
+        1: "Qonfucius, SASU with a capital of €14,000"
+        2: "25 avenue de la Châtaigneraie, 91800 Brunoy"
+        3: "SIRET: 83422697900013"
+        4: "R.C.S.: Evry 834 226 979"
+        5: "Phone number: 09 80 80 80 16"
+      director-publication: Director of the publication of the website

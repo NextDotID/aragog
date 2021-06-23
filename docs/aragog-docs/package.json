@@ -1,0 +1,29 @@
+{
+  "name": "aragog-docs",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "@nuxtjs/sitemap": "^2.4.0",
+    "core-js": "^3.9.1",
+    "highlight.js": "^11.0.1",
+    "marked": "^2.1.1",
+    "nuxt": "^2.15.3",
+    "nuxt-i18n": "^6.27.1",
+    "nuxt-social-meta": "0.0.5",
+    "sass": "^1.35.1",
+    "vue-highlight.js": "^4.0.1-beta"
+  },
+  "devDependencies": {
+    "@nuxt/types": "^2.15.3",
+    "@nuxt/typescript-build": "^2.1.0",
+    "@nuxtjs/svg": "^0.1.12",
+    "@types/marked": "^2.0.3",
+    "sass-loader": "^10"
+  }
+}

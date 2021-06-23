@@ -1,0 +1,26 @@
+en:
+  index:
+    title: Home
+    description: Aragog
+    blocs:
+      description: A fully featured ODM and OGM library for ArangoDB.
+      safe: Safe
+      safe-explanation: Fully benefit Rust speed and safety with Aragog. Type safe queries, exhaustive errors and transactional operations.
+      easy: Easy
+      easy-explanation: Define and manipulate models, edges and graphs seamlessly.
+      productive: Productive
+      productive-explanation: Complete CRUD operations, validations, and hooks with zero boilerplate code.
+      models: Models
+      hooks: Hooks
+      validations: Validations
+      type-safe-queries: Type safe queries
+      graph-queries: Graph queries
+      examples: Examples
+      examples-list:
+        0: Make a struct queryable with a simple derive
+        1: Define life cycle methods to your model
+        2: Integrate field and custom validations to your life cycle seamlessly
+        3: Enjoy type safety for your AQL queries
+        4: Make complex edge queries
+      buttons:
+        quick-start: Quick start
