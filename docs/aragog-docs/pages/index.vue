@@ -13,12 +13,26 @@
           </a>
         </div>
         <div class="animate-container">
-          <img src="~/assets/images/pictures/aragog-illustration-accolade-droite.svg" class="aragog-picture-left" alt="aragog-picture-left">
-          <img src="~/assets/images/pictures/aragog-illustration-accolade-gauche.svg" class="aragog-picture-right" alt="aragog-picture-right">
-          <img src="~/assets/images/pictures/aragog-illustration-ellipse.svg" class="aragog-picture-ecllipse" alt="aragog-picture-ecllipse">
-          <img src="~/assets/images/pictures/aragog-illustration-screen-1.svg" class="aragog-picture-screen-1" alt="aragog-picture-screen">
-          <img src="~/assets/images/pictures/aragog-illustration-screen-2.svg" class="aragog-picture-screen-2" alt="aragog-picture-screen">
-          <img src="~/assets/images/pictures/aragog-illustration-spider.svg" class="aragog-spider" alt="aragog-spider">
+          <client-only>
+            <transition appear name="aragog-picture-left">
+              <img src="~/assets/images/pictures/aragog-illustration-accolade-droite.svg" class="aragog-picture-left" alt="aragog-picture-left">
+            </transition>
+            <transition appear name="aragog-picture-right">
+              <img src="~/assets/images/pictures/aragog-illustration-accolade-gauche.svg" class="aragog-picture-right" alt="aragog-picture-right">
+            </transition>
+            <transition appear name="aragog-picture-ecllipse">
+              <img src="~/assets/images/pictures/aragog-illustration-ellipse.svg" class="aragog-picture-ecllipse" alt="aragog-picture-ecllipse">
+            </transition>
+            <transition appear name="aragog-picture-screen-1">
+              <img src="~/assets/images/pictures/aragog-illustration-screen-1.svg" class="aragog-picture-screen-1" alt="aragog-picture-screen">
+            </transition>
+            <transition appear name="aragog-picture-screen-2">
+              <img src="~/assets/images/pictures/aragog-illustration-screen-2.svg" class="aragog-picture-screen-2" alt="aragog-picture-screen">
+            </transition>
+            <transition appear name="aragog-spider">
+              <img src="~/assets/images/pictures/aragog-illustration-spider.svg" class="aragog-spider" alt="aragog-spider">
+            </transition>
+          </client-only>
         </div>
       </div>
     </section>
@@ -212,6 +226,35 @@ export default Vue.extend({
 <style scoped lang="scss">
 @import 'assets/css/_vars.scss';
 
+.aragog-picture-left-enter-active,
+.aragog-picture-right-enter-active,
+.aragog-picture-ecllipse-enter-active,
+.aragog-picture-screen-1-enter-active,
+.aragog-picture-screen-2-enter-active,
+.aragog-spider-enter-active {
+  transition: all 2s;
+}
+.aragog-picture-left-enter {
+  transform: translate(50px, 30px);
+}
+
+.aragog-picture-right-enter,
+.aragog-picture-screen-1-enter  {
+  transform: translate(-50px, 50px);
+}
+
+.aragog-picture-ecllipse-enter {
+  transform: translate(-50px, -20px);
+}
+
+.aragog-picture-screen-2-enter {
+  transform: translate(40px, -20px);
+}
+
+.aragog-spider-enter {
+  transform: translateY(50px);
+}
+
 main {
   section {
     #title {
@@ -295,7 +338,6 @@ main {
           img {
             width: 200px;
             position: absolute;
-            transition: 0.5s all;
           }
 
           .aragog-picture-left {
@@ -303,7 +345,6 @@ main {
             right: -120px;
             top: 120px;
             width: 60px;
-            transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
           }
           .aragog-picture-right {
             z-index: 5;
