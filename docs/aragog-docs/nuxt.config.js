@@ -2,6 +2,7 @@ import Sass from 'sass';
 import i18n from './config/i18n/config';
 
 export default {
+  target: 'static',
   head: {
     titleTemplate: '%s - Aragog',
     meta: [
@@ -38,4 +39,7 @@ export default {
       },
     },
   },
+  sitemap: {
+    hostname: process.env.CI_PAGES_URL
+  }
 }
