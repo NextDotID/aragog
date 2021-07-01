@@ -15,14 +15,14 @@ section {
 
      .title {
        color: vars.$purple;
-       font-weight: 1000;
+       font-weight: 800;
        line-height: 1.5;
        font-size: 2em;
      }
 
      h2 {
        color: $purple;
-       font-weight: 900;
+       font-weight: 700;
        line-height: 1.5;
      }
 
@@ -66,6 +66,7 @@ section {
 @media screen and(min-width: vars.$tablet) {
   section {
     &.primary-section {
+      padding: vars.$size-extra-large 0;
       background: rgb(144,144,224);
       background: linear-gradient(63deg, rgba(144,144,224,1) 40%, rgba(242,242,241,1) 93%);
     }
