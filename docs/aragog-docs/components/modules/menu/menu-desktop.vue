@@ -22,7 +22,7 @@
       </ul>
     </div>
     <div class="buttons">
-      <a href="https://qonfucius.gitlab.io/aragog/" target="_blank">
+      <a href="https://aragog.rs/book" target="_blank">
         <a-button :invert-color="true">{{ $t('menu.quick-start') }}</a-button>
       </a>
       <a href="https://gitlab.com/qonfucius/aragog" target="_blank">

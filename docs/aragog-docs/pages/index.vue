@@ -5,7 +5,7 @@
         <div class="description-container">
           <img src="~/assets/images/logos/aragog-logo-blanc.svg" alt="aragog-logo">
           <p>{{ $t('index.blocs.description') }}</p>
-          <a href="https://qonfucius.gitlab.io/aragog/" target="_blank">
+          <a href="https://aragog.rs/book" target="_blank">
             <a-button :invert-color="true" :large="true">{{ $t('index.blocs.buttons.quick-start') }}</a-button>
           </a>
           <a href="https://gitlab.com/qonfucius/aragog" target="_blank">

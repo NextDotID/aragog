@@ -5,7 +5,8 @@ variables:
 stages:
   - build
   - test
-  - documentation
+  - build_doc
+  - deploy_doc
 
 cache: &cache_template
   key: ${CI_COMMIT_REF_SLUG}
@@ -14,7 +15,7 @@ cache: &cache_template
     - .cargo
   policy: pull-push
 
-.cache_pulll_template: &cache_pull_template
+.cache_pull_template: &cache_pull_template
   cache:
     <<: *cache_template
     policy: pull
@@ -116,27 +117,46 @@ test::rustfmt:
 rustdoc:
   <<: *cache_pull_template
   image: rust:latest
-  stage: documentation
+  stage: build_doc
   variables:
     PKG_NAME: aragog
   script:
     - cargo --version
-    - rm -rf public
-    - cargo rustdoc -p $PKG_NAME
-    - mv target/doc public
+    - cargo rustdoc -p $PKG_NAME --target-dir public/rustdoc
+  artifacts:
+    paths:
+      - public
+
+build::mdbook:
+  image: registry.gitlab.com/qonfucius/infrastructure/docker-images/mdbook-alpine
+  stage: build_doc
+  variables:
+    MDBOOK_OUTPUT__HTML__SITE_URL: $CI_PAGES_URL/book
+  script:
+    - cargo --version
+    - mdbook build -d public/book
+  artifacts:
+    paths:
+      - public
+
+build::website:
+  image: node:latest
+  stage: build_doc
+  script:
+      - cd docs/aragog-docs
+      - npm ci
+      - npm run generate 
+      - cp -r dist ../../public
   artifacts:
     paths:
       - public
 
 pages:
-  image: registry.gitlab.com/qonfucius/infrastructure/docker-images/mdbook-alpine
-  stage: documentation
-  variables:
-    MDBOOK_OUTPUT__HTML__SITE_URL: $CI_PAGES_URL/book
-  script:
-    - cargo --version
-    - rm -rf public
-    - mdbook build -d public
+  script: ls
+  needs:
+    - build::mdbook
+    - build::website
+  stage: deploy_doc
   artifacts:
     paths:
       - public

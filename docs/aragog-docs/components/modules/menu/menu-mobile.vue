@@ -18,7 +18,7 @@
     <div class="buttons">
       <ul>
         <li>
-          <a href="https://qonfucius.gitlab.io/aragog/" target="_blank">
+          <a href="https://aragog.rs/book" target="_blank">
             {{ $t('menu.quick-start') }}
           </a>
         </li>

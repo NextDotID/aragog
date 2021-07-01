@@ -36,7 +36,7 @@
 //! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error
 //! * Transactional operations
 //!
-//! For detailed explanations on theses feature, read the [book](https://gitlab.com/qonfucius/aragog/-/tree/master/book) ([published version](https://qonfucius.gitlab.io/aragog/))
+//! For detailed explanations on theses feature, read the [book](https://gitlab.com/qonfucius/aragog/-/tree/master/book) ([published version](https://aragog.rs/book))
 //!
 //! ## Quick Reference
 //!

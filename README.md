@@ -25,7 +25,7 @@ The crate also provides a powerful [AQL][AQL] querying tool allowing complex and
 ## Book and Documentation
 
 - See the official documentation [here](https://docs.rs/aragog)
-- See The official [book](./book) ([published version](https://qonfucius.gitlab.io/aragog))
+- See The official [book](./book) ([published version](https://aragog.rs/book))
 - See the [examples](./examples)
 
 ## Project Layout

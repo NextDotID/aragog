@@ -1,6 +1,6 @@
 # Aragog Book
 
-See the [published version](https://qonfucius.gitlab.io/aragog)
+See the [published version](https://aragog.rs/book)
 
 This book is destined to cover every major feature of the `aragog` library.
 Note that **everything** in the lib is documented, so don't forget to check the [technical documentation](https://docs.rs/aragog)
