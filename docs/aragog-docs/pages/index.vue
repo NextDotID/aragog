@@ -282,7 +282,7 @@ main {
 
         a {
           .button {
-            margin-left: $size-small;
+            margin-right: $size-small;
           }
         }
       }
@@ -326,6 +326,8 @@ main {
         max-height: 1000px;
         .description-container {
           position: relative;
+          text-align: left;
+          margin-left: 10%;
           img {
             width: 350px;
           }

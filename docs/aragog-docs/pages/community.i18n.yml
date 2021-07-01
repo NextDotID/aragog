@@ -5,7 +5,7 @@ en:
     blocs:
       title: Community
       code-repository: Code Repository
-      code-repository-explanation: We have an official chat room on Gitter. If you need a quick question answered, this is the best place to do it. Also, if you are working on a project and you need any kind of advice, please feel free to ask. Someone will be there to answer most of the times. We are always happy to help.
+      code-repository-explanation: Aragog’s official code repository is on GitLab. If you find any bugs, please report them by opening an issue. Also, pull requests are always welcome. We will get back to you as soon as possible.
       chat-room: Chat Room
       chat-room-explanation: We have an official chat room on Gitter. If you need a quick question answered, this is the best place to do it. Also, if you are working on a project and you need any kind of advice, please feel free to ask. Someone will be there to answer most of the times. We are always happy to help.
       blog: Blog

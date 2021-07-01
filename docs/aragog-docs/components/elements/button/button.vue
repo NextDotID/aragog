@@ -45,6 +45,7 @@ export default Vue.extend({
 
 .button {
   position: relative;
+  font-family: 'Avenir medium', serif;
   margin: vars.$size-extra-large auto;
   background-color: vars.$white;
   color: vars.$purple;
