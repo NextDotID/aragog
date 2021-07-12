@@ -40,6 +40,6 @@ export default {
     },
   },
   sitemap: {
-    hostname: process.env.CI_PAGES_URL
+    hostname: process.env.CUSTOM_DOMAIN,
   }
 }
