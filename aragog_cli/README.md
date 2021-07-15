@@ -66,6 +66,14 @@ Command: `argog describe`
 
 Will render information about the database, schema synced version and render a table describing every collection.
 
+### Discover database
+
+Command: `aragog discover`
+
+Will generate and apply a migration file for every collection, graph and index in the database not referenced in the schema.
+
+This command is useful to force synchronization between your database state and the schema or to initialize your schema and migrations from an existing database.
+
 ## Migration files
 
 Every migration file looks like this:

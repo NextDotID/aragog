@@ -1,5 +1,5 @@
 use std::fs;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
 
@@ -24,6 +24,7 @@ pub struct Migration {
     pub name: String,
     pub version: MigrationVersion,
     pub data: MigrationData,
+    pub path: String,
 }
 
 impl Migration {
@@ -48,9 +49,8 @@ impl Migration {
         Ok(db_path)
     }
 
-    pub fn new(name: &str, schema_path: &str) -> Result<Self, AragogCliError> {
+    pub fn new(name: &str, schema_path: &str, write: bool) -> Result<Self, AragogCliError> {
         let data = MigrationData::default();
-        let data_str = serde_yaml::to_string(&data).unwrap();
         let version = Utc::now().timestamp_millis() as u64;
         let migration_path = Self::migration_path(schema_path)?;
         let path = format!(
@@ -59,24 +59,39 @@ impl Migration {
             version,
             name.to_ascii_lowercase()
         );
-        let mut file = File::create(&path)?;
-        let buff = format!("{}{}", HELP_MESSAGE, data_str);
-        file.write_all(buff.as_bytes())?;
-        log(format!("Created Migration {}", path), LogLevel::Info);
-        Ok(Self {
+        let res = Self {
             name: name.to_string(),
             version,
             data,
-        })
+            path: path.clone(),
+        };
+        if write {
+            res.save()?;
+            log(format!("Created Migration {}", path), LogLevel::Info);
+        }
+        Ok(res)
+    }
+
+    pub fn file(&self) -> Result<File, AragogCliError> {
+        let file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(&self.path)?;
+        Ok(file)
+    }
+
+    pub fn save(&self) -> Result<(), AragogCliError> {
+        let data_str = serde_yaml::to_string(&self.data).unwrap();
+        let mut file = self.file()?;
+        let buff = format!("{}{}", HELP_MESSAGE, data_str);
+        file.write_all(buff.as_bytes())?;
+        Ok(())
     }
 
     pub fn load(file_name: &str, schema_path: &str) -> Result<Self, AragogCliError> {
-        let file_path = format!("{}/{}/{}", schema_path, MIGRATION_PATH, file_name);
-        log(
-            format!("Loading migration file {}", file_path),
-            LogLevel::Info,
-        );
-        let mut split = file_name.split("_");
+        let path = format!("{}/{}/{}", schema_path, MIGRATION_PATH, file_name);
+        log(format!("Loading migration file {}", path), LogLevel::Info);
+        let mut split = file_name.split('_');
         let version = match split.next() {
             Some(str) => str,
             None => {
@@ -95,21 +110,26 @@ impl Migration {
         };
         let vec: Vec<&str> = split.collect();
         let name = vec.join("_");
-        let data = MigrationData::load(&file_path)?;
+        let data = MigrationData::load(&path)?;
         Ok(Self {
             name,
             version,
             data,
+            path,
         })
     }
 
-    pub fn apply_up(self, db: &mut VersionedDatabase) -> Result<MigrationVersion, AragogCliError> {
+    pub fn apply_up(
+        self,
+        db: &mut VersionedDatabase,
+        silent: bool,
+    ) -> Result<MigrationVersion, AragogCliError> {
         log(
             format!("Apply Migration {} ...", &self.name),
             LogLevel::Info,
         );
         for operation in self.data.up.into_iter() {
-            operation.apply(db)?;
+            operation.apply(db, silent)?;
         }
         db.schema.version = Some(self.version);
         log("Done.", LogLevel::Info);
@@ -124,8 +144,8 @@ impl Migration {
             format!("Rollback Migration {} ...", &self.name),
             LogLevel::Info,
         );
-        for operation in self.data.down.unwrap_or(Vec::new()).into_iter() {
-            operation.apply(db)?;
+        for operation in self.data.down.unwrap_or_default().into_iter() {
+            operation.apply(db, false)?;
         }
         db.schema.version = Some(self.version - 1);
         log("Done.", LogLevel::Info);

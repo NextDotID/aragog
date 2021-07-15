@@ -68,7 +68,7 @@ impl TransactionBuilder {
                     .wait_for_sync(self.wait_for_sync.unwrap_or(false))
                     .collections(
                         TransactionCollections::builder()
-                            .write(collection_names.clone())
+                            .write(collection_names)
                             .build(),
                     )
                     .build(),

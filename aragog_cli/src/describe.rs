@@ -26,12 +26,7 @@ pub fn describe_db(config: &Config) -> Result<(), AragogCliError> {
         }
         let collection = db.collection(&info.name)?;
         let properties: Properties = collection.document_count()?;
-        let synced = db
-            .schema
-            .collections
-            .iter()
-            .find(|a| &a.name == &info.name)
-            .is_some();
+        let synced = db.schema.collections.iter().any(|a| a.name == info.name);
         let index_count = db.indexes(&info.name)?.indexes.len();
         table.add_row(row![
             &info.name,

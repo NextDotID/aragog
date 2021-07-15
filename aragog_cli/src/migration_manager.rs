@@ -40,7 +40,7 @@ impl MigrationManager {
             }
         };
         let schema_file_path = format!("{}/{}", schema_path, SCHEMA_NAME);
-        log(format!("Loading schema.yaml"), LogLevel::Debug);
+        log("Loading schema.yaml", LogLevel::Debug);
         match fs::File::open(&schema_file_path) {
             Ok(_) => (),
             Err(error) => {
@@ -51,7 +51,7 @@ impl MigrationManager {
                 fs::File::create(&schema_file_path)?;
             }
         };
-        log(format!("Loading migrations..."), LogLevel::Debug);
+        log("Loading migrations...", LogLevel::Debug);
         let mut migrations = Vec::new();
         for entry in dir {
             let entry = entry?;
@@ -79,7 +79,7 @@ impl MigrationManager {
             return Err(AragogCliError::NoMigrations);
         }
         migrations.sort_by(|a, b| a.version.cmp(&b.version));
-        log(format!("Migrations loaded."), LogLevel::Debug);
+        log("Migrations loaded.", LogLevel::Debug);
         Ok(Self {
             migrations,
             schema_file_path,
@@ -96,7 +96,7 @@ impl MigrationManager {
         let mut i = 0;
         for migration in self.migrations.into_iter() {
             if migration.version > current_version {
-                migration.apply_up(db)?;
+                migration.apply_up(db, false)?;
                 db.save()?;
                 Self::write_schema(&db.schema, &self.schema_file_path)?;
                 i += 1;

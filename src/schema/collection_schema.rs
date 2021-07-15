@@ -51,7 +51,7 @@ impl SchemaDatabaseOperation for CollectionSchema {
             } else {
                 CollectionType::Document
             })
-            .wait_for_sync(self.wait_for_sync.unwrap_or(false))
+            .wait_for_sync(true)
             .build();
         let res = database
             .create_collection_with_options(creation_settings, Default::default())
