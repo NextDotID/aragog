@@ -9,6 +9,7 @@ pub use config::log;
 
 use crate::config::Config;
 use crate::describe::{describe_collection_indexes, describe_db};
+use crate::discover::discover_migration;
 use crate::error::AragogCliError;
 use crate::log_level::LogLevel;
 use crate::migration::Migration;
@@ -17,6 +18,7 @@ use crate::versioned_database::VersionedDatabase;
 
 mod config;
 mod describe;
+mod discover;
 mod error;
 mod log_level;
 mod migration;
@@ -78,7 +80,7 @@ fn main() -> Result<(), AragogCliError> {
             migrate(MigrationDirection::Down(count), &mut db, manager)?;
         }
         Some(("create_migration", args)) => {
-            Migration::new(args.value_of("MIGRATION_NAME").unwrap(), &schema_path)?;
+            Migration::new(args.value_of("MIGRATION_NAME").unwrap(), &schema_path, true)?;
         }
         Some(("truncate_database", _args)) => {
             let db = VersionedDatabase::init(&config)?;
@@ -92,7 +94,37 @@ fn main() -> Result<(), AragogCliError> {
                 );
                 db.drop_collection(&info.name)?;
             }
-            log(format!("Truncated database collections."), LogLevel::Info);
+            for graph in db.graphs()?.graphs.into_iter() {
+                log(format!("Dropping Graph {}", &graph.name), LogLevel::Info);
+                db.drop_graph(&graph.name, false)?;
+            }
+            log("Truncated database collections and graphs", LogLevel::Info);
+        }
+        Some(("discover", _args)) => {
+            let mut db = VersionedDatabase::init(&config)?;
+            let manager = MigrationManager::new(&schema_path)?;
+            let migration = discover_migration(&mut db, &config)?;
+            if migration.data.is_empty() {
+                log(
+                    "Your schema and database are synchronized, no discovery required",
+                    LogLevel::Info,
+                );
+                return Ok(());
+            }
+            log(
+                format!("Created discover migration {}", migration.path),
+                LogLevel::Info,
+            );
+            migration.apply_up(&mut db, true)?;
+            db.save()?;
+            MigrationManager::write_schema(&db.schema, &manager.schema_file_path)?;
+            log(
+                format!(
+                    "Applied discover migration to schema, new version: {}",
+                    db.schema.version.unwrap()
+                ),
+                LogLevel::Info,
+            );
         }
         Some(("describe", _args)) => {
             describe_db(&config)?;
@@ -100,7 +132,7 @@ fn main() -> Result<(), AragogCliError> {
         Some(("describe_indexes", args)) => {
             describe_collection_indexes(&config, args.value_of("COLLECTION_NAME").unwrap())?;
         }
-        _ => log(format!("No usage found, use --help"), LogLevel::Info),
+        _ => log("No usage found, use --help", LogLevel::Info),
     };
     Ok(())
 }

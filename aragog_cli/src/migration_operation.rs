@@ -58,18 +58,21 @@ pub enum MigrationOperation {
 }
 
 impl MigrationOperation {
-    pub fn apply(self, db: &mut VersionedDatabase) -> Result<(), AragogCliError> {
+    pub fn apply(self, db: &mut VersionedDatabase, silent: bool) -> Result<(), AragogCliError> {
         match self {
             MigrationOperation::CreateCollection {
                 name,
                 wait_for_sync,
             } => {
-                log("Executing create_collection operation", LogLevel::Verbose);
+                log(
+                    format!("Executing create_collection `{}` operation", name),
+                    LogLevel::Verbose,
+                );
                 let item = match db.schema.collection(&name) {
                     Some(_) => return Err(AragogCliError::DuplicateCollection { name }),
                     None => CollectionSchema::new(&name, false, wait_for_sync),
                 };
-                item.apply_to_database(db, false)?;
+                item.apply_to_database(db, silent)?;
                 db.schema.collections.push(item);
             }
             MigrationOperation::CreateEdgeCollection {
@@ -77,18 +80,21 @@ impl MigrationOperation {
                 wait_for_sync,
             } => {
                 log(
-                    "Executing create_edge_collection operation",
+                    format!("Executing create_edge_collection `{}` operation", name),
                     LogLevel::Verbose,
                 );
                 let item = match db.schema.collection(&name) {
                     Some(_) => return Err(AragogCliError::DuplicateEdgeCollection { name }),
                     None => CollectionSchema::new(&name, true, wait_for_sync),
                 };
-                item.apply_to_database(db, false)?;
+                item.apply_to_database(db, silent)?;
                 db.schema.collections.push(item);
             }
             MigrationOperation::DeleteCollection { name } => {
-                log("Executing delete_collection operation", LogLevel::Verbose);
+                log(
+                    format!("Executing delete_collection `{}` operation", name),
+                    LogLevel::Verbose,
+                );
                 match db.schema.collection_index(&name) {
                     None => return Err(AragogCliError::MissingCollection { name }),
                     Some(index) => {
@@ -99,7 +105,7 @@ impl MigrationOperation {
             }
             MigrationOperation::DeleteEdgeCollection { name } => {
                 log(
-                    "Executing delete_edge_collection operation",
+                    format!("Executing delete_edge_collection `{}` operation", name),
                     LogLevel::Verbose,
                 );
                 match db.schema.collection_index(&name) {
@@ -116,7 +122,10 @@ impl MigrationOperation {
                 settings,
                 fields,
             } => {
-                log("Executing create_index operation", LogLevel::Verbose);
+                log(
+                    format!("Executing create_index `{}` operation", name),
+                    LogLevel::Verbose,
+                );
                 let item = match db.schema.index(&collection, &name) {
                     Some(_) => return Err(AragogCliError::DuplicateIndex { name, collection }),
                     None => IndexSchema {
@@ -130,7 +139,10 @@ impl MigrationOperation {
                 db.schema.indexes.push(item);
             }
             MigrationOperation::DeleteIndex { name, collection } => {
-                log("Executing delete_index operation", LogLevel::Verbose);
+                log(
+                    format!("Executing delete_index `{}` operation", name),
+                    LogLevel::Verbose,
+                );
                 match db.schema.index_index(&collection, &name) {
                     None => return Err(AragogCliError::MissingIndex { collection, name }),
                     Some(index) => {
@@ -147,23 +159,29 @@ impl MigrationOperation {
                 is_disjoint,
                 options,
             } => {
-                log("Executing create_graph operation", LogLevel::Verbose);
+                log(
+                    format!("Executing create_graph `{}` operation", name),
+                    LogLevel::Verbose,
+                );
                 let item = match db.schema.graph(&name) {
                     Some(_) => return Err(AragogCliError::DuplicateGraph { name }),
                     None => GraphSchema(Graph {
                         name,
                         edge_definitions,
-                        orphan_collections: orphan_collections.unwrap_or(Vec::new()),
+                        orphan_collections: orphan_collections.unwrap_or_default(),
                         is_smart,
                         is_disjoint,
                         options,
                     }),
                 };
-                item.apply_to_database(db, false)?;
+                item.apply_to_database(db, silent)?;
                 db.schema.graphs.push(item);
             }
             MigrationOperation::DeleteGraph { name } => {
-                log("Executing delete_graph operation", LogLevel::Verbose);
+                log(
+                    format!("Executing delete_graph `{}` operation", name),
+                    LogLevel::Verbose,
+                );
                 match db.schema.graph_index(&name) {
                     None => return Err(AragogCliError::MissingGraph { name }),
                     Some(graph) => {

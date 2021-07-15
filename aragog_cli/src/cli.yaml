@@ -1,47 +1,47 @@
 name: aragog
 version: "0.2.12"
 author: Felix de Maneville <felix.maneville@qonfucius.team>
-about: CLI too for aragog crate, handles ArangoDB migrations and schema generation
+about: CLI too for aragog crate, handles ArangoDB migrations and schema generation.
 args:
   - schema_path:
       short: f
       long: folder
       value_name: PATH
-      about: Sets the path for the migrations and schema (by default env var SCHEMA_PATH is used or `config/db/schema.yaml`)
+      about: Sets the path for the migrations and schema (by default env var SCHEMA_PATH is used or `config/db/schema.yaml`).
       takes_value: true
       required: false
   - db_host:
       short: h
       long: db-host
       value_name: DB_HOST
-      about: Sets the ArangoDB host (by default env var DB_HOST is used)
+      about: Sets the ArangoDB host (by default env var DB_HOST is used).
       takes_value: true
       required: false
   - db_name:
       short: n
       long: db-name
       value_name: DB_NAME
-      about: Sets the ArangoDB database name (by default env var DB_NAME is used)
+      about: Sets the ArangoDB database name (by default env var DB_NAME is used).
       takes_value: true
       required: false
   - db_user:
       short: u
       long: db-user
       value_name: DB_USER
-      about: Sets the ArangoDB database user (by default env var DB_USER is used)
+      about: Sets the ArangoDB database user (by default env var DB_USER is used).
       takes_value: true
       required: false
   - db_password:
       short: p
       long: db-password
       value_name: DB_PASSWORD
-      about: Sets the ArangoDB database user password (by default env var DB_PASSWORD is used)
+      about: Sets the ArangoDB database user password (by default env var DB_PASSWORD is used).
       takes_value: true
       required: false
   - aragog_collection:
       long: aragog-collection
       value_name: COLLECTION_NAME
-      about: Sets the name of the config ArangoDB collection that will be used to synchronize database and schema version (by default "AragogConfiguration" is used)
+      about: Sets the name of the config ArangoDB collection that will be used to synchronize database and schema version (by default "AragogConfiguration" is used).
       takes_value: true
       required: false
   - verbose:
@@ -54,7 +54,7 @@ subcommands:
       about: Launches migrations
       takes_value: false
   - rollback:
-      about: Rollbacks migrations (One by default)
+      about: Rollbacks migrations (One by default).
       takes_value: true
       args:
         - COUNT:
@@ -63,19 +63,22 @@ subcommands:
             required: false
   - check:
       takes_value: false
-      about: loads migrations and check their format
+      about: Loads migrations and check their format.
   - create_migration:
       takes_value: true
       value_name: MIGRATION_NAME
-      about: creates a new migration file
+      about: Creates a new migration file.
       args:
         - MIGRATION_NAME:
             about: Migration name
             help: Sets the migration name
             required: true
+  - discover:
+      about: Generates and apply a migration for collections, indexes and graphs missing from the schema.
+      takes_value: false
   - truncate_database:
       takes_value: false
-      about: Truncates the database, removes all collections and documents. Does not remove Named Graphs
+      about: Truncates the database, removes all collections and documents. Does not remove Named Graphs.
   - describe:
       takes_value: false
       about: Describes the current database state, the synced schema version, collections, document couts, etc.

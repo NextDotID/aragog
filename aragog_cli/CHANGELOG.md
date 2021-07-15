@@ -3,6 +3,9 @@
 ## Unreleased
 
 * `arangors` dependency bumped to `=0.4.8`
+* Clippy fixes
+* Added `discover` command for existing databases
+* Added a Dockerfile
 
 ## 0.2.12
 

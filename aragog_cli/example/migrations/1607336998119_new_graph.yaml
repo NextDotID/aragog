@@ -11,6 +11,9 @@ up:
       settings:
         type: ttl
         expireAfter: 3600
+  - create_collection:
+      name: OrphanCollection
+      wait_for_sync: true
   - create_graph:
       name: Graph
       orphan_collections:
@@ -28,5 +31,7 @@ down:
   - delete_index:
       collection: MyCollection2
       name: Expiration
+  - delete_collection:
+      name: OrphanCollection
   - delete_graph:
       name: Graph

@@ -7,9 +7,9 @@ pub enum LogLevel {
     Verbose,
 }
 
-impl Into<u64> for LogLevel {
-    fn into(self) -> u64 {
-        match self {
+impl From<LogLevel> for u64 {
+    fn from(level: LogLevel) -> Self {
+        match level {
             LogLevel::Info => 0,
             LogLevel::Debug => 1,
             LogLevel::Verbose => 2,

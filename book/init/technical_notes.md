@@ -16,7 +16,7 @@ All `aragog` API using a `DatabaseAccess` type also use `?Sized` (`Sized` [restr
 
 This means you can use dynamically typed [trait objects](https://doc.rust-lang.org/book/ch17-02-trait-objects.html).
 
-Example extract from [boxed example](../../examples/boxed_example):
+Example extract from [boxed example](https://gitlab.com/qonfucius/aragog/-/tree/master/examples/boxed_example):
 
 ```rust
 pub struct BoxedConnection {

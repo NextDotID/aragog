@@ -15,8 +15,8 @@ of requesting them.
 
 ### Fixed
 
-* Clippy fixes.
-* `ServiceError` sources were not correctly set. 
+* Fixed Clippy errors and warning (Rust 1.53 support).
+* Fixed `ServiceError` sources. 
 
 ### Removed
 

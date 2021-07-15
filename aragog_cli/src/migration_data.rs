@@ -21,6 +21,14 @@ impl MigrationData {
         let res: Self = serde_yaml::from_str(&migration)?;
         Ok(res)
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.up.is_empty()
+            && match self.down {
+                None => true,
+                Some(ref arr) => arr.is_empty(),
+            }
+    }
 }
 
 impl Default for MigrationData {

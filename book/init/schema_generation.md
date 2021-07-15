@@ -1,6 +1,6 @@
 # Schema Generation
 
-[aragog_cli](https://crates.io/crates/aragog_cli) provides the following basics:
+[aragog_cli][CLI] provides the following basics:
 
 ## Creating a Migration
 
@@ -14,6 +14,8 @@ Command: `aragog migrate`
 
 Will launch every migration in `SCHEMA_PATH/migrations/` and update the schema according to its current version.
 If there is no schema it will be generated.
+
+> Note: ArangoDB doesn't handle transactional operations for collection, index and graph management
 
 ## Rollback migrations
 
@@ -30,3 +32,9 @@ Will rollback `COUNT` migration in `$CHEMA_PATH/migrations/` and update the sche
 >   - once in the database, the snapshot (synchronized version)
 > 
 > This allows seamless deployment, as the migrations launch will check the current snapshot
+
+## Using aragog with an exiting database
+
+The [aragog_cli][CLI] provides a `discover` command creating a migration file for already initialized database and apply it to the schema.
+
+[CLI]: https://crates.io/crates/aragog_cli "cli"
