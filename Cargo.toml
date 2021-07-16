@@ -45,14 +45,14 @@ maybe-async = "0.2"
 
 # Optional crates
 # The aragog derive macros
-aragog-macros = { path = "aragog_macros", version = "0.6", optional = true }
+aragog-macros = { path = "aragog_macros", version = "0.7", optional = true }
 
 [dev-dependencies]
 # We add the "feature" option to avoid serde version conflict somehow
 # TODO: remove this dependency
 chrono = { version = "0.4", features = ["serde"] }
 # Used by examples:
-env_logger = "0.8"
+env_logger = "0.9"
 
 [dev-dependencies.tokio]
 version = "0.2"

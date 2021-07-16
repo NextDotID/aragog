@@ -1,9 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.7.0
 
 * `regex` validation macro takes an `OperationValue`, allowing to use constants or types that deref to string literals in addition to string literals.
-* Adapted `Record` derive implementation using the new `const COLLECTION_NAME`
+* Adapted `Record` derive implementation using the new `const COLLECTION_NAME` (aragog 0.13.1)
 
 ## 0.6.0
 
