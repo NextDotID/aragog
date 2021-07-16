@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.13.1
+
+### Added
+
+* `QueryResult::first_record` method
+* `Validate::simple_email_regex` method 
+* `Validate::rfc_5322_email_regex` method
+
+### Changed
+
+* `regex` dependency bumped to 1.5
+
 ## 0.13.0
 
 ### Changed

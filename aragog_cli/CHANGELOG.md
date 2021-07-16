@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* `aragog` dependency bumped to 0.13
+
 ## 0.3.0
 
 * `arangors` dependency bumped to `=0.4.8`
