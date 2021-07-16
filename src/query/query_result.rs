@@ -12,7 +12,7 @@ impl<T: Clone + Record> QueryResult<T> {
         Self(documents)
     }
 
-    /// Returns the only document of the current `QueryResult`.
+    /// Consumes and returns the only document of the current `QueryResult`.
     /// If there is no document or more than one, a [`ServiceError`]::[`NotFound`] is returned.
     ///
     /// [`ServiceError`]: enum.ServiceError.html
@@ -31,6 +31,11 @@ impl<T: Clone + Record> QueryResult<T> {
             });
         }
         Ok(self.0.into_iter().next().unwrap())
+    }
+
+    /// Consumes and returns the first document of the current `QueryResult`
+    pub fn first_record(self) -> Option<DatabaseRecord<T>> {
+        self.0.into_iter().next()
     }
 }
 
