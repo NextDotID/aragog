@@ -27,7 +27,7 @@ minimal_traits = []
 # ArangoDB driver
 arangors = { version = "0.4.8", default-features = false, features = ["rocksdb"] }
 # Used for string validation toolbox, not used otherwise
-regex = "1.4"
+regex = "1.5"
 # Record trait has async methods
 async-trait = "0.1"
 # Serialization and deserialization
