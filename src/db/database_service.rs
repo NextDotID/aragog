@@ -108,7 +108,7 @@ where
 {
     log::debug!(
         "Querying {} records through AQL: `{}`",
-        T::collection_name(),
+        T::COLLECTION_NAME,
         aql
     );
     let query_result = match db_accessor.database().aql_str(aql).await {
@@ -130,7 +130,7 @@ where
 {
     log::debug!(
         "Querying {} records through AQL with {} batch size: `{}`",
-        T::collection_name(),
+        T::COLLECTION_NAME,
         batch_size,
         aql
     );

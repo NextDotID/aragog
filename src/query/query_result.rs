@@ -21,11 +21,11 @@ impl<T: Clone + Record> QueryResult<T> {
         if self.is_empty() || self.len() > 1 {
             log::error!(
                 "Wrong number of {} returned: {}",
-                T::collection_name(),
+                T::COLLECTION_NAME,
                 self.len()
             );
             return Err(ServiceError::NotFound {
-                item: T::collection_name().to_string(),
+                item: T::COLLECTION_NAME.to_string(),
                 id: "queried".to_string(),
                 source: None,
             });

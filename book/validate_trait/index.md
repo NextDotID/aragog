@@ -54,7 +54,7 @@ The current available field attribute validation operation macros (can be chaine
     - `length(VAL)` validates the field has exact length of *VAL*
     - `min_length(VAL)` validates the field has a minimum length of *VAL*
     - `max_length(VAL)` validates the field has a maximum length of *VAL*
-    - `regex(REGEX)` validates the field matches the *REGEX* regexp
+    - `regex(REGEX)` validates the field matches the *REGEX* regular expression (which can be consts like `Validate::SIMPLE_EMAIL_REGEX`)
 - Numeric fields or ordered types
     - `greater_than(VAL)` validated the field is greater than *VAL*
     - `greater_or_equal(VAL)` validated the field is greater or equal to *VAL*
@@ -72,7 +72,7 @@ The current available field attribute validation operation macros (can be chaine
     - `call_validations` calls the validations of the field allowing to propagate the validation calls.
   The field must be an type implementing `Validate`
     
-> Note: The order of the validations is not guaranteed
+> Note: The macro doesn't guarantee the order of validations
 
 #### Validate comparison between custom types
 

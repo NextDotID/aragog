@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* `regex` validation macro takes an `OperationValue`, allowing to use constants or types that deref to string literals in addition to string literals.
+* Adapted `Record` derive implementation using the new `const COLLECTION_NAME`
+
 ## 0.6.0
 
 * Added a `README`

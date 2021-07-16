@@ -21,7 +21,7 @@ pub fn impl_record_macro(ast: &syn::DeriveInput) -> TokenStream {
     #[cfg(feature = "blocking")]
     let gen = quote! {
         impl Record for #target_name {
-            fn collection_name() -> &'static str { stringify!(#target_name)  }
+             const COLLECTION_NAME :&'static str = stringify!(#target_name);
 
             #container_quote
         }
@@ -30,7 +30,7 @@ pub fn impl_record_macro(ast: &syn::DeriveInput) -> TokenStream {
     let gen = quote! {
         #[aragog::async_trait::async_trait]
         impl Record for #target_name {
-            fn collection_name() -> &'static str { stringify!(#target_name)  }
+            const COLLECTION_NAME :&'static str = stringify!(#target_name);
 
             #container_quote
         }

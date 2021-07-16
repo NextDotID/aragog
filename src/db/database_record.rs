@@ -79,7 +79,7 @@ impl<T: Record> DatabaseRecord<T> {
             record.before_create_hook(db_accessor).await?;
         }
         let mut res =
-            database_service::create_record(record, db_accessor, T::collection_name(), options)
+            database_service::create_record(record, db_accessor, T::COLLECTION_NAME, options)
                 .await?;
         if launch_hooks {
             res.record.after_create_hook(db_accessor).await?;
@@ -200,7 +200,7 @@ impl<T: Record> DatabaseRecord<T> {
             self.clone(),
             self.key(),
             db_accessor,
-            T::collection_name(),
+            T::COLLECTION_NAME,
             options,
         )
         .await?;
@@ -317,7 +317,7 @@ impl<T: Record> DatabaseRecord<T> {
         database_service::remove_record::<T, D>(
             self.key(),
             db_accessor,
-            T::collection_name(),
+            T::COLLECTION_NAME,
             options,
         )
         .await?;
@@ -472,7 +472,7 @@ impl<T: Record> DatabaseRecord<T> {
     where
         D: DatabaseAccess + ?Sized,
     {
-        database_service::retrieve_record(key, db_accessor, T::collection_name()).await
+        database_service::retrieve_record(key, db_accessor, T::COLLECTION_NAME).await
     }
 
     /// Reloads a record from the database, returning the new record.
@@ -900,7 +900,7 @@ impl<T: Record> From<Document<T>> for DatabaseRecord<T> {
 
 impl<T: Record> Display for DatabaseRecord<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{} {} Database Record", T::collection_name(), self.key())
+        write!(f, "{} {} Database Record", T::COLLECTION_NAME, self.key())
     }
 }
 

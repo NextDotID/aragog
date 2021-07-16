@@ -140,9 +140,7 @@ impl<T: Record> Validate for EdgeRecord<T> {
 
 #[maybe_async::maybe_async]
 impl<T: Record + Send> Record for EdgeRecord<T> {
-    fn collection_name() -> &'static str {
-        T::collection_name()
-    }
+    const COLLECTION_NAME: &'static str = T::COLLECTION_NAME;
 
     async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
     where

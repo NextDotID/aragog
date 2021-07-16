@@ -9,9 +9,7 @@ pub struct UndefinedRecord(pub Value);
 
 #[maybe_async::maybe_async]
 impl Record for UndefinedRecord {
-    fn collection_name() -> &'static str {
-        "Undefined Collection"
-    }
+    const COLLECTION_NAME: &'static str = "Undefined Collection";
 
     async fn before_create_hook<D>(&mut self, _db_accessor: &D) -> Result<(), ServiceError>
     where

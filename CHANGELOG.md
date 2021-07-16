@@ -5,12 +5,13 @@
 ### Added
 
 * `QueryResult::first_record` method
-* `Validate::simple_email_regex` method 
-* `Validate::rfc_5322_email_regex` method
+* `Validate::SIMPLE_EMAIL_REGEX` const string literal 
+* `Validate::RFC_5322_EMAIL_REGEX` const string literal
 
 ### Changed
 
 * `regex` dependency bumped to 1.5
+* `Record::collection_name()` static method is now a `const COLLECTION_NAME`, this is breaking only if you implement the `Record` trait directly instead of the derive macro 
 
 ## 0.13.0
 

@@ -13,6 +13,10 @@ use crate::{DatabaseAccess, DatabaseConnection, DatabaseRecord, ServiceError};
 /// [`DatabaseRecord`]: struct.DatabaseRecord.html
 #[maybe_async::maybe_async]
 pub trait Record: DeserializeOwned + Serialize + Clone {
+    /// returns the associated Collection
+    /// for read and write operations.
+    const COLLECTION_NAME: &'static str;
+
     /// Finds a document in database from its unique key.
     /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`find`]
     ///
@@ -115,16 +119,12 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// // All three statements are equivalent:
     /// let q = User::query();
-    /// let q = Query::new(User::collection_name());
+    /// let q = Query::new(User::COLLECTION_NAME);
     /// let q = Query::new("User");
     /// ```
     fn query() -> Query {
-        Query::new(Self::collection_name())
+        Query::new(Self::COLLECTION_NAME)
     }
-
-    /// returns the associated Collection
-    /// for read and write operations.
-    fn collection_name() -> &'static str;
 
     /// method called by [`DatabaseRecord`]::[`create`]
     /// before the database operation.
@@ -194,7 +194,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
 
     /// Returns a transaction builder on this collection only.
     fn transaction_builder() -> TransactionBuilder {
-        TransactionBuilder::new().collections(vec![Self::collection_name().to_string()])
+        TransactionBuilder::new().collections(vec![Self::COLLECTION_NAME.to_string()])
     }
 
     /// Builds a transaction for this collection only.
