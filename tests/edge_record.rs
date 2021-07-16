@@ -146,12 +146,9 @@ async fn edge_can_be_created_with_a_simple_link() -> Result<(), String> {
     common::expect_assert_eq(record.id_to(), order.id())?;
     common::expect_assert_eq(
         record.from_collection_name().as_str(),
-        Dish::collection_name(),
+        Dish::COLLECTION_NAME,
     )?;
-    common::expect_assert_eq(
-        record.to_collection_name().as_str(),
-        Order::collection_name(),
-    )?;
+    common::expect_assert_eq(record.to_collection_name().as_str(), Order::COLLECTION_NAME)?;
     let from: DatabaseRecord<Dish> = record.from_record(&connection).await.unwrap();
     assert_eq!(from.id(), record.id_from());
     let to: DatabaseRecord<Order> = record.to_record(&connection).await.unwrap();

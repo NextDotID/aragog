@@ -323,6 +323,28 @@ mod macros {
         }
     }
 
+    mod custom_regex {
+        use super::*;
+
+        #[derive(Validate)]
+        struct User {
+            #[validate(regex(Self::SIMPLE_EMAIL_REGEX))]
+            pub email: String,
+        }
+
+        #[test]
+        fn regex_works() {
+            let user = User {
+                email: "fake_email".to_string(),
+            };
+            assert!(!user.is_valid());
+            let user = User {
+                email: "email@gmail.com".to_string(),
+            };
+            assert!(user.is_valid());
+        }
+    }
+
     mod enum_validations {
         use super::*;
 

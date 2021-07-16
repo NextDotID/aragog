@@ -41,7 +41,7 @@ You can implement `Record` directly instead of deriving it.
 > We strongly suggest you derive the `Record` trait instead of implementing it,
 as in the future more hooks may be added to this trait without considering it **breaking changes**
 
-You need to specify the `collection_name` method which, when deriving, takes the name of the structure.
+You need to specify the `COLLECTION_NAME` const which, when deriving, takes the name of the structure.
 You also need to implement directly the different hooks.
 
 Example:
@@ -57,7 +57,7 @@ pub struct User {
 }
 
 impl Record for User {
-    fn collection_name() -> &'static str { "User" }
+    const COLLECTION_NAME :&'static str = "User";
 
     async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
         D: DatabaseAccess + ?Sized {

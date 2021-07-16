@@ -81,7 +81,7 @@ async fn init_menu(db_access: &DatabaseConnection) -> DatabaseRecord<Menu> {
 
 #[test]
 fn macro_works() {
-    assert_eq!(Dish::collection_name(), "Dish");
+    assert_eq!(Dish::COLLECTION_NAME, "Dish");
 }
 
 mod write {

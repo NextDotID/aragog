@@ -31,7 +31,7 @@ pub enum Operation {
         field: String,
     },
     Regex {
-        value: String,
+        value: OperationValue,
         field: String,
     },
     GreaterThan {
@@ -100,7 +100,7 @@ impl ParseOperation for Operation {
                 Self::Count { value, field }
             }
             "regex" => {
-                let value = expect_str_lit(&Self::expect_literal_value(path, value)?)?;
+                let value = Self::expect_value(path, value)?;
                 let field = Self::expect_field(path, field)?;
                 Self::Regex { value, field }
             }
