@@ -42,14 +42,30 @@ impl VersionedDatabase {
             format!("Connecting to database {}", &config.db_name),
             LogLevel::Verbose,
         );
+        match connection.accessible_databases() {
+            Ok(map) => {
+                log(format!("Available databases: {:?}", map), LogLevel::Debug);
+            }
+            Err(e) => log(
+                format!("Failed to retrieve accessible databases: {}", e),
+                LogLevel::Info,
+            ),
+        };
         let db: Database<ReqwestClient> = match connection.db(&config.db_name) {
             Ok(val) => val,
-            Err(_) => {
+            Err(e) => {
                 log(
-                    format!("Missing database {}, creating it...", &config.db_name),
-                    LogLevel::Debug,
+                    format!(
+                        "Failed to connect to database {}:\n\
+                           error: {}, \n\
+                           Trying to create it...",
+                        &config.db_name, e
+                    ),
+                    LogLevel::Info,
                 );
-                connection.create_database(&config.db_name)?
+                let res = connection.create_database(&config.db_name)?;
+                log("Done", LogLevel::Info);
+                res
             }
         };
         log(

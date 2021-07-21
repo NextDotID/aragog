@@ -1,4 +1,5 @@
-[![Logo](https://gitlab.com/qonfucius/aragog/-/snippets/2090578/raw/master/logo.svg)]()
+[![Logo](https://gitlab.com/qonfucius/aragog/-/snippets/2090578/raw/master/logo.svg)](http://aragog.rs)
+
 # Aragog
 
 [![pipeline status](https://gitlab.com/qonfucius/aragog/badges/master/pipeline.svg)](https://gitlab.com/qonfucius/aragog/commits/master)
@@ -24,8 +25,9 @@ The crate also provides a powerful [AQL][AQL] querying tool allowing complex and
 
 ## Book and Documentation
 
-- See the official documentation [here](https://docs.rs/aragog)
-- See The official [book](./book) ([published version](https://aragog.rs/book))
+- See the [official website](http://aragog.rs)
+- See the [official documentation](https://docs.rs/aragog)
+- See the [official book](./book) ([published version](https://aragog.rs/book))
 - See the [examples](./examples)
 
 ## Project Layout
