@@ -1,4 +1,5 @@
-[![Logo](https://gitlab.com/qonfucius/aragog/-/snippets/2090578/raw/master/logo.svg)]()
+[![Logo](https://gitlab.com/qonfucius/aragog/-/snippets/2090578/raw/master/logo.svg)](http://aragog.rs)
+
 # Aragog Macros
 
 [![pipeline status](https://gitlab.com/qonfucius/aragog/badges/master/pipeline.svg)](https://gitlab.com/qonfucius/aragog/commits/master)
@@ -9,7 +10,7 @@
 [![Discord](https://img.shields.io/discord/763034131335741440.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Xyx3hUP)
 [![Gitter](https://badges.gitter.im/aragog-rs/community.svg)](https://gitter.im/aragog-rs/community)
 
-Procedural macros utility for [aragog](https://crates.io/crates/aragog).
+Procedural macros utility for [aragog](http://aragog.rs) ([crates.io](https://crates.io/crates/aragog)).
 
 ## Record derive macro
 
