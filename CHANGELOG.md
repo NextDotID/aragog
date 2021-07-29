@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* Added status check for transaction `commit` and `abort` 
+* Resolved a few `TODO` elements, 
+
 ## 0.13.1
 
 ### Added
