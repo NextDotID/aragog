@@ -2,7 +2,7 @@
 use std::future::Future;
 
 use arangors::client::reqwest::ReqwestClient;
-use arangors::transaction::Transaction as TransactionLayer;
+use arangors::transaction::{Status, Transaction as TransactionLayer};
 
 pub use {
     transaction_builder::TransactionBuilder, transaction_connection::TransactionDatabaseConnection,
@@ -154,7 +154,11 @@ impl Transaction {
     pub async fn commit(&self) -> Result<(), ServiceError> {
         let status = self.accessor.commit().await?;
         log::debug!("Transaction committed with status: {:?}", status);
-        // TODO: Create a critical error for wrong status, which should not happen
+        if !matches!(status, Status::Committed) {
+            let msg = format!("Unexpected {:?} transaction status after commit", status);
+            log::error!("{}", msg);
+            return Err(ServiceError::InternalError { message: Some(msg) });
+        }
         Ok(())
     }
 
@@ -206,7 +210,11 @@ impl Transaction {
     pub async fn abort(&self) -> Result<(), ServiceError> {
         let status = self.accessor.abort().await?;
         log::debug!("Transaction aborted with status: {:?}", status);
-        // TODO: Create a critical error for wrong status, which should not happen
+        if !matches!(status, Status::Aborted) {
+            let msg = format!("Unexpected {:?} transaction status after abort", status);
+            log::error!("{}", msg);
+            return Err(ServiceError::InternalError { message: Some(msg) });
+        }
         Ok(())
     }
 

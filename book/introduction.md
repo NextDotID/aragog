@@ -1,6 +1,8 @@
+[![Logo](https://gitlab.com/qonfucius/aragog/-/snippets/2090578/raw/master/logo.svg)](http://aragog.rs)
+
 # Introduction
 
-This book covers every major feature of the `aragog` library.
+This book covers every major feature of the [`aragog`](http://aragog.rs) library.
 
 > Note that **everything** in the lib is documented, don't forget to check the [technical documentation](https://docs.rs/aragog)
 for detailed information.
