@@ -1,9 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.13.2
 
 * Added status check for transaction `commit` and `abort` 
-* Resolved a few `TODO` elements, 
+* Resolved a few `TODO` elements
 
 ## 0.13.1
 

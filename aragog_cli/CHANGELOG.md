@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+
+* Improved database connection step logging and error message
+
 ## 0.3.1
 
 * `aragog` dependency bumped to 0.13
