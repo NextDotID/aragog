@@ -76,10 +76,11 @@ impl MigrationManager {
             migrations.push(migration);
         }
         if migrations.is_empty() {
-            return Err(AragogCliError::NoMigrations);
+            log("No migrations loaded.", LogLevel::Debug)
+        } else {
+            migrations.sort_by(|a, b| a.version.cmp(&b.version));
+            log("Migrations loaded.", LogLevel::Debug);
         }
-        migrations.sort_by(|a, b| a.version.cmp(&b.version));
-        log("Migrations loaded.", LogLevel::Debug);
         Ok(Self {
             migrations,
             schema_file_path,

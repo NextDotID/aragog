@@ -123,7 +123,7 @@ impl DatabaseConnection {
             AuthMode::Jwt => Connection::establish_jwt(db_host, db_user, db_password).await?,
         };
         log::info!("Connecting to database {} ...", db_name);
-        Ok(db_connection.db(&db_name).await?)
+        Ok(db_connection.db(db_name).await?)
     }
 
     /// retrieves a vector of all collection names from the database
@@ -162,7 +162,7 @@ impl DatabaseConnection {
         );
         let mut collections = HashMap::new();
         for collection in schema.collections.into_iter() {
-            let coll = collection.get(&database).await?;
+            let coll = collection.get(database).await?;
             collections.insert(collection.name, DatabaseCollection::from(coll));
         }
         Ok(collections)

@@ -26,8 +26,6 @@ pub enum AragogCliError {
     IOError { message: String },
     #[error("Parsing Error: {message}")]
     ParsingError { message: String },
-    #[error("No migrations")]
-    NoMigrations,
     #[error("Invalid parameter: {name} ({message})")]
     InvalidParameter { name: String, message: String },
     #[error("Failed to initialize {item} ({message})")]

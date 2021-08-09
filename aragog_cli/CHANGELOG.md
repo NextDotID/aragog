@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Fixed panic without any migration file for `discover` command
+
 ## 0.3.2
 
 * Improved database connection step logging and error message
