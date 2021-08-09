@@ -19,6 +19,8 @@
 //!
 //! See the [official website](http://aragog.rs)
 //!
+//! Minimum rust version: `1.42` (2018 edition)
+//!
 //! ## Migrations CLI
 //!
 //! `aragog` provides a safe schema generation and migrations command line interface: [aragog_cli][CLI].
@@ -479,7 +481,7 @@
 #![forbid(missing_docs)]
 #![forbid(unsafe_code)]
 #![deny(warnings)]
-#![warn(rustdoc::broken_intra_doc_links)]
+// #![warn(rustdoc::broken_intra_doc_links)]
 
 pub extern crate async_trait;
 

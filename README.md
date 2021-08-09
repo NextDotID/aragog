@@ -36,6 +36,10 @@ The crate also provides a powerful [AQL][AQL] querying tool allowing complex and
 - [`aragog_macros`](https://crates.io/crates/aragog_macros): The derive proc macros for `aragog`
 - [`aragog_cli`](https://crates.io/crates/aragog_cli): The migration and schema generation Command line interface
 
+## Rust version
+
+Minimum rust version: `1.42` (2018 edition)
+
 ## License
 
 `aragog` is provided under the MIT license. See [LICENSE](./LICENSE).

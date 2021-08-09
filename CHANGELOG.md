@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Support for rust >= `1.42` with a new CI job
+
 ## 0.13.2
 
 * Added status check for transaction `commit` and `abort` 
