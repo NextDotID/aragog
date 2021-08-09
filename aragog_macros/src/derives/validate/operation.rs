@@ -4,6 +4,7 @@ use proc_macro2::{Span, TokenStream};
 use std::fmt::{self, Display, Formatter};
 use syn::{spanned::Spanned, Ident, Path};
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub enum Operation {
     MinLength {

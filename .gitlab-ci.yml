@@ -28,6 +28,14 @@ build::default:
   cache:
     <<: *cache_template
 
+build::1.42:
+  image: rust:1.42
+  stage: build
+  script:
+    - cargo build
+  cache:
+    <<: *cache_template
+
 build::blocking:
   image: rust:latest
   stage: build
