@@ -1,7 +1,7 @@
 en:
   community:
-    title: Community
-    description: Community
+    title: Join the community of our ArangoDB ODM & OGM library
+    description: Join the Aragog community! Report bugs on our GitLab repository, come chat with us on our official Gitter room, or contact us directly.
     blocs:
       title: Community
       code-repository: Code Repository
