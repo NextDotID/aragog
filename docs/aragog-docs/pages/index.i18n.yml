@@ -1,7 +1,7 @@
 en:
   index:
-    title: Home
-    description: Aragog
+    title: ODM and OGM library for ArangoDB
+    description: Aragog is a fully-featured ODM and OGM library for ArangoDB with complete CRUD operations, validations, and hooks with zero boilerplate code.
     blocs:
       description: A fully featured ODM and OGM library for ArangoDB.
       safe: Safe

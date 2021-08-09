@@ -33,6 +33,15 @@ export default {
   modules: [
     ['nuxt-i18n', i18n],
     '@nuxtjs/sitemap',
+    ['@qonfucius/nuxt-opengraph-meta',
+      {
+        forceProtocol: 'https',
+        nuxtOpengraphMeta: {
+          'twitter:site': '@qongzi',
+          'twitter:creator': '@qongzi',
+        },
+      },
+    ],
   ],
 
   build: {

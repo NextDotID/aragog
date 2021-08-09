@@ -4,6 +4,7 @@
       <div id="legal-notices">
         <h1 class="title">{{ $t('legal-notices.blocs.title') }}</h1>
         <p class="subtitle">{{ $t('legal-notices.blocs.subtitle') }} :</p>
+        <p>{{ $t('legal-notices.blocs.aragog-library-license') }}</p>
         <div class="qonfucius">
           <p
             v-for="(card, index) in $t('legal-notices.blocs.qonfucius')"
