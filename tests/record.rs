@@ -596,7 +596,25 @@ mod enum_record {
     }
 }
 
-mod all_macros {
+mod collection_name {
+    use super::*;
+
+    #[derive(Serialize, Deserialize, Clone, Record)]
+    #[collection_name = "Dish"]
+    pub struct Dish1 {}
+
+    #[derive(Serialize, Deserialize, Clone, Record)]
+    #[collection_name = "Dish"]
+    pub struct Dish2 {}
+
+    #[test]
+    fn has_correct_collection_name() {
+        assert_eq!(Dish1::COLLECTION_NAME, "Dish");
+        assert_eq!(Dish2::COLLECTION_NAME, "Dish");
+    }
+}
+
+mod all_hooks {
     use super::*;
 
     #[derive(Serialize, Deserialize, Clone, Record)]
