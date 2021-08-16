@@ -22,6 +22,7 @@ mod toolbox;
 #[proc_macro_derive(
     Record,
     attributes(
+        collection_name,
         before_create,
         before_save,
         before_write,

@@ -24,7 +24,26 @@ We don't specify the `_key` field, as we describe the document's **data**;
 
 > Note: An ArangoDB document is identified by its `_key` field which is its primary identifier and `_id` and `_rev` fields not yet used by `aragog`.
 
-Now `User` can be written and retrieved for the database collection **"User"**
+## Custom collection name
+
+By default, the collection name associated with the model will be the same. A `User` struct deriving `Record` will be stored in a `User` collection (case sensitive).
+
+In the case were your model and collection name don't match you can specify a `collection_name` attribute along with the *derive* macro:
+
+```rust
+use aragog::Record;
+
+#[derive(Serialize, Deserialize, Clone, Record)]
+#[collection_name = "Users"]
+pub struct User {
+    pub username: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub age: usize
+}
+```
+
+In this example, the `User` models will be synced with the `Users` collection.
 
 ## Synced documents
 
