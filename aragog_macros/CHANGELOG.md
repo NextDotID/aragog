@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1
+
+* New `Record` derive attribute `collection_name`
+
 ## 0.7.0
 
 * `regex` validation macro takes an `OperationValue`, allowing to use constants or types that deref to string literals in addition to string literals.
