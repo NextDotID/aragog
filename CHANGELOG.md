@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-* Support for rust >= `1.42` with a new CI job
+* Support for rust >= `1.46` with a new CI job
 
 ## 0.13.2
 

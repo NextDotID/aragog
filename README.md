@@ -38,7 +38,7 @@ The crate also provides a powerful [AQL][AQL] querying tool allowing complex and
 
 ## Rust version
 
-Minimum rust version: `1.42` (2018 edition)
+Minimum rust version: `1.46` (2018 edition)
 
 ## License
 

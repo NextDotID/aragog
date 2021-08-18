@@ -28,8 +28,8 @@ build::default:
   cache:
     <<: *cache_template
 
-build::1.42:
-  image: rust:1.42
+build::1.46:
+  image: rust:1.46
   stage: build
   script:
     - cargo build

@@ -19,7 +19,7 @@
 //!
 //! See the [official website](http://aragog.rs)
 //!
-//! Minimum rust version: `1.42` (2018 edition)
+//! Minimum rust version: `1.46` (2018 edition)
 //!
 //! ## Migrations CLI
 //!
