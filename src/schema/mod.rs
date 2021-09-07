@@ -1,5 +1,5 @@
-use arangors::client::reqwest::ReqwestClient;
 use arangors::{ClientError, Database};
+use uclient::reqwest::ReqwestClient;
 
 pub use {
     collection_schema::CollectionSchema, database_schema::DatabaseSchema,

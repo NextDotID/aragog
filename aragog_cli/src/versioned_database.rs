@@ -1,10 +1,10 @@
 use std::ops::Deref;
 
-use arangors::client::reqwest::ReqwestClient;
 use arangors::document::options::{InsertOptions, ReplaceOptions};
 use arangors::Connection;
 use arangors::{Collection, Database};
 use serde::{Deserialize, Serialize};
+use uclient::reqwest::ReqwestClient;
 
 use aragog::schema::DatabaseSchema;
 

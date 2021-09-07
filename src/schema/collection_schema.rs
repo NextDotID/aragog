@@ -1,9 +1,9 @@
-use arangors::client::reqwest::ReqwestClient;
 use arangors::{
     collection::{options::CreateOptions, Collection, CollectionType},
     ClientError, Database,
 };
 use serde::{Deserialize, Serialize};
+use uclient::reqwest::ReqwestClient;
 
 use crate::schema::SchemaDatabaseOperation;
 

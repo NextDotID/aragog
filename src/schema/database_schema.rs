@@ -1,8 +1,8 @@
 use std::fs;
 
-use arangors::client::reqwest::ReqwestClient;
 use arangors::{ClientError, Database};
 use serde::{Deserialize, Serialize};
+use uclient::reqwest::ReqwestClient;
 
 use crate::schema::{CollectionSchema, GraphSchema, IndexSchema, SchemaDatabaseOperation};
 use crate::ServiceError;

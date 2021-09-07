@@ -1,5 +1,5 @@
-use arangors::client::reqwest::ReqwestClient;
 use arangors::Database;
+use uclient::reqwest::ReqwestClient;
 
 use crate::db::database_collection::DatabaseCollection;
 use crate::db::database_service::{query_records, query_records_in_batches};

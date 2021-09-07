@@ -1,5 +1,5 @@
-use arangors::client::reqwest::ReqwestClient;
 use arangors::{Cursor, Database};
+use uclient::reqwest::ReqwestClient;
 
 use crate::query::QueryResult;
 use crate::{DatabaseRecord, Record};

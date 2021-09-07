@@ -1,7 +1,7 @@
 use crate::ServiceError;
-use arangors::client::reqwest::ReqwestClient;
 use arangors::Collection;
 use std::ops::Deref;
+use uclient::reqwest::ReqwestClient;
 
 /// Struct containing the connection information on a ArangoDB collection
 #[derive(Debug, Clone)]
