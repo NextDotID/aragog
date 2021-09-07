@@ -39,7 +39,7 @@
 //!     * `AuthorizeAction`: The structure can define authorization behavior on a target record with custom Action type.
 //!     * `New`: The structure can be initialized from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
 //!     * `Update`: The structure can be updated from an other type (a form for example). It allows to maintain a privacy level in the model and to use different data formats.
-//! * Different operations can return a `ServiceError` error that can easily be transformed into a Http Error
+//! * Different operations can return a `Error` error that can easily be transformed into a Http Error
 //! * Transactional operations
 //!
 //! For detailed explanations on theses feature, read the [book](https://gitlab.com/qonfucius/aragog/-/tree/master/book) ([published version](https://aragog.rs/book))
@@ -506,7 +506,7 @@ pub use {
     db::database_access::DatabaseAccess, db::database_connection::AuthMode,
     db::database_connection::DatabaseConnection, db::database_record::DatabaseRecord,
     db::operation_options::OperationOptions, db::transaction, edge_record::EdgeRecord,
-    error::ServiceError, foreign_link::ForeignLink, link::Link, record::Record,
+    error::Error, foreign_link::ForeignLink, link::Link, record::Record,
     undefined_record::UndefinedRecord, validate::Validate,
 };
 

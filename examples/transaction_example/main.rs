@@ -1,9 +1,7 @@
 extern crate env_logger;
 
 use aragog::transaction::Transaction;
-use aragog::{
-    AuthMode, DatabaseAccess, DatabaseConnection, DatabaseRecord, New, ServiceError, Update,
-};
+use aragog::{AuthMode, DatabaseAccess, DatabaseConnection, DatabaseRecord, Error, New, Update};
 
 use crate::models::dish::{Dish, DishDTO};
 use crate::models::order::Order;
@@ -115,7 +113,7 @@ async fn main() {
     let error = transaction_output.err().unwrap();
 
     match error {
-        ServiceError::ValidationError(msg) => {
+        Error::ValidationError(msg) => {
             assert_eq!(msg, String::from("price '0' must be greater than 0"))
         }
         _ => panic!("Wrong error returned"),

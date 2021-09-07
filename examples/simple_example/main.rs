@@ -4,8 +4,8 @@ extern crate env_logger;
 
 use aragog::query::{Comparison, Filter};
 use aragog::{
-    AuthMode, DatabaseAccess, DatabaseConnection, DatabaseRecord, New, Record, ServiceError,
-    Update, Validate,
+    AuthMode, DatabaseAccess, DatabaseConnection, DatabaseRecord, Error, New, Record, Update,
+    Validate,
 };
 
 use crate::models::dish::{Dish, DishDTO};
@@ -100,7 +100,7 @@ async fn main() {
     match dish_record.save(&db_connection).await {
         Ok(()) => panic!("Validations should have failed"),
         Err(error) => match error {
-            ServiceError::ValidationError(msg) => {
+            Error::ValidationError(msg) => {
                 assert_eq!(msg, String::from("price '0' must be greater than 0"))
             }
             _ => panic!("Wrong error returned"),

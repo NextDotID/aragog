@@ -6,7 +6,7 @@ use std::fmt::{self, Display, Formatter};
 use crate::db::database_service;
 use crate::db::database_service::{query_records, query_records_in_batches};
 use crate::query::{Query, QueryCursor, QueryResult};
-use crate::{DatabaseAccess, EdgeRecord, OperationOptions, Record, ServiceError};
+use crate::{DatabaseAccess, EdgeRecord, Error, OperationOptions, Record};
 use std::ops::{Deref, DerefMut};
 
 /// Struct representing database stored documents.
@@ -61,16 +61,16 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
     /// argument value
-    /// A [`ServiceError`] is returned if the operation or the hooks failed.
+    /// A [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     /// [`DatabaseConnection`]: struct.DatabaseConnection.html
     #[maybe_async::maybe_async]
     pub async fn create_with_options<D>(
         mut record: T,
         db_accessor: &D,
         options: OperationOptions,
-    ) -> Result<Self, ServiceError>
+    ) -> Result<Self, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -104,11 +104,11 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
     /// argument value
-    /// A [`ServiceError`] is returned if the operation or the hooks failed.
+    /// A [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     #[maybe_async::maybe_async]
-    pub async fn create<D>(record: T, db_accessor: &D) -> Result<Self, ServiceError>
+    pub async fn create<D>(record: T, db_accessor: &D) -> Result<Self, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -138,11 +138,11 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
     /// argument value
-    /// On failure a [`ServiceError`] is returned.
+    /// On failure a [`Error`] is returned.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     #[maybe_async::maybe_async]
-    pub async fn force_create<D>(record: T, db_accessor: &D) -> Result<Self, ServiceError>
+    pub async fn force_create<D>(record: T, db_accessor: &D) -> Result<Self, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -179,16 +179,16 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the current instance is up to date with the database state.
-    /// A [`ServiceError`] is returned if the operation or the hooks failed.
+    /// A [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     /// [`DatabaseConnection`]: struct.DatabaseConnection.html
     #[maybe_async::maybe_async]
     pub async fn save_with_options<D>(
         &mut self,
         db_accessor: &D,
         options: OperationOptions,
-    ) -> Result<(), ServiceError>
+    ) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -225,11 +225,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the current instance is up to date with the database state.
-    /// A [`ServiceError`] is returned if the operation or the hooks failed.
+    /// A [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     #[maybe_async::maybe_async]
-    pub async fn save<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    pub async fn save<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -257,11 +257,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the current instance is up to date with the database state.
-    /// On failure a [`ServiceError`] is returned.
+    /// On failure a [`Error`] is returned.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     #[maybe_async::maybe_async]
-    pub async fn force_save<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    pub async fn force_save<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -297,16 +297,16 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
-    /// A [`ServiceError`] is returned if the operation or the hooks failed.
+    /// A [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     /// [`DatabaseConnection`]: struct.DatabaseConnection.html
     #[maybe_async::maybe_async]
     pub async fn delete_with_options<D>(
         &mut self,
         db_accessor: &D,
         options: OperationOptions,
-    ) -> Result<(), ServiceError>
+    ) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -342,11 +342,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
-    /// A [`ServiceError`] is returned if the operation or the hooks failed.
+    /// A [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     #[maybe_async::maybe_async]
-    pub async fn delete<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    pub async fn delete<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -375,11 +375,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
-    /// On failure a [`ServiceError`] is returned.
+    /// On failure a [`Error`] is returned.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     #[maybe_async::maybe_async]
-    pub async fn force_delete<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    pub async fn force_delete<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -435,7 +435,7 @@ impl<T: Record> DatabaseRecord<T> {
         to_record: &DatabaseRecord<B>,
         db_accessor: &D,
         edge_record: T,
-    ) -> Result<DatabaseRecord<EdgeRecord<T>>, ServiceError>
+    ) -> Result<DatabaseRecord<EdgeRecord<T>>, Error>
     where
         A: Record,
         B: Record,
@@ -460,15 +460,15 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `Self` is returned,
-    /// On failure a [`ServiceError`] is returned:
+    /// On failure a [`Error`] is returned:
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    /// [`Error`]: enum.Error.html
+    /// [`NotFound`]: enum.Error.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn find<D>(key: &str, db_accessor: &D) -> Result<Self, ServiceError>
+    pub async fn find<D>(key: &str, db_accessor: &D) -> Result<Self, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -484,15 +484,15 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `Self` is returned,
-    /// On failure a [`ServiceError`] is returned:
+    /// On failure a [`Error`] is returned:
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    /// [`Error`]: enum.Error.html
+    /// [`NotFound`]: enum.Error.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn reload<D>(self, db_accessor: &D) -> Result<Self, ServiceError>
+    pub async fn reload<D>(self, db_accessor: &D) -> Result<Self, Error>
     where
         D: DatabaseAccess + ?Sized,
         T: Send,
@@ -505,15 +505,15 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned and `self` is updated,
-    /// On failure a [`ServiceError`] is returned:
+    /// On failure a [`Error`] is returned:
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    /// [`Error`]: enum.Error.html
+    /// [`NotFound`]: enum.Error.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn reload_mut<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    pub async fn reload_mut<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
         T: Send,
@@ -536,7 +536,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success a `QueryResult` with a vector of `Self` is returned. It can be empty.
-    /// On failure a [`ServiceError`] is returned:
+    /// On failure a [`Error`] is returned:
     /// * [`NotFound`] if no document matches the condition
     /// * [`UnprocessableEntity`] on data corruption
     ///
@@ -570,11 +570,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// # }
     /// ```
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    /// [`Error`]: enum.Error.html
+    /// [`NotFound`]: enum.Error.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn get<D>(query: Query, db_accessor: &D) -> Result<QueryResult<T>, ServiceError>
+    pub async fn get<D>(query: Query, db_accessor: &D) -> Result<QueryResult<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -593,7 +593,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success a `QueryCursor` is returned. It can be empty.
-    /// On failure a [`ServiceError`] is returned:
+    /// On failure a [`Error`] is returned:
     /// * [`NotFound`] if no document matches the condition
     /// * [`UnprocessableEntity`] on data corruption
     ///
@@ -626,15 +626,15 @@ impl<T: Record> DatabaseRecord<T> {
     /// # }
     /// ```
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    /// [`Error`]: enum.Error.html
+    /// [`NotFound`]: enum.Error.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn get_in_batches<D>(
         query: Query,
         db_accessor: &D,
         batch_size: u32,
-    ) -> Result<QueryCursor<T>, ServiceError>
+    ) -> Result<QueryCursor<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -651,7 +651,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success a `QueryResult` with a vector of `Self` is returned. It is can be empty.
-    /// On failure a [`ServiceError`] is returned:
+    /// On failure a [`Error`] is returned:
     /// * [`NotFound`] if no document matches the condition
     /// * [`UnprocessableEntity`] on data corruption
     ///
@@ -681,11 +681,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// # }
     /// ```
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
+    /// [`Error`]: enum.Error.html
     /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn aql_get<D>(query: &str, db_accessor: &D) -> Result<QueryResult<T>, ServiceError>
+    pub async fn aql_get<D>(query: &str, db_accessor: &D) -> Result<QueryResult<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {

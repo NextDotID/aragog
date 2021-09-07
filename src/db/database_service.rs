@@ -1,7 +1,7 @@
 use crate::db::database_record_dto::DatabaseRecordDto;
 use crate::error::ArangoHttpError;
 use crate::query::{QueryCursor, QueryResult};
-use crate::{DatabaseAccess, DatabaseRecord, OperationOptions, Record, ServiceError};
+use crate::{DatabaseAccess, DatabaseRecord, Error, OperationOptions, Record};
 use arangors::{AqlOptions, AqlQuery};
 use std::convert::TryInto;
 
@@ -12,7 +12,7 @@ pub async fn update_record<T, D>(
     db_accessor: &D,
     collection_name: &str,
     options: OperationOptions,
-) -> Result<DatabaseRecord<T>, ServiceError>
+) -> Result<DatabaseRecord<T>, Error>
 where
     T: Record,
     D: DatabaseAccess + ?Sized,
@@ -21,7 +21,7 @@ where
     let collection = db_accessor.get_collection(collection_name)?;
     let response = match collection.update_document(key, obj, options.into()).await {
         Ok(resp) => resp,
-        Err(error) => return Err(ServiceError::from(error)),
+        Err(error) => return Err(Error::from(error)),
     };
     response.try_into()
 }
@@ -32,7 +32,7 @@ pub async fn create_record<T, D>(
     db_accessor: &D,
     collection_name: &str,
     options: OperationOptions,
-) -> Result<DatabaseRecord<T>, ServiceError>
+) -> Result<DatabaseRecord<T>, Error>
 where
     T: Record,
     D: DatabaseAccess + ?Sized,
@@ -42,7 +42,7 @@ where
     let dto = DatabaseRecordDto::new(obj);
     let response = match collection.create_document(dto, options.into()).await {
         Ok(resp) => resp,
-        Err(error) => return Err(ServiceError::from(error)),
+        Err(error) => return Err(Error::from(error)),
     };
     response.try_into()
 }
@@ -52,7 +52,7 @@ pub async fn retrieve_record<T, D>(
     key: &str,
     db_accessor: &D,
     collection_name: &str,
-) -> Result<DatabaseRecord<T>, ServiceError>
+) -> Result<DatabaseRecord<T>, Error>
 where
     T: Record,
     D: DatabaseAccess + ?Sized,
@@ -62,10 +62,10 @@ where
     let record = match collection.document(key).await {
         Ok(doc) => doc,
         Err(error) => {
-            let err = ServiceError::from(error);
-            if let ServiceError::ArangoError(ref db_error) = err {
+            let err = Error::from(error);
+            if let Error::ArangoError(ref db_error) = err {
                 if let ArangoHttpError::NotFound = db_error.http_error {
-                    return Err(ServiceError::NotFound {
+                    return Err(Error::NotFound {
                         item: collection_name.to_string(),
                         id: key.to_string(),
                         source: Some(db_error.clone()),
@@ -84,7 +84,7 @@ pub async fn remove_record<T, D>(
     db_accessor: &D,
     collection_name: &str,
     options: OperationOptions,
-) -> Result<(), ServiceError>
+) -> Result<(), Error>
 where
     T: Record,
     D: DatabaseAccess + ?Sized,
@@ -96,12 +96,12 @@ where
         .await
     {
         Ok(_result) => Ok(()),
-        Err(error) => Err(ServiceError::from(error)),
+        Err(error) => Err(Error::from(error)),
     }
 }
 
 #[maybe_async::maybe_async]
-pub async fn query_records<T, D>(db_accessor: &D, aql: &str) -> Result<QueryResult<T>, ServiceError>
+pub async fn query_records<T, D>(db_accessor: &D, aql: &str) -> Result<QueryResult<T>, Error>
 where
     T: Record,
     D: DatabaseAccess + ?Sized,
@@ -113,7 +113,7 @@ where
     );
     let query_result = match db_accessor.database().aql_str(aql).await {
         Ok(value) => value,
-        Err(error) => return Err(ServiceError::from(error)),
+        Err(error) => return Err(Error::from(error)),
     };
     Ok(query_result.into())
 }
@@ -123,7 +123,7 @@ pub async fn query_records_in_batches<T, D>(
     db_accessor: &D,
     aql: &str,
     batch_size: u32,
-) -> Result<QueryCursor<T>, ServiceError>
+) -> Result<QueryCursor<T>, Error>
 where
     T: Record,
     D: DatabaseAccess + ?Sized,
@@ -142,7 +142,7 @@ where
         .build();
     let cursor = match db_accessor.database().aql_query_batch(query).await {
         Ok(value) => value,
-        Err(error) => return Err(ServiceError::from(error)),
+        Err(error) => return Err(Error::from(error)),
     };
     Ok(QueryCursor::new(
         cursor,

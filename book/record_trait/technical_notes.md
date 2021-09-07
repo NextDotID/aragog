@@ -59,37 +59,37 @@ pub struct User {
 impl Record for User {
     const COLLECTION_NAME :&'static str = "User";
 
-    async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+    async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error> where
         D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
 
-    async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+    async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error> where
         D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
     
-    async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+    async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error> where
         D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
     
-    async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+    async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error> where
         D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
 
-    async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+    async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error> where
         D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())
     }
 
-    async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError> where
+    async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error> where
         D: DatabaseAccess + ?Sized {
         // Your implementation
         Ok(())

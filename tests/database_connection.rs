@@ -3,8 +3,7 @@ extern crate aragog;
 use serde::{Deserialize, Serialize};
 
 use aragog::{
-    AuthMode, DatabaseAccess, DatabaseConnection, DatabaseRecord, OperationOptions, Record,
-    ServiceError,
+    AuthMode, DatabaseAccess, DatabaseConnection, DatabaseRecord, Error, OperationOptions, Record,
 };
 use common::*;
 
@@ -18,8 +17,8 @@ struct Dish {
 }
 
 impl Dish {
-    fn before_create(&self) -> Result<(), ServiceError> {
-        Err(ServiceError::InternalError {
+    fn before_create(&self) -> Result<(), Error> {
+        Err(Error::InternalError {
             message: String::from("Hook forbids creation").into(),
         })
     }
@@ -64,7 +63,7 @@ async fn fails_with_wrong_parameters() {
     {
         Ok(_) => panic!("should have failed"),
         Err(e) => match e {
-            ServiceError::Unauthorized(db_error) => {
+            Error::Unauthorized(db_error) => {
                 assert_eq!(db_error.unwrap().http_error.http_code(), 401)
             }
             _ => panic!("wrong error"),
@@ -86,7 +85,7 @@ async fn fails_with_wrong_parameters() {
     {
         Ok(_) => panic!("should have failed"),
         Err(e) => match e {
-            ServiceError::Unauthorized(db_error) => {
+            Error::Unauthorized(db_error) => {
                 assert_eq!(db_error.unwrap().http_error.http_code(), 401)
             }
             _ => panic!("wrong error"),
@@ -143,7 +142,7 @@ async fn operation_options() {
     {
         Ok(_) => panic!("Hook should have launched failure"),
         Err(e) => match e {
-            ServiceError::InternalError { message } => {
+            Error::InternalError { message } => {
                 assert_eq!(message.unwrap(), "Hook forbids creation".to_string())
             }
             _ => panic!("Wrong error"),

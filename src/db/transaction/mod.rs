@@ -9,7 +9,7 @@ pub use {
     transaction_output::TransactionOutput,
 };
 
-use crate::{DatabaseConnection, ServiceError};
+use crate::{DatabaseConnection, Error};
 
 mod transaction_builder;
 mod transaction_connection;
@@ -103,7 +103,7 @@ impl Transaction {
     /// [`DatabaseConnection`]: ../struct.DatabaseConnection.html
     /// [`TransactionBuilder`]: struct.TransactionBuilder.html
     #[maybe_async::maybe_async]
-    pub async fn new(db_connection: &DatabaseConnection) -> Result<Self, ServiceError> {
+    pub async fn new(db_connection: &DatabaseConnection) -> Result<Self, Error> {
         TransactionBuilder::new().build(db_connection).await
     }
 
@@ -151,13 +151,13 @@ impl Transaction {
     ///
     /// For a more practical and safer use, use the `safe_execute` method which allows multiple operations
     #[maybe_async::maybe_async]
-    pub async fn commit(&self) -> Result<(), ServiceError> {
+    pub async fn commit(&self) -> Result<(), Error> {
         let status = self.accessor.commit().await?;
         log::debug!("Transaction committed with status: {:?}", status);
         if !matches!(status, Status::Committed) {
             let msg = format!("Unexpected {:?} transaction status after commit", status);
             log::error!("{}", msg);
-            return Err(ServiceError::InternalError { message: Some(msg) });
+            return Err(Error::InternalError { message: Some(msg) });
         }
         Ok(())
     }
@@ -207,13 +207,13 @@ impl Transaction {
     ///
     /// For a more practical and safer use, use the `safe_execute` method which allows multiple operations
     #[maybe_async::maybe_async]
-    pub async fn abort(&self) -> Result<(), ServiceError> {
+    pub async fn abort(&self) -> Result<(), Error> {
         let status = self.accessor.abort().await?;
         log::debug!("Transaction aborted with status: {:?}", status);
         if !matches!(status, Status::Aborted) {
             let msg = format!("Unexpected {:?} transaction status after abort", status);
             log::error!("{}", msg);
-            return Err(ServiceError::InternalError { message: Some(msg) });
+            return Err(Error::InternalError { message: Some(msg) });
         }
         Ok(())
     }
@@ -264,13 +264,10 @@ impl Transaction {
     ///
     /// Don't use `unwrap()` in the closure, as if the code panics the transaction won't be aborted nor commited.
     #[cfg(feature = "async")]
-    pub async fn safe_execute<T, O, F>(
-        &self,
-        operations: O,
-    ) -> Result<TransactionOutput<T>, ServiceError>
+    pub async fn safe_execute<T, O, F>(&self, operations: O) -> Result<TransactionOutput<T>, Error>
     where
         O: FnOnce(TransactionDatabaseConnection) -> F,
-        F: Future<Output = Result<T, ServiceError>>,
+        F: Future<Output = Result<T, Error>>,
     {
         log::trace!("Safely executing transactional operations..");
         let res = operations(self.database_connection.clone()).await;
@@ -327,9 +324,9 @@ impl Transaction {
     ///
     /// Don't use `unwrap()` in the closure, as if the code panics the transaction won't be aborted nor commited.
     #[cfg(not(feature = "async"))]
-    pub fn safe_execute<T, O>(&self, operations: O) -> Result<TransactionOutput<T>, ServiceError>
+    pub fn safe_execute<T, O>(&self, operations: O) -> Result<TransactionOutput<T>, Error>
     where
-        O: FnOnce(TransactionDatabaseConnection) -> Result<T, ServiceError>,
+        O: FnOnce(TransactionDatabaseConnection) -> Result<T, Error>,
     {
         log::trace!("Safely executing transactional operations..");
         let res = operations(self.database_connection.clone());
@@ -343,8 +340,8 @@ impl Transaction {
     #[maybe_async::maybe_async]
     async fn handle_safe_execute<T>(
         &self,
-        result: Result<T, ServiceError>,
-    ) -> Result<TransactionOutput<T>, ServiceError> {
+        result: Result<T, Error>,
+    ) -> Result<TransactionOutput<T>, Error> {
         match result {
             Ok(value) => {
                 log::debug!("Transaction succeeded. Committing..");

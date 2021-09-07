@@ -38,10 +38,10 @@ If you combine a lot of operations, like creating documents in hooks or chaining
 ```
 *my_method* can be either:
 - ```rust 
-  fn my_method(&self) -> Result<(), aragog::ServiceError>
+  fn my_method(&self) -> Result<(), aragog::Error>
   ```
 - ```rust 
-  fn my_method(&mut self) -> Result<(), aragog::ServiceError>
+  fn my_method(&mut self) -> Result<(), aragog::Error>
   ```
 
 ### Async hook
@@ -50,10 +50,10 @@ If you combine a lot of operations, like creating documents in hooks or chaining
 ```
 *my_method* can be either:
 - ```rust 
-  async fn my_method(&self) -> Result<(), aragog::ServiceError>
+  async fn my_method(&self) -> Result<(), aragog::Error>
   ```
 - ```rust 
-  async fn my_method(&mut self) -> Result<(), aragog::ServiceError>
+  async fn my_method(&mut self) -> Result<(), aragog::Error>
   ```
 
 > If you use `aragog` with the `blocking` feature then this option will have no effect.
@@ -65,10 +65,10 @@ If you combine a lot of operations, like creating documents in hooks or chaining
 ```
 *my_method* can be either:
 - ```rust 
-  fn my_method<D>(&self, db_access: &D) -> Result<(), aragog::ServiceError> where D: aragog::DatabaseAccess
+  fn my_method<D>(&self, db_access: &D) -> Result<(), aragog::Error> where D: aragog::DatabaseAccess
   ```
 - ```rust 
-  fn my_method<D>(&mut self, db_access: &D) -> Result<(), aragog::ServiceError> where D: aragog::DatabaseAccess
+  fn my_method<D>(&mut self, db_access: &D) -> Result<(), aragog::Error> where D: aragog::DatabaseAccess
   ```
 
 > If you want to use the database access, using also `is_async = true` would be recommended

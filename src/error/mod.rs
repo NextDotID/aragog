@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 
 use arangors::ClientError;
@@ -14,7 +13,7 @@ mod database_error;
 
 /// Error enum used for the Arango ORM mapped as potential Http errors
 #[derive(Debug)]
-pub enum ServiceError {
+pub enum Error {
     /// Unhandled error.
     /// Can be interpreted as a HTTP code `500` internal error.
     InternalError {
@@ -41,7 +40,7 @@ pub enum ServiceError {
     /// Can be interpreted as a HTTP code `422` Unprocessable Entity.
     UnprocessableEntity {
         /// The source error
-        source: Box<dyn Error>,
+        source: Box<dyn std::error::Error>,
     },
     /// The ArangoDb Error as returned by the database host
     ///
@@ -68,44 +67,44 @@ pub enum ServiceError {
     Forbidden(Option<DatabaseError>),
 }
 
-impl Display for ServiceError {
+impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                ServiceError::InternalError { .. } => "Internal Error".to_string(),
-                ServiceError::ValidationError(str) => format!("Validations failed: `{}`", str),
-                ServiceError::NotFound { item, id, .. } => format!("{} {} not found", item, id),
-                ServiceError::UnprocessableEntity { .. } => "Unprocessable Entity".to_string(),
-                ServiceError::ArangoError(_) => "ArangoDB Error".to_string(),
-                ServiceError::Conflict(_) => "Conflict".to_string(),
-                ServiceError::InitError { item, message, .. } =>
+                Error::InternalError { .. } => "Internal Error".to_string(),
+                Error::ValidationError(str) => format!("Validations failed: `{}`", str),
+                Error::NotFound { item, id, .. } => format!("{} {} not found", item, id),
+                Error::UnprocessableEntity { .. } => "Unprocessable Entity".to_string(),
+                Error::ArangoError(_) => "ArangoDB Error".to_string(),
+                Error::Conflict(_) => "Conflict".to_string(),
+                Error::InitError { item, message, .. } =>
                     format!("Failed to initialize `{}`: `{}`", item, message),
-                ServiceError::Unauthorized(_) => "Unauthorized".to_string(),
-                ServiceError::Forbidden(_) => "Forbidden".to_string(),
+                Error::Unauthorized(_) => "Unauthorized".to_string(),
+                Error::Forbidden(_) => "Forbidden".to_string(),
             }
         )
     }
 }
 
-impl Error for ServiceError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            ServiceError::InternalError { .. } => None,
-            ServiceError::ValidationError(_) => None,
-            ServiceError::NotFound { source, .. } => source.as_ref().map(AsDynError::as_dyn_error),
-            ServiceError::UnprocessableEntity { source } => Some(source.as_ref()),
-            ServiceError::ArangoError(e) => Some(e),
-            ServiceError::Conflict(e) => Some(e),
-            ServiceError::InitError { .. } => None,
-            ServiceError::Unauthorized(source) => source.as_ref().map(AsDynError::as_dyn_error),
-            ServiceError::Forbidden(source) => source.as_ref().map(AsDynError::as_dyn_error),
+            Error::InternalError { .. } => None,
+            Error::ValidationError(_) => None,
+            Error::NotFound { source, .. } => source.as_ref().map(AsDynError::as_dyn_error),
+            Error::UnprocessableEntity { source } => Some(source.as_ref()),
+            Error::ArangoError(e) => Some(e),
+            Error::Conflict(e) => Some(e),
+            Error::InitError { .. } => None,
+            Error::Unauthorized(source) => source.as_ref().map(AsDynError::as_dyn_error),
+            Error::Forbidden(source) => source.as_ref().map(AsDynError::as_dyn_error),
         }
     }
 }
 
-impl ServiceError {
+impl Error {
     /// get the matching http code
     #[allow(dead_code)]
     pub fn http_code(&self) -> u16 {
@@ -123,7 +122,7 @@ impl ServiceError {
     }
 }
 
-impl From<ClientError> for ServiceError {
+impl From<ClientError> for Error {
     fn from(error: ClientError) -> Self {
         log::debug!("Client Error: {}", error);
         match error {
@@ -161,7 +160,7 @@ impl From<ClientError> for ServiceError {
     }
 }
 
-impl Default for ServiceError {
+impl Default for Error {
     fn default() -> Self {
         Self::InternalError { message: None }
     }

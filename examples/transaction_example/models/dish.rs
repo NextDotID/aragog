@@ -1,7 +1,7 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use aragog::{New, Record, ServiceError, Update, Validate};
+use aragog::{Error, New, Record, Update, Validate};
 
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
 #[before_write(func = "validate")]
@@ -25,7 +25,7 @@ pub struct DishDTO {
 }
 
 impl New<DishDTO> for Dish {
-    fn new(form: DishDTO) -> Result<Self, ServiceError> {
+    fn new(form: DishDTO) -> Result<Self, Error> {
         Ok(Self {
             name: form.name,
             description: form.description,
@@ -38,7 +38,7 @@ impl New<DishDTO> for Dish {
 }
 
 impl Update<DishDTO> for Dish {
-    fn update(&mut self, form: &DishDTO) -> Result<(), ServiceError> {
+    fn update(&mut self, form: &DishDTO) -> Result<(), Error> {
         self.name = form.name.clone();
         self.description = form.description.clone();
         self.price = form.price;

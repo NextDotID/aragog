@@ -1,12 +1,12 @@
 use aragog::error::{ArangoError, ArangoHttpError, DatabaseError};
-use aragog::ServiceError;
-use std::error::Error;
+use aragog::Error;
+use std::error::Error as StdError;
 
 #[test]
 fn error_default() {
     assert_eq!(
-        ServiceError::default().http_code(),
-        ServiceError::InternalError { message: None }.http_code()
+        Error::default().http_code(),
+        Error::InternalError { message: None }.http_code()
     );
 }
 
@@ -18,44 +18,36 @@ fn error_sources() {
         message: "".to_string(),
     };
 
-    assert!(ServiceError::ValidationError(String::new())
-        .source()
-        .is_none());
-    assert!(ServiceError::NotFound {
+    assert!(Error::ValidationError(String::new()).source().is_none());
+    assert!(Error::NotFound {
         item: "".to_string(),
         id: "".to_string(),
         source: None
     }
     .source()
     .is_none());
-    assert!(ServiceError::NotFound {
+    assert!(Error::NotFound {
         item: "".to_string(),
         id: "".to_string(),
         source: Some(db_error.clone())
     }
     .source()
     .is_some());
-    assert!(ServiceError::ArangoError(db_error.clone())
+    assert!(Error::ArangoError(db_error.clone()).source().is_some());
+    assert!(Error::Conflict(db_error.clone()).source().is_some());
+    assert!(Error::Forbidden(Some(db_error.clone())).source().is_some());
+    assert!(Error::Unauthorized(Some(db_error.clone()))
         .source()
         .is_some());
-    assert!(ServiceError::Conflict(db_error.clone()).source().is_some());
-    assert!(ServiceError::Forbidden(Some(db_error.clone()))
-        .source()
-        .is_some());
-    assert!(ServiceError::Unauthorized(Some(db_error.clone()))
-        .source()
-        .is_some());
-    assert!(ServiceError::Forbidden(None).source().is_none());
-    assert!(ServiceError::Unauthorized(None).source().is_none());
-    assert!(ServiceError::UnprocessableEntity {
+    assert!(Error::Forbidden(None).source().is_none());
+    assert!(Error::Unauthorized(None).source().is_none());
+    assert!(Error::UnprocessableEntity {
         source: Box::new(db_error)
     }
     .source()
     .is_some());
-    assert!(ServiceError::InternalError { message: None }
-        .source()
-        .is_none());
-    assert!(ServiceError::InitError {
+    assert!(Error::InternalError { message: None }.source().is_none());
+    assert!(Error::InitError {
         item: "".to_string(),
         message: "".to_string()
     }

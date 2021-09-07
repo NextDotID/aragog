@@ -1,7 +1,7 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use aragog::{DatabaseAccess, New, Record, ServiceError, Update, Validate};
+use aragog::{DatabaseAccess, Error, New, Record, Update, Validate};
 
 /// this is a Dish
 #[derive(Serialize, Deserialize, Clone, Record, Validate)]
@@ -22,7 +22,7 @@ pub struct Dish {
 }
 
 impl Dish {
-    async fn hook_before_create<D>(&mut self, _db_accessor: &D) -> Result<(), ServiceError>
+    async fn hook_before_create<D>(&mut self, _db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -32,7 +32,7 @@ impl Dish {
         Ok(())
     }
 
-    fn hook_before_save(&mut self) -> Result<(), ServiceError> {
+    fn hook_before_save(&mut self) -> Result<(), Error> {
         self.updated_at = Utc::now().timestamp() as u64;
         self.validate()?;
         Ok(())
@@ -47,7 +47,7 @@ pub struct DishDTO {
 }
 
 impl New<DishDTO> for Dish {
-    fn new(form: DishDTO) -> Result<Self, ServiceError> {
+    fn new(form: DishDTO) -> Result<Self, Error> {
         Ok(Self {
             name: form.name,
             description: form.description,
@@ -60,7 +60,7 @@ impl New<DishDTO> for Dish {
 }
 
 impl Update<DishDTO> for Dish {
-    fn update(&mut self, form: &DishDTO) -> Result<(), ServiceError> {
+    fn update(&mut self, form: &DishDTO) -> Result<(), Error> {
         self.name = form.name.clone();
         self.description = form.description.clone();
         self.price = form.price;

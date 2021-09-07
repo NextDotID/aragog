@@ -1,7 +1,7 @@
 extern crate aragog;
 
 use aragog::error::{ArangoError, ArangoHttpError};
-use aragog::{DatabaseRecord, OperationOptions, Record, ServiceError};
+use aragog::{DatabaseRecord, Error, OperationOptions, Record};
 use serde::{Deserialize, Serialize};
 
 pub mod common;
@@ -104,7 +104,7 @@ async fn revision_check_works() -> Result<(), String> {
     {
         Ok(_) => return Err(String::from("_rev check should have failed")),
         Err(e) => match e {
-            ServiceError::ArangoError(e) => {
+            Error::ArangoError(e) => {
                 assert!(e.message.contains("conflict"));
                 assert_eq!(e.http_error, ArangoHttpError::PreconditionFailed);
                 assert_eq!(e.arango_error, ArangoError::ArangoConflict);

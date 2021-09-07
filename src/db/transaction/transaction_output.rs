@@ -1,4 +1,4 @@
-use crate::ServiceError;
+use crate::Error;
 
 /// Output of a [`TransactionDatabaseConnection`][`safe_execute`]
 ///
@@ -9,7 +9,7 @@ pub enum TransactionOutput<T> {
     /// The transaction was committed
     Committed(T),
     /// The transaction was aborted due to an error
-    Aborted(ServiceError),
+    Aborted(Error),
 }
 
 impl<T> TransactionOutput<T> {
@@ -49,8 +49,8 @@ impl<T> TransactionOutput<T> {
         }
     }
 
-    /// transform the output to a `Option<ServiceError>`
-    pub fn err(self) -> Option<ServiceError> {
+    /// transform the output to a `Option<Error>`
+    pub fn err(self) -> Option<Error> {
         match self {
             TransactionOutput::Committed(_) => None,
             TransactionOutput::Aborted(err) => Some(err),
@@ -73,7 +73,7 @@ impl<T> TransactionOutput<T> {
     }
 }
 
-impl<T> From<TransactionOutput<T>> for Result<T, ServiceError> {
+impl<T> From<TransactionOutput<T>> for Result<T, Error> {
     fn from(output: TransactionOutput<T>) -> Self {
         match output {
             TransactionOutput::Committed(v) => Ok(v),

@@ -3,7 +3,7 @@ use crate::query::operations::{AqlOperation, OperationContainer};
 use crate::query::query_id_helper::get_str_identifier;
 use crate::query::utils::{string_from_array, OptionalQueryString};
 use crate::undefined_record::UndefinedRecord;
-use crate::{DatabaseAccess, Record, ServiceError};
+use crate::{DatabaseAccess, Error, Record};
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
 pub use {
@@ -602,10 +602,7 @@ impl Query {
     /// [`DatabaseAccess`]: trait.DatabaseAccess.html
     /// [`query`]: trait.DatabaseAccess.html#method.query
     #[maybe_async::maybe_async]
-    pub async fn raw_call<D>(
-        self,
-        db_accessor: &D,
-    ) -> Result<QueryResult<UndefinedRecord>, ServiceError>
+    pub async fn raw_call<D>(self, db_accessor: &D) -> Result<QueryResult<UndefinedRecord>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -620,7 +617,7 @@ impl Query {
     /// [`Record`]: trait.Record.html
     /// [`get`]: trait.Record.html#method.get
     #[maybe_async::maybe_async]
-    pub async fn call<D, T>(self, db_accessor: &D) -> Result<QueryResult<T>, ServiceError>
+    pub async fn call<D, T>(self, db_accessor: &D) -> Result<QueryResult<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
         T: Record + Send,
@@ -642,7 +639,7 @@ impl Query {
         self,
         db_accessor: &D,
         batch_size: u32,
-    ) -> Result<QueryCursor<UndefinedRecord>, ServiceError>
+    ) -> Result<QueryCursor<UndefinedRecord>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -661,7 +658,7 @@ impl Query {
         self,
         db_accessor: &D,
         batch_size: u32,
-    ) -> Result<QueryCursor<T>, ServiceError>
+    ) -> Result<QueryCursor<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
         T: Record + Send,

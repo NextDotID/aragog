@@ -5,6 +5,7 @@
 * bumped `arangors` to 0.5
   * (**BREAKING**) `tokio` dependency is no longer 0.2.x but 1.x
 * Support for rust >= `1.46` with a new CI job
+* (**BREAKING**) Renamed `ServiceError` into `Error`
 
 ## 0.13.2
 

@@ -1,4 +1,4 @@
-use aragog::{ServiceError, Validate};
+use aragog::{Error, Validate};
 use serde::{Deserialize, Serialize};
 
 pub mod common;
@@ -82,7 +82,7 @@ fn can_fail_and_provide_message() -> Result<(), String> {
     match dish.validate() {
         Ok(()) => Err(String::from("Should have failed validations")),
         Err(error) => match error {
-            ServiceError::ValidationError(str) => {
+            Error::ValidationError(str) => {
                 common::expect_assert(str.contains(r#"name 'Piza' is too short, min length: 5"#))?;
                 common::expect_assert(
                     str.contains(r#"description 'wrong' is too short, min length: 15"#),
@@ -370,7 +370,7 @@ mod macros {
             match EnumValidator::Case1.validate() {
                 Ok(()) => panic!("Should fail for Case1"),
                 Err(e) => match e {
-                    ServiceError::ValidationError(msg) => {
+                    Error::ValidationError(msg) => {
                         assert_eq!(msg, "Case1 is invalid".to_string())
                     }
                     _ => panic!("Wrong error returned for Case1"),
@@ -380,7 +380,7 @@ mod macros {
             match EnumValidator::Case2.validate() {
                 Ok(()) => panic!("Should fail for Case2"),
                 Err(e) => match e {
-                    ServiceError::ValidationError(msg) => {
+                    Error::ValidationError(msg) => {
                         assert_eq!(msg, "Case2 is invalid".to_string())
                     }
                     _ => panic!("Wrong error returned for Case2"),
@@ -420,7 +420,7 @@ mod macros {
             match it.validate() {
                 Ok(()) => Err(String::from("Should have failed validations")),
                 Err(error) => match error {
-                    ServiceError::ValidationError(str) => {
+                    Error::ValidationError(str) => {
                         common::expect_assert(
                             str.contains(r#"list doesn't have enough elements, min count: 2"#),
                         )?;
@@ -441,7 +441,7 @@ mod macros {
             match it.validate() {
                 Ok(()) => Err(String::from("Should have failed validations")),
                 Err(error) => match error {
-                    ServiceError::ValidationError(str) => {
+                    Error::ValidationError(str) => {
                         common::expect_assert(
                             str.contains(r#"list has too many elements, max count: 5"#),
                         )?;
@@ -462,7 +462,7 @@ mod macros {
             match it.validate() {
                 Ok(()) => Err(String::from("Should have failed validations")),
                 Err(error) => match error {
-                    ServiceError::ValidationError(str) => {
+                    Error::ValidationError(str) => {
                         common::expect_assert(str.contains(
                             r#"exact_list has a wrong number of elements, expected count: 5"#,
                         ))?;
