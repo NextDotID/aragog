@@ -1,8 +1,8 @@
 #[cfg(feature = "async")]
 use std::future::Future;
 
-use arangors::client::reqwest::ReqwestClient;
 use arangors::transaction::{Status, Transaction as TransactionLayer};
+use uclient::reqwest::ReqwestClient;
 
 pub use {
     transaction_builder::TransactionBuilder, transaction_connection::TransactionDatabaseConnection,

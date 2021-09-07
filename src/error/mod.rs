@@ -155,7 +155,7 @@ impl From<ClientError> for ServiceError {
             },
             ClientError::HttpClient(error) => Self::InitError {
                 item: "Http Client".to_string(),
-                message: error,
+                message: error.to_string(),
             },
         }
     }

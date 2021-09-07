@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use arangors::client::reqwest::ReqwestClient;
 use arangors::{Connection, Database};
+use uclient::reqwest::ReqwestClient;
 
 use crate::db::database_collection::DatabaseCollection;
 use crate::db::database_connection_builder::{

@@ -17,29 +17,40 @@ documentation = "https://docs.rs/aragog"
 
 [features]
 default = ["derive", "async"]
-async = ["arangors/reqwest_async"]
-blocking = ["arangors/blocking", "arangors/reqwest_blocking", "maybe-async/is_sync", "aragog-macros/blocking"]
+async = ["arangors/reqwest_async", "uclient/async_reqwest"]
+blocking = ["arangors/blocking", "arangors/reqwest_blocking", "maybe-async/is_sync", "aragog-macros/blocking", "uclient/blocking_reqwest"]
 entreprise = ["arangors/enterprise"]
 derive = ["aragog-macros"]
 minimal_traits = []
 
 [dependencies]
 # ArangoDB driver
-arangors = { version = "0.4.8", default-features = false, features = ["rocksdb"] }
+arangors = { version = "0.5", default-features = false, features = ["rocksdb"] }
+# TODO: remove this when arangors fixes https://github.com/fMeow/arangors/issues/79
+typed-builder = "=0.9.0"
+# Required until re-exported from arangors crate, latest version (0.2.3) is not compatible
+uclient = "0.1.3"
+
 # Used for string validation toolbox, not used otherwise
 regex = "1.5"
+
 # Record trait has async methods
 async-trait = "0.1"
+
 # Serialization and deserialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.8"
+
 # Log handling
 log = "0.4"
+
 # Error definitions
 thiserror = "1.0"
+
 # Numeric types for query engine
 num = "0.4"
+
 # Self depedencies
 maybe-async = "0.2"
 
@@ -55,8 +66,8 @@ chrono = { version = "0.4", features = ["serde"] }
 env_logger = "0.9"
 
 [dev-dependencies.tokio]
-version = "0.2"
-features = [ "macros", "rt-core"]
+version = "1"
+features = [ "macros", "rt-multi-thread"]
 
 [badges.maintenance]
 status = "actively-developed"

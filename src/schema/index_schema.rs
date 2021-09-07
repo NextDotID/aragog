@@ -1,8 +1,8 @@
 use crate::schema::SchemaDatabaseOperation;
-use arangors::client::reqwest::ReqwestClient;
 use arangors::index::{Index, IndexSettings};
 use arangors::{ClientError, Database};
 use serde::{Deserialize, Serialize};
+use uclient::reqwest::ReqwestClient;
 
 /// Aragog schema representation of an ArangoDB Index.
 /// This struct is meant to load/generate the schema file.
