@@ -1,6 +1,6 @@
 [package]
 name = "aragog"
-version = "0.13.2"
+version = "0.14"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -56,7 +56,7 @@ maybe-async = "0.2"
 
 # Optional crates
 # The aragog derive macros
-aragog-macros = { path = "aragog_macros", version = "0.7", optional = true }
+aragog-macros = { path = "aragog_macros", version = "0.7.2", optional = true }
 
 [dev-dependencies]
 # We add the "feature" option to avoid serde version conflict somehow

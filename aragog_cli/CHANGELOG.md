@@ -1,9 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.3.3
 
 * bumped `arangors` to 0.5
-    * (**BREAKING**) `tokio` dependency is no longer 0.2.x but 1.x
 * Fixed panic without any migration file for `discover` command
 
 ## 0.3.2

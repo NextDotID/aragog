@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.14.0
 
 * bumped `arangors` to 0.5
   * (**BREAKING**) `tokio` dependency is no longer 0.2.x but 1.x

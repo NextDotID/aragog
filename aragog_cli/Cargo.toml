@@ -1,6 +1,6 @@
 [package]
 name = "aragog_cli"
-version = "0.3.2"
+version = "0.3.3"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -20,7 +20,7 @@ doc = false
 
 [dependencies]
 # Aragog
-aragog = { path = "..", version = "0.13", features = ["blocking", "minimal_traits"], default-features = false }
+aragog = { path = "..", version = "0.14", features = ["blocking", "minimal_traits"], default-features = false }
 
 arangors = { version = "0.5", features = ["blocking", "reqwest_blocking", "rocksdb"], default-features = false }
 # TODO: remove this when arangors fixes https://github.com/fMeow/arangors/issues/79
