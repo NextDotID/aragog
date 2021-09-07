@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Applied `ServiceError` -> `Error` rename
+
 ## 0.7.1
 
 * New `Record` derive attribute `collection_name`

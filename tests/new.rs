@@ -1,6 +1,6 @@
 #![cfg(not(feature = "minimal_traits"))]
 
-use aragog::{New, ServiceError};
+use aragog::{Error, New};
 use serde::{Deserialize, Serialize};
 
 pub mod common;
@@ -21,7 +21,7 @@ pub struct DishForm {
 }
 
 impl New<DishForm> for Dish {
-    fn new(form: DishForm) -> Result<Self, ServiceError> {
+    fn new(form: DishForm) -> Result<Self, Error> {
         let res = Dish {
             name: form.form_name,
             description: form.form_description,
@@ -29,7 +29,7 @@ impl New<DishForm> for Dish {
             created_at: 1000,
         };
         if res.price == 0 {
-            return Err(ServiceError::ValidationError(String::from("Wrong price")));
+            return Err(Error::ValidationError(String::from("Wrong price")));
         }
         Ok(res)
     }

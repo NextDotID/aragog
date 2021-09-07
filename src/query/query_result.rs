@@ -1,5 +1,5 @@
 use crate::undefined_record::UndefinedRecord;
-use crate::{DatabaseRecord, Record, ServiceError};
+use crate::{DatabaseRecord, Error, Record};
 use std::ops::{Deref, DerefMut};
 
 /// Query result containing the queried documents
@@ -13,18 +13,18 @@ impl<T: Clone + Record> QueryResult<T> {
     }
 
     /// Consumes and returns the only document of the current `QueryResult`.
-    /// If there is no document or more than one, a [`ServiceError`]::[`NotFound`] is returned.
+    /// If there is no document or more than one, a [`Error`]::[`NotFound`] is returned.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    pub fn uniq(self) -> Result<DatabaseRecord<T>, ServiceError> {
+    /// [`Error`]: enum.Error.html
+    /// [`NotFound`]: enum.Error.html#variant.NotFound
+    pub fn uniq(self) -> Result<DatabaseRecord<T>, Error> {
         if self.is_empty() || self.len() > 1 {
             log::error!(
                 "Wrong number of {} returned: {}",
                 T::COLLECTION_NAME,
                 self.len()
             );
-            return Err(ServiceError::NotFound {
+            return Err(Error::NotFound {
                 item: T::COLLECTION_NAME.to_string(),
                 id: "queried".to_string(),
                 source: None,

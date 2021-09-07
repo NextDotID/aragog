@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::ServiceError;
+use crate::Error;
 use std::fmt::Display;
 use std::slice;
 
@@ -40,13 +40,13 @@ use std::slice;
 /// [`Record`]: trait.Record.html
 pub trait Validate {
     /// Validates the object field formats, logic or anything. Calls the [`validations`] method
-    /// and will render a complete [`ServiceError`]::[`ValidationError`] on validation failure.
+    /// and will render a complete [`Error`]::[`ValidationError`] on validation failure.
     /// On success returns `()`
     ///
     /// [`validations`]: trait.Validate.html#tymethod.validations
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`ValidationError`]: enum.ServiceError.html#variant.ValidationError
-    fn validate(&self) -> Result<(), ServiceError> {
+    /// [`Error`]: enum.Error.html
+    /// [`ValidationError`]: enum.Error.html#variant.ValidationError
+    fn validate(&self) -> Result<(), Error> {
         let mut errors: Vec<String> = Vec::new();
 
         self.validations(&mut errors);
@@ -56,7 +56,7 @@ pub trait Validate {
         } else {
             let error_str = errors.join(", ");
             log::error!("{}", &error_str);
-            Err(ServiceError::ValidationError(error_str))
+            Err(Error::ValidationError(error_str))
         }
     }
 

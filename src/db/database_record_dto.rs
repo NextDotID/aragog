@@ -1,4 +1,4 @@
-use crate::{DatabaseRecord, Record, ServiceError};
+use crate::{DatabaseRecord, Error, Record};
 use arangors::document::response::DocumentResponse;
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
@@ -27,16 +27,16 @@ impl<T: Record> DatabaseRecordDto<T> {
 }
 
 impl<T: Record> TryInto<DatabaseRecord<T>> for DocumentResponse<DatabaseRecord<T>> {
-    type Error = ServiceError;
+    type Error = Error;
 
     fn try_into(self) -> Result<DatabaseRecord<T>, Self::Error> {
         match self {
-            DocumentResponse::Silent => Err(ServiceError::InternalError {
+            DocumentResponse::Silent => Err(Error::InternalError {
                 message: Some(String::from("Received unexpected silent document response")),
             }),
             DocumentResponse::Response { new, header, .. } => match new {
                 Some(value) => Ok(value),
-                None => Err(ServiceError::InternalError {
+                None => Err(Error::InternalError {
                     message: Some(format!(
                         "Expected ArangoDB to return the new {} document",
                         header._id
@@ -48,18 +48,18 @@ impl<T: Record> TryInto<DatabaseRecord<T>> for DocumentResponse<DatabaseRecord<T
 }
 
 impl<T: Record> TryInto<DatabaseRecord<T>> for DocumentResponse<DatabaseRecordDto<T>> {
-    type Error = ServiceError;
+    type Error = Error;
 
     fn try_into(self) -> Result<DatabaseRecord<T>, Self::Error> {
         match self {
-            DocumentResponse::Silent => Err(ServiceError::InternalError {
+            DocumentResponse::Silent => Err(Error::InternalError {
                 message: Some(String::from("Received unexpected silent document response")),
             }),
             DocumentResponse::Response { header, new, .. } => {
                 let doc: T = match new {
                     Some(value) => value.record,
                     None => {
-                        return Err(ServiceError::InternalError {
+                        return Err(Error::InternalError {
                             message: Some(format!(
                                 "Expected ArangoDB to return the new {} document",
                                 header._id

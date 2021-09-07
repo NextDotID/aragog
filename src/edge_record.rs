@@ -1,4 +1,4 @@
-use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError, Validate};
+use crate::{DatabaseAccess, DatabaseRecord, Error, Record, Validate};
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, DerefMut};
 
@@ -40,7 +40,7 @@ impl<T: Record> EdgeRecord<T> {
     /// # Failure
     ///
     /// This function validates the format of the id fields which can result in an error.
-    pub fn new(id_from: String, id_to: String, data: T) -> Result<Self, ServiceError> {
+    pub fn new(id_from: String, id_to: String, data: T) -> Result<Self, Error> {
         let res = Self {
             from: id_from,
             to: id_to,
@@ -52,7 +52,7 @@ impl<T: Record> EdgeRecord<T> {
 
     /// Retrieves the `from` document from the database
     #[maybe_async::maybe_async]
-    pub async fn from_record<D, R>(&self, db_access: &D) -> Result<DatabaseRecord<R>, ServiceError>
+    pub async fn from_record<D, R>(&self, db_access: &D) -> Result<DatabaseRecord<R>, Error>
     where
         D: DatabaseAccess + ?Sized,
         R: Record,
@@ -62,7 +62,7 @@ impl<T: Record> EdgeRecord<T> {
 
     /// Retrieves the `to` document from the database
     #[maybe_async::maybe_async]
-    pub async fn to_record<D, R>(&self, db_access: &D) -> Result<DatabaseRecord<R>, ServiceError>
+    pub async fn to_record<D, R>(&self, db_access: &D) -> Result<DatabaseRecord<R>, Error>
     where
         D: DatabaseAccess + ?Sized,
         R: Record,
@@ -142,7 +142,7 @@ impl<T: Record> Validate for EdgeRecord<T> {
 impl<T: Record + Send> Record for EdgeRecord<T> {
     const COLLECTION_NAME: &'static str = T::COLLECTION_NAME;
 
-    async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -150,28 +150,28 @@ impl<T: Record + Send> Record for EdgeRecord<T> {
         self.data.before_create_hook(db_accessor).await
     }
 
-    async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
         self.data.before_save_hook(db_accessor).await
     }
 
-    async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
         self.data.before_delete_hook(db_accessor).await
     }
 
-    async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
         self.data.after_create_hook(db_accessor).await
     }
 
-    async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -179,7 +179,7 @@ impl<T: Record + Send> Record for EdgeRecord<T> {
         self.data.after_save_hook(db_accessor).await
     }
 
-    async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {

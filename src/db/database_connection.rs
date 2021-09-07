@@ -8,7 +8,7 @@ use crate::db::database_connection_builder::{
     DatabaseConnectionBuilder, DatabaseSchemaOption, DbCredentialsOption,
 };
 use crate::schema::{DatabaseSchema, SchemaDatabaseOperation};
-use crate::{DatabaseAccess, OperationOptions, ServiceError};
+use crate::{DatabaseAccess, Error, OperationOptions};
 
 /// Struct containing ArangoDB connections and information to access the database, collections and documents
 #[derive(Clone, Debug)]
@@ -96,7 +96,7 @@ impl DatabaseConnection {
         schema: DatabaseSchema,
         apply_schema: bool,
         operation_options: OperationOptions,
-    ) -> Result<Self, ServiceError> {
+    ) -> Result<Self, Error> {
         if apply_schema {
             schema.apply_to_database(&database, true).await?;
         }
@@ -114,7 +114,7 @@ impl DatabaseConnection {
         db_user: &str,
         db_password: &str,
         auth_mode: AuthMode,
-    ) -> Result<Database<ReqwestClient>, ServiceError> {
+    ) -> Result<Database<ReqwestClient>, Error> {
         log::info!("Connecting to database server on {} ...", db_host);
         let db_connection = match auth_mode {
             AuthMode::Basic => {
@@ -155,7 +155,7 @@ impl DatabaseConnection {
     async fn load_schema(
         database: &Database<ReqwestClient>,
         schema: DatabaseSchema,
-    ) -> Result<HashMap<String, DatabaseCollection>, ServiceError> {
+    ) -> Result<HashMap<String, DatabaseCollection>, Error> {
         log::info!(
             "Loading Schema with version {}",
             schema.version.unwrap_or(0)
@@ -170,7 +170,7 @@ impl DatabaseConnection {
 
     /// Returns the number of currently running server-side transactions
     #[maybe_async::maybe_async]
-    pub async fn transactions_count(&self) -> Result<usize, ServiceError> {
+    pub async fn transactions_count(&self) -> Result<usize, Error> {
         let vec = self.database().list_transactions().await?;
         Ok(vec.len())
     }

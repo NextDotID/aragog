@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use uclient::reqwest::ReqwestClient;
 
 use crate::schema::{CollectionSchema, GraphSchema, IndexSchema, SchemaDatabaseOperation};
-use crate::ServiceError;
+use crate::Error;
 
 /// Aragog schema representation of an ArangoDB Database.
 /// This struct is meant to load/generate the schema file.
@@ -61,11 +61,11 @@ impl DatabaseSchema {
     /// Loads the YAML schema from the give `path`
     ///
     /// Will fail on wrong file path, file ACLs or content
-    pub fn load(path: &str) -> Result<Self, ServiceError> {
+    pub fn load(path: &str) -> Result<Self, Error> {
         let file = match fs::read_to_string(&path) {
             Ok(val) => val,
             Err(error) => {
-                return Err(ServiceError::InitError {
+                return Err(Error::InitError {
                     item: path.to_string(),
                     message: error.to_string(),
                 });
@@ -74,7 +74,7 @@ impl DatabaseSchema {
         let value: Self = match serde_yaml::from_str(&file) {
             Ok(val) => val,
             Err(error) => {
-                return Err(ServiceError::InitError {
+                return Err(Error::InitError {
                     item: path.to_string(),
                     message: error.to_string(),
                 });

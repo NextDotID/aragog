@@ -5,7 +5,7 @@ use crate::db::database_collection::DatabaseCollection;
 use crate::db::database_service::{query_records, query_records_in_batches};
 use crate::query::{Query, QueryCursor, QueryResult};
 use crate::undefined_record::UndefinedRecord;
-use crate::{OperationOptions, ServiceError};
+use crate::{Error, OperationOptions};
 
 /// The `DatabaseAccess` trait of the `Aragog` library.
 ///
@@ -42,8 +42,8 @@ pub trait DatabaseAccess: Sync {
     fn collection(&self, collection: &str) -> Option<&DatabaseCollection>;
 
     /// Retrieves a Collection from the database accessor.
-    fn get_collection(&self, collection: &str) -> Result<&DatabaseCollection, ServiceError> {
-        self.collection(collection).ok_or(ServiceError::NotFound {
+    fn get_collection(&self, collection: &str) -> Result<&DatabaseCollection, Error> {
+        self.collection(collection).ok_or(Error::NotFound {
             item: "Collection".to_string(),
             id: collection.to_string(),
             source: None,
@@ -65,7 +65,7 @@ pub trait DatabaseAccess: Sync {
     /// [`Record`]: trait.Record.html
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`get`]: struct.DatabaseRecord.html#method.get
-    async fn query(&self, query: Query) -> Result<QueryResult<UndefinedRecord>, ServiceError> {
+    async fn query(&self, query: Query) -> Result<QueryResult<UndefinedRecord>, Error> {
         query_records(self, query.to_aql().as_str()).await
     }
 
@@ -85,7 +85,7 @@ pub trait DatabaseAccess: Sync {
         &self,
         query: Query,
         batch_size: u32,
-    ) -> Result<QueryCursor<UndefinedRecord>, ServiceError> {
+    ) -> Result<QueryCursor<UndefinedRecord>, Error> {
         query_records_in_batches(self, query.to_aql().as_str(), batch_size).await
     }
 }

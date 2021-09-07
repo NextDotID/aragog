@@ -4,7 +4,7 @@ use serde::Serialize;
 use crate::db::transaction::Transaction;
 use crate::query::{Query, QueryCursor, QueryResult};
 use crate::transaction::TransactionBuilder;
-use crate::{DatabaseAccess, DatabaseConnection, DatabaseRecord, ServiceError};
+use crate::{DatabaseAccess, DatabaseConnection, DatabaseRecord, Error};
 
 /// The main trait of the Aragog library.
 /// Trait for structures that can be stored in Database.
@@ -22,7 +22,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`find`]: struct.DatabaseRecord.html#method.find
-    async fn find<D>(key: &str, db_accessor: &D) -> Result<DatabaseRecord<Self>, ServiceError>
+    async fn find<D>(key: &str, db_accessor: &D) -> Result<DatabaseRecord<Self>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -34,7 +34,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`get`]: struct.DatabaseRecord.html#method.get
-    async fn get<D>(query: Query, db_accessor: &D) -> Result<QueryResult<Self>, ServiceError>
+    async fn get<D>(query: Query, db_accessor: &D) -> Result<QueryResult<Self>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -50,7 +50,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
         query: Query,
         db_accessor: &D,
         batch_size: u32,
-    ) -> Result<QueryCursor<Self>, ServiceError>
+    ) -> Result<QueryCursor<Self>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -100,7 +100,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// ```
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`create`]: struct.DatabaseRecord.html#method.create
-    async fn create<D>(record: Self, db_accessor: &D) -> Result<DatabaseRecord<Self>, ServiceError>
+    async fn create<D>(record: Self, db_accessor: &D) -> Result<DatabaseRecord<Self>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -133,7 +133,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`create`]: struct.DatabaseRecored.html#method.create
-    async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
 
@@ -144,7 +144,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`save`]: struct.DatabaseRecored.html#method.save
-    async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
 
@@ -155,7 +155,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`delete`]: struct.DatabaseRecored.html#method.delete
-    async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
 
@@ -166,7 +166,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`create`]: struct.DatabaseRecored.html#method.create
-    async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
 
@@ -177,7 +177,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`save`]: struct.DatabaseRecored.html#method.save
-    async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
 
@@ -188,7 +188,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`delete`]: struct.DatabaseRecored.html#method.delete
-    async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), ServiceError>
+    async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
 
@@ -202,7 +202,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// # Arguments
     ///
     /// * `db_connection` - The current database connection
-    async fn transaction(db_connection: &DatabaseConnection) -> Result<Transaction, ServiceError> {
+    async fn transaction(db_connection: &DatabaseConnection) -> Result<Transaction, Error> {
         Self::transaction_builder().build(db_connection).await
     }
 }

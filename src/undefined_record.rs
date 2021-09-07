@@ -1,4 +1,4 @@
-use crate::{DatabaseAccess, Record, ServiceError};
+use crate::{DatabaseAccess, Error, Record};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::ops::{Deref, DerefMut};
@@ -11,42 +11,42 @@ pub struct UndefinedRecord(pub Value);
 impl Record for UndefinedRecord {
     const COLLECTION_NAME: &'static str = "Undefined Collection";
 
-    async fn before_create_hook<D>(&mut self, _db_accessor: &D) -> Result<(), ServiceError>
+    async fn before_create_hook<D>(&mut self, _db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
         Ok(())
     }
 
-    async fn before_save_hook<D>(&mut self, _db_accessor: &D) -> Result<(), ServiceError>
+    async fn before_save_hook<D>(&mut self, _db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
         Ok(())
     }
 
-    async fn before_delete_hook<D>(&mut self, _db_accessor: &D) -> Result<(), ServiceError>
+    async fn before_delete_hook<D>(&mut self, _db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
         Ok(())
     }
 
-    async fn after_create_hook<D>(&mut self, _db_accessor: &D) -> Result<(), ServiceError>
+    async fn after_create_hook<D>(&mut self, _db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
         Ok(())
     }
 
-    async fn after_save_hook<D>(&mut self, _db_accessor: &D) -> Result<(), ServiceError>
+    async fn after_save_hook<D>(&mut self, _db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
         Ok(())
     }
 
-    async fn after_delete_hook<D>(&mut self, _db_accessor: &D) -> Result<(), ServiceError>
+    async fn after_delete_hook<D>(&mut self, _db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {

@@ -1,7 +1,7 @@
 use std::convert::{TryFrom, TryInto};
 
 use crate::schema::{DatabaseSchema, SCHEMA_DEFAULT_FILE_NAME, SCHEMA_DEFAULT_PATH};
-use crate::{AuthMode, DatabaseConnection, OperationOptions, ServiceError};
+use crate::{AuthMode, DatabaseConnection, Error, OperationOptions};
 
 #[derive(Debug, Clone)]
 pub(crate) struct DbCredentials {
@@ -40,7 +40,7 @@ impl From<DbCredentialsOption> for DbCredentials {
 }
 
 impl TryFrom<DatabaseSchemaOption> for DatabaseSchema {
-    type Error = ServiceError;
+    type Error = Error;
 
     fn try_from(option: DatabaseSchemaOption) -> Result<Self, Self::Error> {
         match option {
@@ -102,7 +102,7 @@ impl DatabaseConnectionBuilder {
     /// If the provided credentials are wrong or if the database is not running the function will panic.
     /// If any of the previous env var is not specified the function will panic with an explanation message.
     #[maybe_async::maybe_async]
-    pub async fn build(self) -> Result<DatabaseConnection, ServiceError> {
+    pub async fn build(self) -> Result<DatabaseConnection, Error> {
         let credentials = self.credentials();
         let auth_mode = self.auth_mode();
         let apply_schema = self.apply_schema;
@@ -213,7 +213,7 @@ impl DatabaseConnectionBuilder {
         self.credentials.clone().into()
     }
 
-    fn schema(self) -> Result<DatabaseSchema, ServiceError> {
+    fn schema(self) -> Result<DatabaseSchema, Error> {
         self.schema.try_into()
     }
 

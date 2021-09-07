@@ -1,6 +1,6 @@
 use crate::db::database_collection::DatabaseCollection;
 use crate::transaction::{Transaction, TransactionDatabaseConnection};
-use crate::{DatabaseAccess, DatabaseConnection, OperationOptions, ServiceError};
+use crate::{DatabaseAccess, DatabaseConnection, Error, OperationOptions};
 use arangors::transaction::{TransactionCollections, TransactionSettings};
 use std::collections::HashMap;
 
@@ -53,10 +53,7 @@ impl TransactionBuilder {
 
     /// Builds the transaction with the database connection
     #[maybe_async::maybe_async]
-    pub async fn build(
-        self,
-        db_connection: &DatabaseConnection,
-    ) -> Result<Transaction, ServiceError> {
+    pub async fn build(self, db_connection: &DatabaseConnection) -> Result<Transaction, Error> {
         let collection_names = self
             .collections
             .unwrap_or_else(|| db_connection.collections_names());

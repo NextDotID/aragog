@@ -1,4 +1,4 @@
-use crate::ServiceError;
+use crate::Error;
 use arangors::Collection;
 use std::ops::Deref;
 use uclient::reqwest::ReqwestClient;
@@ -21,12 +21,12 @@ impl DatabaseCollection {
     /// # Returns
     ///
     /// On success a `i32` is returned as the document count.
-    /// On failure a ServiceError wil be returned.
+    /// On failure a Error wil be returned.
     #[maybe_async::maybe_async]
-    pub async fn record_count(&self) -> Result<u32, ServiceError> {
+    pub async fn record_count(&self) -> Result<u32, Error> {
         let properties = match self.collection.document_count().await {
             Ok(value) => value,
-            Err(client_error) => return Err(ServiceError::from(client_error)),
+            Err(client_error) => return Err(Error::from(client_error)),
         };
         match properties.info.count {
             Some(value) => Ok(value),

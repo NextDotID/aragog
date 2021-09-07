@@ -1,4 +1,4 @@
-use crate::{DatabaseRecord, Record, ServiceError};
+use crate::{DatabaseRecord, Error, Record};
 
 /// The `AuthorizeAction` trait of the Aragog library.
 /// This traits allows provides the ability to authorize a [`Record`] to execute a custom action on
@@ -47,19 +47,19 @@ pub trait AuthorizeAction<T: Record> {
     type Action;
 
     /// If the object is authorized to do `action` on `target` then the method will return `Ok(())`,
-    /// otherwise a [`ServiceError`]::[`Forbidden`] is returned.
+    /// otherwise a [`Error`]::[`Forbidden`] is returned.
     ///
-    /// [`ServiceError`]: enum.ServiceError.html
-    /// [`Forbidden`]: enum.ServiceError.html#variant.Forbidden
+    /// [`Error`]: enum.Error.html
+    /// [`Forbidden`]: enum.Error.html#variant.Forbidden
     fn authorize_action(
         &self,
         action: Self::Action,
         target: Option<&DatabaseRecord<T>>,
-    ) -> Result<(), ServiceError> {
+    ) -> Result<(), Error> {
         if self.is_action_authorized(action, target) {
             return Ok(());
         }
-        Err(ServiceError::Forbidden(None))
+        Err(Error::Forbidden(None))
     }
 
     /// Returns true if the object is authorized to do `action` on `target`

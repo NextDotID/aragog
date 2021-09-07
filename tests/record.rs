@@ -3,7 +3,7 @@ extern crate aragog;
 
 use serde::{Deserialize, Serialize};
 
-use aragog::{DatabaseAccess, DatabaseConnection, DatabaseRecord, Record, ServiceError, Validate};
+use aragog::{DatabaseAccess, DatabaseConnection, DatabaseRecord, Error, Record, Validate};
 
 pub mod common;
 
@@ -28,13 +28,13 @@ pub struct Dish {
 }
 
 impl Dish {
-    fn after_all(&self) -> Result<(), ServiceError> {
+    fn after_all(&self) -> Result<(), Error> {
         println!("Dish written in db");
         Ok(())
     }
 
     #[maybe_async::maybe_async]
-    async fn increment_menu<D>(&self, db_access: &D) -> Result<(), ServiceError>
+    async fn increment_menu<D>(&self, db_access: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -46,7 +46,7 @@ impl Dish {
     }
 
     #[maybe_async::maybe_async]
-    async fn last_dish_update<D>(&self, db_access: &D) -> Result<(), ServiceError>
+    async fn last_dish_update<D>(&self, db_access: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -239,7 +239,7 @@ mod fmt {
 
 mod read {
     use aragog::query::{Comparison, Filter, QueryCursor};
-    use aragog::ServiceError;
+    use aragog::Error;
 
     use super::*;
     use aragog::error::{ArangoError, ArangoHttpError};
@@ -319,7 +319,7 @@ mod read {
         let res = Dish::find("wrong_key", &connection).await;
         if let Err(error) = res {
             assert_eq!(error.to_string(), "Dish wrong_key not found".to_string());
-            if let ServiceError::NotFound { item, id, source } = error {
+            if let Error::NotFound { item, id, source } = error {
                 assert_eq!(&item, "Dish");
                 assert_eq!(&id, "wrong_key");
                 assert!(source.is_some());
@@ -642,43 +642,43 @@ mod all_hooks {
     }
 
     impl Dish {
-        fn before_create(&mut self) -> Result<(), ServiceError> {
+        fn before_create(&mut self) -> Result<(), Error> {
             self.before_create_count += 1;
             Ok(())
         }
-        fn before_save(&mut self) -> Result<(), ServiceError> {
+        fn before_save(&mut self) -> Result<(), Error> {
             self.before_save_count += 1;
             Ok(())
         }
-        fn before_delete(&mut self) -> Result<(), ServiceError> {
+        fn before_delete(&mut self) -> Result<(), Error> {
             self.before_delete_count += 1;
             Ok(())
         }
-        fn before_write(&mut self) -> Result<(), ServiceError> {
+        fn before_write(&mut self) -> Result<(), Error> {
             self.before_write_count += 1;
             Ok(())
         }
-        fn before_all(&mut self) -> Result<(), ServiceError> {
+        fn before_all(&mut self) -> Result<(), Error> {
             self.before_all_count += 1;
             Ok(())
         }
-        fn after_create(&mut self) -> Result<(), ServiceError> {
+        fn after_create(&mut self) -> Result<(), Error> {
             self.after_create_count += 1;
             Ok(())
         }
-        fn after_save(&mut self) -> Result<(), ServiceError> {
+        fn after_save(&mut self) -> Result<(), Error> {
             self.after_save_count += 1;
             Ok(())
         }
-        fn after_delete(&mut self) -> Result<(), ServiceError> {
+        fn after_delete(&mut self) -> Result<(), Error> {
             self.after_delete_count += 1;
             Ok(())
         }
-        fn after_write(&mut self) -> Result<(), ServiceError> {
+        fn after_write(&mut self) -> Result<(), Error> {
             self.after_write_count += 1;
             Ok(())
         }
-        fn after_all(&mut self) -> Result<(), ServiceError> {
+        fn after_all(&mut self) -> Result<(), Error> {
             self.after_all_count += 1;
             Ok(())
         }

@@ -1,5 +1,5 @@
 use crate::query::{Query, QueryResult};
-use crate::{DatabaseAccess, DatabaseRecord, Record, ServiceError};
+use crate::{DatabaseAccess, DatabaseRecord, Error, Record};
 
 /// The `Link` trait of the Aragog library.
 /// It allows to define a query relation between different models.
@@ -83,7 +83,7 @@ pub trait Link<T: Record + Send>: Sized {
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
     #[cfg(feature = "async")]
-    async fn linked_models<D>(&self, db_access: &D) -> Result<QueryResult<T>, ServiceError>
+    async fn linked_models<D>(&self, db_access: &D) -> Result<QueryResult<T>, Error>
     where
         Self: Sized,
         D: DatabaseAccess + ?Sized,
@@ -94,7 +94,7 @@ pub trait Link<T: Record + Send>: Sized {
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
     #[cfg(not(feature = "async"))]
-    fn linked_models<D>(&self, db_access: &D) -> Result<QueryResult<T>, ServiceError>
+    fn linked_models<D>(&self, db_access: &D) -> Result<QueryResult<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {

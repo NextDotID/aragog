@@ -47,7 +47,7 @@ pub struct User {
 ```
 
 When trying to **create** or **save** a `User` document all validations must match 
-or a `ServiceError::ValidationError` will be returned with an explicit message.
+or a `Error::ValidationError` will be returned with an explicit message.
 
 The current available field attribute validation operation macros (can be chained):
 - `String` or string slice fields:

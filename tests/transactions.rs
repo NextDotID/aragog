@@ -27,7 +27,7 @@ mod safe_execute {
     mod commit {
         use super::*;
         use aragog::error::{ArangoError, ArangoHttpError};
-        use aragog::ServiceError;
+        use aragog::Error;
 
         #[cfg(feature = "async")]
         async fn get_correct_result(
@@ -149,7 +149,7 @@ mod safe_execute {
             let result = get_correct_result(&transaction, &user_doc, &dish_doc).await;
             assert!(result.is_aborted());
             match result.err().unwrap() {
-                ServiceError::ArangoError(db_error) => {
+                Error::ArangoError(db_error) => {
                     assert_eq!(
                         db_error.arango_error,
                         ArangoError::TransactionUnregisteredCollectionError
@@ -176,7 +176,7 @@ mod safe_execute {
     }
 
     mod abort {
-        use aragog::ServiceError;
+        use aragog::Error;
 
         use super::*;
 
@@ -190,7 +190,7 @@ mod safe_execute {
                     DatabaseRecord::create(doc.clone(), &connection).await?;
                     DatabaseRecord::create(doc.clone(), &connection).await?;
                     DatabaseRecord::create(doc.clone(), &connection).await?;
-                    Err(ServiceError::default())
+                    Err(Error::default())
                 })
                 .await
                 .unwrap()
@@ -206,7 +206,7 @@ mod safe_execute {
                     DatabaseRecord::create(doc.clone(), &connection)?;
                     DatabaseRecord::create(doc.clone(), &connection)?;
                     DatabaseRecord::create(doc.clone(), &connection)?;
-                    Err(ServiceError::default())
+                    Err(Error::default())
                 })
                 .unwrap()
         }
@@ -232,10 +232,7 @@ mod safe_execute {
             let transaction = Transaction::new(&connection).await.unwrap();
             let result = get_failing_result(&transaction, &doc).await;
             assert!(result.is_aborted());
-            assert!(matches!(
-                result.err().unwrap(),
-                ServiceError::InternalError { .. }
-            ));
+            assert!(matches!(result.err().unwrap(), Error::InternalError { .. }));
             let count = connection
                 .get_collection("User")
                 .unwrap()

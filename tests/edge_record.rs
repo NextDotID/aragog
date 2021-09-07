@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use aragog::{DatabaseConnection, DatabaseRecord, EdgeRecord, Record, ServiceError, Validate};
+use aragog::{DatabaseConnection, DatabaseRecord, EdgeRecord, Error, Record, Validate};
 
 mod common;
 
@@ -194,7 +194,7 @@ async fn link_launches_hooks() -> Result<(), String> {
     match res {
         Ok(_) => Err(String::from("Validations should have failed")),
         Err(error) => match error {
-            ServiceError::ValidationError(msg) => common::expect_assert_eq(
+            Error::ValidationError(msg) => common::expect_assert_eq(
                 msg,
                 r#"description 'Test' is too short, min length: 5"#.to_string(),
             ),
