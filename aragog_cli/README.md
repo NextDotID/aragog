@@ -5,6 +5,7 @@
 [![pipeline status](https://gitlab.com/qonfucius/aragog/badges/master/pipeline.svg)](https://gitlab.com/qonfucius/aragog/commits/master)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Crates.io](https://img.shields.io/crates/v/aragog_cli.svg)](https://crates.io/crates/aragog_cli)
+[![dependency status](https://deps.rs/crate/aragog_cli/0.3.3/status.svg)](https://deps.rs/crate/aragog_cli)
 
 [![Discord](https://img.shields.io/discord/763034131335741440.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Xyx3hUP)
 [![Gitter](https://badges.gitter.im/aragog-rs/community.svg)](https://gitter.im/aragog-rs/community)
