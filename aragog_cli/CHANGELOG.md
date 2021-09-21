@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Using `aragog` `blocking_rustls` new feature to avoid `openssl-sys` dependency
+
 ## 0.3.3
 
 * bumped `arangors` to 0.5

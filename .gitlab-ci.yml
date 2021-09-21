@@ -36,18 +36,14 @@ build::1.46:
   cache:
     <<: *cache_template
 
-build::blocking:
+build::features:
   image: rust:latest
   stage: build
   script:
     - cargo build --features "blocking" --no-default-features
-  cache:
-    <<: *cache_template
-
-build::minimal_traits:
-  image: rust:latest
-  stage: build
-  script:
+    - cargo build --features "blocking_rustls" --no-default-features
+    - cargo build --features "async" --no-default-features
+    - cargo build --features "async_rustls" --no-default-features
     - cargo build --features "minimal_traits"
   cache:
     <<: *cache_template
@@ -80,16 +76,14 @@ test:doc:
   script:
     - cargo test --doc -- --test-threads=1
 
-test:blocking:
+test:features:
   image: rust:latest
   <<: *test_template
   script:
     - cargo test --features "blocking derive" --no-default-features --tests -- --test-threads=1
-
-test:minimal_traits:
-  image: rust:latest
-  <<: *test_template
-  script:
+    - cargo test --features "blocking_rustls derive" --no-default-features --tests -- --test-threads=1
+    - cargo test --features "async derive" --no-default-features --tests -- --test-threads=1
+    - cargo test --features "async_rustls derive" --no-default-features --tests -- --test-threads=1
     - cargo test --features "minimal_traits" --tests -- --test-threads=1
 
 test:packages:

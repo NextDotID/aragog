@@ -13,7 +13,7 @@ impl<T: Clone + Record> QueryResult<T> {
     }
 
     /// Consumes and returns the only document of the current `QueryResult`.
-    /// If there is no document or more than one, a [`Error`]::[`NotFound`] is returned.
+    /// If there is no document or more than one, an [`Error`]::[`NotFound`] is returned.
     ///
     /// [`Error`]: enum.Error.html
     /// [`NotFound`]: enum.Error.html#variant.NotFound
