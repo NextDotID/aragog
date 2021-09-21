@@ -47,7 +47,7 @@ pub trait AuthorizeAction<T: Record> {
     type Action;
 
     /// If the object is authorized to do `action` on `target` then the method will return `Ok(())`,
-    /// otherwise a [`Error`]::[`Forbidden`] is returned.
+    /// otherwise an [`Error`]::[`Forbidden`] is returned.
     ///
     /// [`Error`]: enum.Error.html
     /// [`Forbidden`]: enum.Error.html#variant.Forbidden

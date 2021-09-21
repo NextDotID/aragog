@@ -20,9 +20,9 @@ doc = false
 
 [dependencies]
 # Aragog
-aragog = { path = "..", version = "0.14", features = ["blocking", "minimal_traits"], default-features = false }
+aragog = { path = "..", version = "0.14", features = ["blocking_rustls", "minimal_traits"], default-features = false }
 
-arangors = { version = "0.5", features = ["blocking", "reqwest_blocking", "rocksdb"], default-features = false }
+arangors = { version = "0.5", features = ["blocking", "reqwest_blocking_rustls", "rocksdb"], default-features = false }
 # TODO: remove this when arangors fixes https://github.com/fMeow/arangors/issues/79
 typed-builder = "=0.9.0"
 # Required until re-exported from arangors crate, latest version (0.2.3) is not compatible

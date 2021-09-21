@@ -8,7 +8,7 @@ use crate::Error;
 pub trait Update<T> {
     /// Update the `Self` field values `T`. The object takes a mutable reference of itself and is directly
     /// updated.
-    /// Can fail and return an error, the error is in most of the cases a [`Error`]::[`ValidationError`]
+    /// Can fail and return an error, the error is in most of the cases an [`Error`]::[`ValidationError`]
     /// on fields validation failure
     ///
     /// [`Error`]: enum.Error.html

@@ -138,7 +138,7 @@ impl<T: Record> DatabaseRecord<T> {
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
     /// argument value
-    /// On failure a [`Error`] is returned.
+    /// On failure an [`Error`] is returned.
     ///
     /// [`Error`]: enum.Error.html
     #[maybe_async::maybe_async]
@@ -257,7 +257,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the current instance is up to date with the database state.
-    /// On failure a [`Error`] is returned.
+    /// On failure an [`Error`] is returned.
     ///
     /// [`Error`]: enum.Error.html
     #[maybe_async::maybe_async]
@@ -375,7 +375,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
-    /// On failure a [`Error`] is returned.
+    /// On failure an [`Error`] is returned.
     ///
     /// [`Error`]: enum.Error.html
     #[maybe_async::maybe_async]
@@ -460,7 +460,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `Self` is returned,
-    /// On failure a [`Error`] is returned:
+    /// On failure an [`Error`] is returned:
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
@@ -484,7 +484,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `Self` is returned,
-    /// On failure a [`Error`] is returned:
+    /// On failure an [`Error`] is returned:
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
@@ -505,7 +505,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned and `self` is updated,
-    /// On failure a [`Error`] is returned:
+    /// On failure an [`Error`] is returned:
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
@@ -536,7 +536,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success a `QueryResult` with a vector of `Self` is returned. It can be empty.
-    /// On failure a [`Error`] is returned:
+    /// On failure an [`Error`] is returned:
     /// * [`NotFound`] if no document matches the condition
     /// * [`UnprocessableEntity`] on data corruption
     ///
@@ -593,7 +593,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success a `QueryCursor` is returned. It can be empty.
-    /// On failure a [`Error`] is returned:
+    /// On failure an [`Error`] is returned:
     /// * [`NotFound`] if no document matches the condition
     /// * [`UnprocessableEntity`] on data corruption
     ///
@@ -651,7 +651,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success a `QueryResult` with a vector of `Self` is returned. It is can be empty.
-    /// On failure a [`Error`] is returned:
+    /// On failure an [`Error`] is returned:
     /// * [`NotFound`] if no document matches the condition
     /// * [`UnprocessableEntity`] on data corruption
     ///
@@ -682,8 +682,8 @@ impl<T: Record> DatabaseRecord<T> {
     /// ```
     ///
     /// [`Error`]: enum.Error.html
-    /// [`NotFound`]: enum.ServiceError.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.ServiceError.html#variant.UnprocessableEntity
+    /// [`NotFound`]: enum.Error.html#variant.NotFound
+    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn aql_get<D>(query: &str, db_accessor: &D) -> Result<QueryResult<T>, Error>
     where

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* New `blocking_rustls` feature
+* New `async_rustls` feature
+
 ## 0.14.0
 
 * bumped `arangors` to 0.5
