@@ -6,6 +6,8 @@
 //! [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 //! [![Crates.io](https://img.shields.io/crates/v/aragog.svg)](https://crates.io/crates/aragog)
 //! [![aragog](https://docs.rs/aragog/badge.svg)](https://docs.rs/aragog)
+//! [![dependency status](https://deps.rs/crate/aragog/0.14.0/status.svg)](https://deps.rs/crate/aragog)
+//!
 //! [![Discord](https://img.shields.io/discord/763034131335741440.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Xyx3hUP)
 //! [![Gitter](https://badges.gitter.im/aragog-rs/community.svg)](https://gitter.im/aragog-rs/community)
 //!
