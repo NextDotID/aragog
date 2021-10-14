@@ -1,4 +1,5 @@
 use arangors::ClientError;
+use exitcode::ExitCode;
 use std::io;
 use thiserror::Error;
 
@@ -26,8 +27,6 @@ pub enum AragogCliError {
     IOError { message: String },
     #[error("Parsing Error: {message}")]
     ParsingError { message: String },
-    #[error("Invalid parameter: {name} ({message})")]
-    InvalidParameter { name: String, message: String },
     #[error("Failed to initialize {item} ({message})")]
     InitError { item: String, message: String },
     #[error("Arango Error: {0}")]
@@ -52,6 +51,16 @@ impl From<serde_yaml::Error> for AragogCliError {
     fn from(error: serde_yaml::Error) -> Self {
         Self::ParsingError {
             message: error.to_string(),
+        }
+    }
+}
+
+impl AragogCliError {
+    pub fn exit_code(&self) -> ExitCode {
+        match self {
+            Self::InvalidFileName { .. } | Self::ParsingError { .. } => exitcode::DATAERR,
+            Self::IOError { .. } => exitcode::IOERR,
+            _ => exitcode::USAGE,
         }
     }
 }

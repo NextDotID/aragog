@@ -3,6 +3,10 @@
 ## Unreleased
 
 * Using `aragog` `blocking_rustls` new feature to avoid `openssl-sys` dependency
+* New `completions` command to generate tab-completion scripts for target shells
+* Errors are now nicely printed
+* Using `clap` latest beta version
+* Using `clap` derive system instead of custom configuration file
 
 ## 0.3.3
 

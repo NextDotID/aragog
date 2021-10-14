@@ -5,7 +5,7 @@ use crate::error::AragogCliError;
 use crate::versioned_database::VersionedDatabase;
 
 pub fn describe_db(config: &Config) -> Result<(), AragogCliError> {
-    let db = VersionedDatabase::init(&config)?;
+    let db = VersionedDatabase::init(config)?;
     println!("\nDescription of {}: \n", db.name());
     match db.schema.version {
         Some(version) => println!("- Database Schema version: {}", version),
@@ -45,7 +45,7 @@ pub fn describe_collection_indexes(
     config: &Config,
     collection_name: &str,
 ) -> Result<(), AragogCliError> {
-    let db = VersionedDatabase::init(&config)?;
+    let db = VersionedDatabase::init(config)?;
     db.collection(collection_name)?;
     println!(
         "\nDescription of {} collection {} indexes: \n",
