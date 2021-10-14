@@ -42,7 +42,11 @@ log = "0.4"
 chrono = "0.4"
 
 # Command-line args
-clap = { version = "=3.0.0-beta.2", features = ["yaml"] }
 
 # error
 thiserror = "1.0"
+exitcode = "1.1"
+
+# CLI lib
+clap = "3.0.0-beta"
+clap_generate = "3.0.0-beta"

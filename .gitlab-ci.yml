@@ -97,7 +97,9 @@ test:clippy:
   <<: *test_template
   script:
     - rustup component add clippy
-    - cargo clippy --all-targets -- -D warnings
+    - cargo clippy -- -D warnings
+    - cargo clippy --package aragog-macros -- -D warnings
+    - cargo clippy --package aragog_cli --no-default-features -- -D warnings
 
 test:examples:
   image: rust:latest

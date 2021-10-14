@@ -1,10 +1,12 @@
-#![deny(warnings)]
+// #![deny(warnings)]
 
 #[macro_use]
 extern crate prettytable;
 
-use clap::{load_yaml, App};
+use clap::Clap;
+use std::process::exit;
 
+use crate::app::{AragogCliApp, Command};
 pub use config::log;
 
 use crate::config::Config;
@@ -16,6 +18,8 @@ use crate::migration::Migration;
 use crate::migration_manager::MigrationManager;
 use crate::versioned_database::VersionedDatabase;
 
+mod app;
+mod completions;
 mod config;
 mod describe;
 mod discover;
@@ -30,7 +34,7 @@ mod versioned_database;
 #[derive(Debug)]
 pub enum MigrationDirection {
     Up,
-    Down(usize),
+    Down(u32),
 }
 
 fn migrate(
@@ -49,40 +53,34 @@ fn migrate(
     Ok(())
 }
 
-fn main() -> Result<(), AragogCliError> {
-    let yaml = load_yaml!("cli.yaml");
-    let matches = App::from(yaml).get_matches();
+fn handle_commands() -> Result<(), AragogCliError> {
+    let opts: AragogCliApp = AragogCliApp::parse();
 
-    let config = Config::new(&matches)?;
-    let schema_path = config.schema_path.clone();
-
-    match matches.subcommand() {
-        Some(("check", _args)) => {
-            MigrationManager::new(&schema_path)?;
+    match &opts.command {
+        Command::Check => {
+            let config = Config::new(&opts)?;
+            MigrationManager::new(&config.schema_path)?;
         }
-        Some(("migrate", _args)) => {
+        Command::Migrate => {
+            let config = Config::new(&opts)?;
+            let schema_path = config.schema_path.clone();
             let manager = MigrationManager::new(&schema_path)?;
             let mut db = VersionedDatabase::init(&config)?;
             migrate(MigrationDirection::Up, &mut db, manager)?;
         }
-        Some(("rollback", args)) => {
+        Command::Rollback { count } => {
+            let config = Config::new(&opts)?;
+            let schema_path = config.schema_path.clone();
             let manager = MigrationManager::new(&schema_path)?;
-            let count = match args.value_of("COUNT").unwrap_or("1").parse() {
-                Ok(val) => val,
-                Err(_error) => {
-                    return Err(AragogCliError::InvalidParameter {
-                        name: "COUNT".to_string(),
-                        message: "Must be a valid number".to_string(),
-                    });
-                }
-            };
             let mut db = VersionedDatabase::init(&config)?;
-            migrate(MigrationDirection::Down(count), &mut db, manager)?;
+            migrate(MigrationDirection::Down(*count), &mut db, manager)?;
         }
-        Some(("create_migration", args)) => {
-            Migration::new(args.value_of("MIGRATION_NAME").unwrap(), &schema_path, true)?;
+        Command::CreateMigration { migration_name } => {
+            let config = Config::new(&opts)?;
+            Migration::new(migration_name, &config.schema_path, true)?;
         }
-        Some(("truncate_database", _args)) => {
+        Command::Truncate => {
+            let config = Config::new(&opts)?;
             let db = VersionedDatabase::init(&config)?;
             for info in db.accessible_collections()?.iter() {
                 if info.is_system {
@@ -100,7 +98,9 @@ fn main() -> Result<(), AragogCliError> {
             }
             log("Truncated database collections and graphs", LogLevel::Info);
         }
-        Some(("discover", _args)) => {
+        Command::Discover => {
+            let config = Config::new(&opts)?;
+            let schema_path = config.schema_path.clone();
             let mut db = VersionedDatabase::init(&config)?;
             let manager = MigrationManager::new(&schema_path)?;
             let migration = discover_migration(&mut db, &config)?;
@@ -126,13 +126,26 @@ fn main() -> Result<(), AragogCliError> {
                 LogLevel::Info,
             );
         }
-        Some(("describe", _args)) => {
+        Command::Describe => {
+            let config = Config::new(&opts)?;
             describe_db(&config)?;
         }
-        Some(("describe_indexes", args)) => {
-            describe_collection_indexes(&config, args.value_of("COLLECTION_NAME").unwrap())?;
+        Command::DescribeIndexes { collection_name } => {
+            let config = Config::new(&opts)?;
+            describe_collection_indexes(&config, collection_name)?;
         }
-        _ => log("No usage found, use --help", LogLevel::Info),
+        Command::Completions(opts) => {
+            opts.generate();
+        }
     };
     Ok(())
+}
+
+fn main() {
+    let res = handle_commands();
+
+    if let Err(e) = res {
+        eprintln!("Error: {}", e);
+        exit(e.exit_code())
+    }
 }

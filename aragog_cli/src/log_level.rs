@@ -17,8 +17,8 @@ impl From<LogLevel> for u64 {
     }
 }
 
-impl From<u64> for LogLevel {
-    fn from(val: u64) -> Self {
+impl From<u8> for LogLevel {
+    fn from(val: u8) -> Self {
         match val {
             v if v == 0 => Self::Info,
             v if v == 1 => Self::Debug,

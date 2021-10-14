@@ -72,7 +72,7 @@ impl MigrationManager {
                     });
                 }
             };
-            let migration = Migration::load(&file_name, &schema_path)?;
+            let migration = Migration::load(&file_name, schema_path)?;
             migrations.push(migration);
         }
         if migrations.is_empty() {
@@ -109,7 +109,7 @@ impl MigrationManager {
 
     pub fn migrations_down(
         mut self,
-        count: usize,
+        count: u32,
         db: &mut VersionedDatabase,
     ) -> Result<(), AragogCliError> {
         let current_version = db.schema_version();
@@ -144,7 +144,7 @@ impl MigrationManager {
             LogLevel::Debug,
         );
         let mut file = OpenOptions::new().write(true).open(&schema_file_path)?;
-        let content = Self::serialized_schema(&schema);
+        let content = Self::serialized_schema(schema);
         // Cleans the file
         file.set_len(0)?;
         file.write_all(content.as_bytes())?;
