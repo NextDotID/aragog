@@ -3,7 +3,7 @@
 #[macro_use]
 extern crate prettytable;
 
-use clap::Clap;
+use clap::Parser;
 use std::process::exit;
 
 use crate::app::{AragogCliApp, Command};

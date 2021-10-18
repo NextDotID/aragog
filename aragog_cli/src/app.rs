@@ -1,56 +1,46 @@
 use crate::completions::CompletionOptions;
-use clap::{AppSettings, Clap};
+use clap::Parser;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 pub enum Command {
     /// Launches migrations
-    #[clap(setting = AppSettings::ColoredHelp)]
     Migrate,
     /// Rollbacks migrations (One by default).
-    #[clap(setting = AppSettings::ColoredHelp)]
     Rollback {
         /// Number of migrations to rollback
         #[clap(default_value = "1")]
         count: u32,
     },
     /// Describes the current database state, the synced schema version, collections, document couts, etc.
-    #[clap(setting = AppSettings::ColoredHelp)]
     Describe,
     /// Describes a database collection current indexes.
-    #[clap(setting = AppSettings::ColoredHelp)]
     DescribeIndexes {
         /// Database collection name
         collection_name: String,
     },
     /// Loads migrations and check their format.
-    #[clap(setting = AppSettings::ColoredHelp)]
     Check,
     /// Truncates the database, removes all collections, graphs, indexes and documents.
-    #[clap(setting = AppSettings::ColoredHelp)]
     Truncate,
     /// Generates and apply a migration for collections, indexes and graphs missing from the schema.
-    #[clap(setting = AppSettings::ColoredHelp)]
     Discover,
     /// Creates a new migration file.
-    #[clap(setting = AppSettings::ColoredHelp)]
     CreateMigration {
         /// Sets the migration name (will be appended to the current timestamp)
         migration_name: String,
     },
-    #[clap(setting = AppSettings::ColoredHelp)]
     /// Generates tab-completion script for your shell
     Completions(CompletionOptions),
 }
 
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 #[clap(
 name = "aragog",
 version = VERSION,
 author = " Felix de Maneville <felix.maneville@qonfucius.team>",
-about = "CLI too for aragog crate, handles ArangoDB migrations and schema generation.",
-setting = AppSettings::ColoredHelp
+about = "CLI too for aragog crate, handles ArangoDB migrations and schema generation."
 )]
 pub struct AragogCliApp {
     #[clap(short = 'c', long = "aragog-collection")]
