@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
 
-* Using `aragog` `blocking_rustls` new feature to avoid `openssl-sys` dependency
+* Using `aragog` `rustls` new feature to avoid `openssl-sys` dependency
 * New `completions` command to generate tab-completion scripts for target shells
 * Errors are now nicely printed
 * Using `clap` latest beta version

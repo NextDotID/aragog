@@ -1,9 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.15.0
 
 * Using `arangors_lite` instead of `arangors` driver:
-  * Simplified `blocking` vs `async` feature gates
+* Simplified feature gates:
+  * Removed `async_rustls` and `blocking` rustls features
+  * Added `rustls` feature
 
 ## 0.14.0
 
