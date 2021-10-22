@@ -82,7 +82,7 @@ pub trait Link<T: Record + Send>: Sized {
     fn link_query(&self) -> Query;
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
-    #[cfg(feature = "async")]
+    #[cfg(not(feature = "blocking"))]
     async fn linked_models<D>(&self, db_access: &D) -> Result<QueryResult<T>, Error>
     where
         Self: Sized,
@@ -93,7 +93,7 @@ pub trait Link<T: Record + Send>: Sized {
     }
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
-    #[cfg(not(feature = "async"))]
+    #[cfg(feature = "blocking")]
     fn linked_models<D>(&self, db_access: &D) -> Result<QueryResult<T>, Error>
     where
         D: DatabaseAccess + ?Sized,

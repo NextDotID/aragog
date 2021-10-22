@@ -3,9 +3,9 @@ use crate::error::AragogCliError;
 use crate::migration::Migration;
 use crate::migration_operation::MigrationOperation;
 use crate::versioned_database::VersionedDatabase;
-use arangors::collection::response::Info;
-use arangors::collection::CollectionType;
-use arangors::index::{Index, IndexSettings};
+use arangors_lite::collection::response::Info;
+use arangors_lite::collection::CollectionType;
+use arangors_lite::index::{Index, IndexSettings};
 
 pub fn discover_migration(
     db: &mut VersionedDatabase,

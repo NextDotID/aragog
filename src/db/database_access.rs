@@ -1,5 +1,4 @@
-use arangors::Database;
-use uclient::reqwest::ReqwestClient;
+use arangors_lite::Database;
 
 use crate::db::database_collection::DatabaseCollection;
 use crate::db::database_service::{query_records, query_records_in_batches};
@@ -51,7 +50,7 @@ pub trait DatabaseAccess: Sync {
     }
 
     /// Retrieves the database object
-    fn database(&self) -> &Database<ReqwestClient>;
+    fn database(&self) -> &Database;
 
     /// Runs an AQL query and returns the found documents as undefined records.
     ///

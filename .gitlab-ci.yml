@@ -24,27 +24,40 @@ build::default:
   image: rust:latest
   stage: build
   script:
-    - cargo build
+    - cargo build --all
   cache:
     <<: *cache_template
 
 build::1.46:
+  <<: *cache_pull_template
+  needs:
+    - build::default
   image: rust:1.46
   stage: build
   script:
     - cargo build
-  cache:
-    <<: *cache_template
 
 build::features:
   image: rust:latest
+  needs:
+    - build::default
   stage: build
   script:
-    - cargo build --features "blocking" --no-default-features
-    - cargo build --features "blocking_rustls" --no-default-features
-    - cargo build --features "async" --no-default-features
-    - cargo build --features "async_rustls" --no-default-features
+    - cargo build --features "blocking"
     - cargo build --features "minimal_traits"
+    - cargo build --no-default-features
+  cache:
+    <<: *cache_template
+
+build::rustls_features:
+  image: rust:alpine
+  needs:
+    - build::default
+  stage: build
+  script:
+    - apk add --no-cache clang musl-dev
+    - cargo build --features "blocking rustls" --no-default-features
+    - cargo build --features "rustls" --no-default-features
   cache:
     <<: *cache_template
 
@@ -80,11 +93,11 @@ test:features:
   image: rust:latest
   <<: *test_template
   script:
+    - cargo test --features "derive" --no-default-features --tests -- --test-threads=1
     - cargo test --features "blocking derive" --no-default-features --tests -- --test-threads=1
-    - cargo test --features "blocking_rustls derive" --no-default-features --tests -- --test-threads=1
-    - cargo test --features "async derive" --no-default-features --tests -- --test-threads=1
-    - cargo test --features "async_rustls derive" --no-default-features --tests -- --test-threads=1
     - cargo test --features "minimal_traits" --tests -- --test-threads=1
+    - cargo test --features "blocking rustls derive" --no-default-features --tests -- --test-threads=1
+    - cargo test --features "rustls derive" --no-default-features --tests -- --test-threads=1
 
 test:packages:
   image: rust:latest
@@ -97,9 +110,8 @@ test:clippy:
   <<: *test_template
   script:
     - rustup component add clippy
-    - cargo clippy -- -D warnings
-    - cargo clippy --package aragog-macros -- -D warnings
-    - cargo clippy --package aragog_cli --no-default-features -- -D warnings
+    - cargo clippy --all-targets -- -D warnings
+    - cargo clippy --all -- -D warnings
 
 test:examples:
   image: rust:latest

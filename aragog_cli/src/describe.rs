@@ -1,4 +1,4 @@
-use arangors::collection::response::Properties;
+use arangors_lite::collection::response::Properties;
 
 use crate::config::Config;
 use crate::error::AragogCliError;

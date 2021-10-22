@@ -2,7 +2,7 @@ use crate::db::database_record_dto::DatabaseRecordDto;
 use crate::error::ArangoHttpError;
 use crate::query::{QueryCursor, QueryResult};
 use crate::{DatabaseAccess, DatabaseRecord, Error, OperationOptions, Record};
-use arangors::{AqlOptions, AqlQuery};
+use arangors_lite::{AqlOptions, AqlQuery};
 use std::convert::TryInto;
 
 #[maybe_async::maybe_async]

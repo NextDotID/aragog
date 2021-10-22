@@ -1,9 +1,8 @@
-use arangors::{
+use arangors_lite::{
     collection::{options::CreateOptions, Collection, CollectionType},
     ClientError, Database,
 };
 use serde::{Deserialize, Serialize};
-use uclient::reqwest::ReqwestClient;
 
 use crate::schema::SchemaDatabaseOperation;
 
@@ -36,11 +35,11 @@ impl CollectionSchema {
 
 #[maybe_async::maybe_async]
 impl SchemaDatabaseOperation for CollectionSchema {
-    type PoolType = Collection<ReqwestClient>;
+    type PoolType = Collection;
 
     async fn apply_to_database(
         &self,
-        database: &Database<ReqwestClient>,
+        database: &Database,
         silent: bool,
     ) -> Result<Option<Self::PoolType>, ClientError> {
         log::debug!("Creating Collection {}", &self.name);
@@ -59,13 +58,13 @@ impl SchemaDatabaseOperation for CollectionSchema {
         Self::handle_pool_result(res, silent)
     }
 
-    async fn drop(&self, database: &Database<ReqwestClient>) -> Result<(), ClientError> {
+    async fn drop(&self, database: &Database) -> Result<(), ClientError> {
         log::debug!("Deleting Collection {}", &self.name);
         database.drop_collection(&self.name).await?;
         Ok(())
     }
 
-    async fn get(&self, database: &Database<ReqwestClient>) -> Result<Self::PoolType, ClientError> {
+    async fn get(&self, database: &Database) -> Result<Self::PoolType, ClientError> {
         database.collection(&self.name).await
     }
 }

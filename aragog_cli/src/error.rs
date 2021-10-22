@@ -1,4 +1,4 @@
-use arangors::ClientError;
+use arangors_lite::ClientError;
 use exitcode::ExitCode;
 use std::io;
 use thiserror::Error;

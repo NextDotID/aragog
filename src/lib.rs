@@ -11,7 +11,7 @@
 //! [![Discord](https://img.shields.io/discord/763034131335741440.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Xyx3hUP)
 //! [![Gitter](https://badges.gitter.im/aragog-rs/community.svg)](https://gitter.im/aragog-rs/community)
 //!
-//! `aragog` is a fully featured ODM and OGM library for [ArangoDB][ArangoDB] using the [arangors][arangors] driver.
+//! `aragog` is a fully featured ODM and OGM library for [ArangoDB][ArangoDB] using the [arangors_lite][arangors_lite] driver.
 //!
 //! The main concept is to provide behaviors allowing to map your structs with ArangoDB documents as simply an lightly as possible.
 //! Inspired by Rails's [Active Record](https://github.com/rails/rails/tree/main/activerecord) library
@@ -468,10 +468,10 @@
 //!     );
 //! ```
 //!
-//! [arangors]: https://docs.rs/arangors
+//! [arangors_lite]: https://docs.rs/arangors_lite
 //! [argonautica]: https://github.com/bcmyers/argonautica
 //! [ArangoDB]: https://www.arangodb.com/
-//! [IndexSettings]: https://docs.rs/arangors/latest/arangors/index/enum.IndexSettings.html
+//! [IndexSettings]: https://docs.rs/arangors_lite/latest/arangors_lite/index/enum.IndexSettings.html
 //! [ComparisonBuilder]: https://docs.rs/aragog/latest/aragog/query/struct.ComparisonBuilder.html
 //! [CLI]: https://crates.io/crates/aragog_cli
 //! [edge_document]: https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#edges
@@ -486,17 +486,6 @@
 // #![warn(rustdoc::broken_intra_doc_links)]
 
 pub extern crate async_trait;
-
-#[cfg(all(feature = "async", feature = "blocking"))]
-compile_error!(
-    r#"feature "blocking" and "async" cannot be set at the same time.
-    If what you want is "blocking", please turn off default features by adding "default-features=false" in your Cargo.toml"#
-);
-
-#[cfg(all(not(feature = "async"), not(feature = "blocking")))]
-compile_error!(
-    r#"feature "blocking" and "async" cannot be disabled at the same time. Enable one of them"#
-);
 
 #[cfg(feature = "derive")]
 #[doc(hidden)]

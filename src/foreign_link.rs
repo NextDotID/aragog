@@ -76,7 +76,7 @@ pub trait ForeignLink<T: Record>: Sized {
     fn foreign_key(&self) -> &str;
 
     /// Retrieves the record matching the defined `foreign_key`. Type inference may be required.
-    #[cfg(feature = "async")]
+    #[cfg(not(feature = "blocking"))]
     async fn linked_model<D>(&self, db_access: &D) -> Result<DatabaseRecord<T>, Error>
     where
         Self: Sized,
@@ -87,7 +87,7 @@ pub trait ForeignLink<T: Record>: Sized {
     }
 
     /// Retrieves the record matching the defined `foreign_key`. Type inference may be required.
-    #[cfg(not(feature = "async"))]
+    #[cfg(feature = "blocking")]
     fn linked_model<D>(&self, db_access: &D) -> Result<DatabaseRecord<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
