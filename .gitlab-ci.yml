@@ -110,7 +110,8 @@ test:clippy:
   <<: *test_template
   script:
     - rustup component add clippy
-    - cargo clippy --all-targets --all -- -D warnings
+    - cargo clippy --all-targets -- -D warnings
+    - cargo clippy --all -- -D warnings
 
 test:examples:
   image: rust:latest
