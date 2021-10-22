@@ -1,5 +1,5 @@
-use arangors::graph::{EdgeDefinition, Graph, GraphOptions};
-use arangors::index::IndexSettings;
+use arangors_lite::graph::{EdgeDefinition, Graph, GraphOptions};
+use arangors_lite::index::IndexSettings;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 

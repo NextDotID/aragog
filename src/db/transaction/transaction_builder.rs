@@ -1,7 +1,7 @@
 use crate::db::database_collection::DatabaseCollection;
 use crate::transaction::{Transaction, TransactionDatabaseConnection};
 use crate::{DatabaseAccess, DatabaseConnection, Error, OperationOptions};
-use arangors::transaction::{TransactionCollections, TransactionSettings};
+use arangors_lite::transaction::{TransactionCollections, TransactionSettings};
 use std::collections::HashMap;
 
 const LOCK_TIMEOUT: usize = 60000;

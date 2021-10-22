@@ -1,5 +1,4 @@
-use arangors::{Cursor, Database};
-use uclient::reqwest::ReqwestClient;
+use arangors_lite::{Cursor, Database};
 
 use crate::query::QueryResult;
 use crate::{DatabaseRecord, Record};
@@ -52,7 +51,7 @@ use crate::{DatabaseRecord, Record};
 #[derive(Debug)]
 pub struct QueryCursor<T> {
     pub(crate) cursor: Cursor<DatabaseRecord<T>>,
-    pub(crate) database: Database<ReqwestClient>,
+    pub(crate) database: Database,
     pub(crate) query: String,
     pending_result: Option<QueryResult<T>>,
 }
@@ -60,7 +59,7 @@ pub struct QueryCursor<T> {
 impl<T: Record> QueryCursor<T> {
     pub(crate) fn new(
         cursor: Cursor<DatabaseRecord<T>>,
-        database: Database<ReqwestClient>,
+        database: Database,
         query: String,
     ) -> Self {
         Self {

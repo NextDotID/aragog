@@ -1,10 +1,9 @@
 use std::ops::Deref;
 
-use arangors::document::options::{InsertOptions, ReplaceOptions};
-use arangors::Connection;
-use arangors::{Collection, Database};
+use arangors_lite::document::options::{InsertOptions, ReplaceOptions};
+use arangors_lite::Connection;
+use arangors_lite::{Collection, Database};
 use serde::{Deserialize, Serialize};
-use uclient::reqwest::ReqwestClient;
 
 use aragog::schema::DatabaseSchema;
 
@@ -25,8 +24,8 @@ struct SchemaWithKey {
 
 #[derive(Debug)]
 pub struct VersionedDatabase {
-    pub db: Database<ReqwestClient>,
-    pub schema_collection: Collection<ReqwestClient>,
+    pub db: Database,
+    pub schema_collection: Collection,
     pub schema: DatabaseSchema,
 }
 
@@ -51,7 +50,7 @@ impl VersionedDatabase {
                 LogLevel::Info,
             ),
         };
-        let db: Database<ReqwestClient> = match connection.db(&config.db_name) {
+        let db: Database = match connection.db(&config.db_name) {
             Ok(val) => val,
             Err(e) => {
                 log(
@@ -134,7 +133,7 @@ impl VersionedDatabase {
 }
 
 impl Deref for VersionedDatabase {
-    type Target = Database<ReqwestClient>;
+    type Target = Database;
 
     fn deref(&self) -> &Self::Target {
         &self.db

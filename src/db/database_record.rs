@@ -1,4 +1,4 @@
-use arangors::{AqlQuery, Document};
+use arangors_lite::{AqlQuery, Document};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::{self, Display, Formatter};

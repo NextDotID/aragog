@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use arangors::{Connection, Database};
-use uclient::reqwest::ReqwestClient;
+use arangors_lite::{Connection, Database};
 
 use crate::db::database_collection::DatabaseCollection;
 use crate::db::database_connection_builder::{
@@ -16,7 +15,7 @@ pub struct DatabaseConnection {
     /// Map between a collection name and a `DatabaseCollection` instance
     collections: HashMap<String, DatabaseCollection>,
     /// The database accessor
-    database: Database<ReqwestClient>,
+    database: Database,
     /// The default options for all `write` operations
     operation_options: OperationOptions,
 }
@@ -29,10 +28,10 @@ pub enum AuthMode {
     /// Recommended JWT authentication.
     ///
     /// # Note:
-    /// The JWT has a 1 month validity (see [arangors] documentation)
+    /// The JWT has a 1 month validity (see [arangors_lite] documentation)
     /// And can lead to issues on docker
     ///
-    /// [arangors]: https://github.com/fMeow/arangors
+    /// [arangors_lite]: https://github.com/fMeow/arangors_lite
     Jwt,
 }
 
@@ -92,7 +91,7 @@ impl DatabaseConnection {
 
     #[maybe_async::maybe_async]
     pub(crate) async fn new(
-        database: Database<ReqwestClient>,
+        database: Database,
         schema: DatabaseSchema,
         apply_schema: bool,
         operation_options: OperationOptions,
@@ -114,7 +113,7 @@ impl DatabaseConnection {
         db_user: &str,
         db_password: &str,
         auth_mode: AuthMode,
-    ) -> Result<Database<ReqwestClient>, Error> {
+    ) -> Result<Database, Error> {
         log::info!("Connecting to database server on {} ...", db_host);
         let db_connection = match auth_mode {
             AuthMode::Basic => {
@@ -142,7 +141,7 @@ impl DatabaseConnection {
     ///
     /// # Panics
     ///
-    /// If the truncate fails on some collection the method will panic, see the `arangors` documentation
+    /// If the truncate fails on some collection the method will panic, see the `arangors_lite` documentation
     /// on collection truncate.
     #[maybe_async::maybe_async]
     pub async fn truncate(&self) {
@@ -153,7 +152,7 @@ impl DatabaseConnection {
 
     #[maybe_async::maybe_async]
     async fn load_schema(
-        database: &Database<ReqwestClient>,
+        database: &Database,
         schema: DatabaseSchema,
     ) -> Result<HashMap<String, DatabaseCollection>, Error> {
         log::info!(
@@ -185,7 +184,7 @@ impl DatabaseAccess for DatabaseConnection {
         self.collections.get(collection)
     }
 
-    fn database(&self) -> &Database<ReqwestClient> {
+    fn database(&self) -> &Database {
         &self.database
     }
 }

@@ -21,13 +21,6 @@ doc = false
 
 [dependencies]
 # Aragog
-aragog = { path = "..", version = "0.14", features = ["blocking_rustls", "minimal_traits"], default-features = false }
-
-arangors = { version = "0.5", features = ["blocking", "reqwest_blocking_rustls", "rocksdb"], default-features = false }
-# TODO: remove this when arangors fixes https://github.com/fMeow/arangors/issues/79
-typed-builder = "=0.9.0"
-# Required until re-exported from arangors crate, latest version (0.2.3) is not compatible
-uclient = { version = "0.1.3", features = ["blocking_reqwest"]}
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -50,3 +43,15 @@ exitcode = "1.1"
 # CLI lib
 clap = "3.0.0-beta"
 clap_generate = "3.0.0-beta"
+
+[dependencies.aragog]
+path = ".."
+version = "0.14"
+features = ["blocking", "rustls", "minimal_traits"]
+default-features = false
+
+# ArangoDB driver
+[dependencies.arangors_lite]
+version = "0.1"
+features = ["rocksdb", "blocking", "rustls"]
+default-features = false

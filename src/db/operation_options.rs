@@ -1,4 +1,4 @@
-use arangors::document::options::{InsertOptions, RemoveOptions, UpdateOptions};
+use arangors_lite::document::options::{InsertOptions, RemoveOptions, UpdateOptions};
 
 #[derive(Clone, Debug)]
 /// Struct defining some options for database `write` operations (create, update, delete)

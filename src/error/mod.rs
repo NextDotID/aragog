@@ -1,6 +1,6 @@
 use std::fmt::{self, Display, Formatter};
 
-use arangors::ClientError;
+use arangors_lite::ClientError;
 
 use thiserror::private::AsDynError;
 pub use {

@@ -29,7 +29,7 @@ mod safe_execute {
         use aragog::error::{ArangoError, ArangoHttpError};
         use aragog::Error;
 
-        #[cfg(feature = "async")]
+        #[cfg(not(feature = "blocking"))]
         async fn get_correct_result(
             transaction: &Transaction,
             user_doc: &User,
@@ -48,7 +48,7 @@ mod safe_execute {
                 .unwrap()
         }
 
-        #[cfg(not(feature = "async"))]
+        #[cfg(feature = "blocking")]
         fn get_correct_result(
             transaction: &Transaction,
             user_doc: &User,
@@ -180,7 +180,7 @@ mod safe_execute {
 
         use super::*;
 
-        #[cfg(feature = "async")]
+        #[cfg(not(feature = "blocking"))]
         async fn get_failing_result(
             transaction: &Transaction,
             doc: &User,
@@ -196,7 +196,7 @@ mod safe_execute {
                 .unwrap()
         }
 
-        #[cfg(not(feature = "async"))]
+        #[cfg(feature = "blocking")]
         fn get_failing_result(
             transaction: &Transaction,
             doc: &User,
@@ -272,7 +272,7 @@ mod safe_execute {
                 .unwrap();
             assert_eq!(res.len(), 0);
             transaction.commit().await.unwrap();
-            let res = User::get(query.clone(), &db_connection).await.unwrap();
+            let res = User::get(query, &db_connection).await.unwrap();
             assert_eq!(res.len(), 1);
             Ok(())
         }

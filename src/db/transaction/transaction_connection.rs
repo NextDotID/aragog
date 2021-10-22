@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use arangors::Database;
-use uclient::reqwest::ReqwestClient;
+use arangors_lite::Database;
 
 use crate::db::database_collection::DatabaseCollection;
 use crate::{DatabaseAccess, OperationOptions};
@@ -12,7 +11,7 @@ use crate::{DatabaseAccess, OperationOptions};
 #[derive(Debug, Clone)]
 pub struct TransactionDatabaseConnection {
     pub(crate) collections: HashMap<String, DatabaseCollection>,
-    pub(crate) database: Database<ReqwestClient>,
+    pub(crate) database: Database,
     pub(crate) operation_options: OperationOptions,
 }
 
@@ -25,7 +24,7 @@ impl DatabaseAccess for TransactionDatabaseConnection {
         self.collections.get(collection)
     }
 
-    fn database(&self) -> &Database<ReqwestClient> {
+    fn database(&self) -> &Database {
         &self.database
     }
 }

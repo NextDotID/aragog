@@ -1,13 +1,12 @@
 use crate::Error;
-use arangors::Collection;
+use arangors_lite::Collection;
 use std::ops::Deref;
-use uclient::reqwest::ReqwestClient;
 
 /// Struct containing the connection information on a ArangoDB collection
 #[derive(Debug, Clone)]
 pub struct DatabaseCollection {
-    /// The collection wrapper accessor of `arangors` crate driver
-    collection: Collection<ReqwestClient>,
+    /// The collection wrapper accessor of `arangors_lite` crate driver
+    collection: Collection,
 }
 
 impl DatabaseCollection {
@@ -35,14 +34,14 @@ impl DatabaseCollection {
     }
 }
 
-impl From<Collection<ReqwestClient>> for DatabaseCollection {
-    fn from(collection: Collection<ReqwestClient>) -> Self {
+impl From<Collection> for DatabaseCollection {
+    fn from(collection: Collection) -> Self {
         Self { collection }
     }
 }
 
 impl Deref for DatabaseCollection {
-    type Target = Collection<ReqwestClient>;
+    type Target = Collection;
 
     fn deref(&self) -> &Self::Target {
         &self.collection

@@ -47,8 +47,8 @@ impl Default for MigrationData {
 
 #[cfg(test)]
 mod tests {
-    use arangors::graph::{EdgeDefinition, GraphOptions};
-    use arangors::index::IndexSettings;
+    use arangors_lite::graph::{EdgeDefinition, GraphOptions};
+    use arangors_lite::index::IndexSettings;
 
     use super::*;
 
@@ -167,6 +167,6 @@ mod tests {
                   name: Collection2
               - delete_collection:
                   name: Collection1";
-        serde_yaml::from_str::<MigrationData>(&migration_yaml).unwrap();
+        serde_yaml::from_str::<MigrationData>(migration_yaml).unwrap();
     }
 }

@@ -1,8 +1,7 @@
 use crate::schema::SchemaDatabaseOperation;
-use arangors::index::{Index, IndexSettings};
-use arangors::{ClientError, Database};
+use arangors_lite::index::{Index, IndexSettings};
+use arangors_lite::{ClientError, Database};
 use serde::{Deserialize, Serialize};
-use uclient::reqwest::ReqwestClient;
 
 /// Aragog schema representation of an ArangoDB Index.
 /// This struct is meant to load/generate the schema file.
@@ -41,7 +40,7 @@ impl SchemaDatabaseOperation for IndexSchema {
 
     async fn apply_to_database(
         &self,
-        database: &Database<ReqwestClient>,
+        database: &Database,
         silent: bool,
     ) -> Result<Option<Self::PoolType>, ClientError> {
         log::debug!("Creating index {}", &self.name);
@@ -52,13 +51,13 @@ impl SchemaDatabaseOperation for IndexSchema {
         )
     }
 
-    async fn drop(&self, database: &Database<ReqwestClient>) -> Result<(), ClientError> {
+    async fn drop(&self, database: &Database) -> Result<(), ClientError> {
         log::debug!("Deleting index {}", &self.name);
         database.delete_index(&self.id()).await?;
         Ok(())
     }
 
-    async fn get(&self, database: &Database<ReqwestClient>) -> Result<Self::PoolType, ClientError> {
+    async fn get(&self, database: &Database) -> Result<Self::PoolType, ClientError> {
         database.index(&self.name).await
     }
 }

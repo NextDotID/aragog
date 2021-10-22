@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-* New `blocking_rustls` feature
-* New `async_rustls` feature
+* Using `arangors_lite` instead of `arangors` driver:
+  * Simplified `blocking` vs `async` feature gates
 
 ## 0.14.0
 

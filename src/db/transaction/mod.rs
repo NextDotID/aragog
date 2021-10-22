@@ -1,8 +1,7 @@
-#[cfg(feature = "async")]
+#[cfg(not(feature = "blocking"))]
 use std::future::Future;
 
-use arangors::transaction::{Status, Transaction as TransactionLayer};
-use uclient::reqwest::ReqwestClient;
+use arangors_lite::transaction::{Status, Transaction as TransactionLayer};
 
 pub use {
     transaction_builder::TransactionBuilder, transaction_connection::TransactionDatabaseConnection,
@@ -77,7 +76,7 @@ mod transaction_output;
 /// [`DatabaseConnection`]: ../struct.DatabaseConnection.html
 #[derive(Debug)]
 pub struct Transaction {
-    accessor: TransactionLayer<ReqwestClient>,
+    accessor: TransactionLayer,
     database_connection: TransactionDatabaseConnection,
 }
 
@@ -263,7 +262,7 @@ impl Transaction {
     /// # Note
     ///
     /// Don't use `unwrap()` in the closure, as if the code panics the transaction won't be aborted nor commited.
-    #[cfg(feature = "async")]
+    #[cfg(not(feature = "blocking"))]
     pub async fn safe_execute<T, O, F>(&self, operations: O) -> Result<TransactionOutput<T>, Error>
     where
         O: FnOnce(TransactionDatabaseConnection) -> F,
@@ -323,7 +322,7 @@ impl Transaction {
     /// # Note
     ///
     /// Don't use `unwrap()` in the closure, as if the code panics the transaction won't be aborted nor commited.
-    #[cfg(not(feature = "async"))]
+    #[cfg(feature = "blocking")]
     pub fn safe_execute<T, O>(&self, operations: O) -> Result<TransactionOutput<T>, Error>
     where
         O: FnOnce(TransactionDatabaseConnection) -> Result<T, Error>,

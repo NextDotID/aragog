@@ -1,5 +1,5 @@
 use crate::error::{ArangoError, ArangoHttpError};
-use arangors::ArangoError as DriverError;
+use arangors_lite::ArangoError as DriverError;
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 

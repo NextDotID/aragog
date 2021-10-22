@@ -7,6 +7,7 @@
 * Errors are now nicely printed
 * Using `clap` latest beta version
 * Using `clap` derive system instead of custom configuration file
+* Using `arangors_lite` instead of `arangors` driver
 
 ## 0.3.3
 

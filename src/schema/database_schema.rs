@@ -1,8 +1,7 @@
 use std::fs;
 
-use arangors::{ClientError, Database};
+use arangors_lite::{ClientError, Database};
 use serde::{Deserialize, Serialize};
-use uclient::reqwest::ReqwestClient;
 
 use crate::schema::{CollectionSchema, GraphSchema, IndexSchema, SchemaDatabaseOperation};
 use crate::Error;
@@ -101,7 +100,7 @@ impl SchemaDatabaseOperation for DatabaseSchema {
 
     async fn apply_to_database(
         &self,
-        database: &Database<ReqwestClient>,
+        database: &Database,
         silent: bool,
     ) -> Result<Option<Self::PoolType>, ClientError> {
         for item in self.collections.iter() {
@@ -116,7 +115,7 @@ impl SchemaDatabaseOperation for DatabaseSchema {
         Ok(Some(()))
     }
 
-    async fn drop(&self, database: &Database<ReqwestClient>) -> Result<(), ClientError> {
+    async fn drop(&self, database: &Database) -> Result<(), ClientError> {
         for item in self.collections.iter() {
             item.drop(database).await?;
         }
@@ -129,18 +128,15 @@ impl SchemaDatabaseOperation for DatabaseSchema {
         Ok(())
     }
 
-    async fn get(
-        &self,
-        _database: &Database<ReqwestClient>,
-    ) -> Result<Self::PoolType, ClientError> {
+    async fn get(&self, _database: &Database) -> Result<Self::PoolType, ClientError> {
         unimplemented!()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use arangors::graph::{EdgeDefinition, Graph, GraphOptions};
-    use arangors::index::IndexSettings;
+    use arangors_lite::graph::{EdgeDefinition, Graph, GraphOptions};
+    use arangors_lite::index::IndexSettings;
 
     use crate::schema::IndexSchema;
 

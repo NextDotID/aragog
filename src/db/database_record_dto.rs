@@ -1,5 +1,5 @@
 use crate::{DatabaseRecord, Error, Record};
-use arangors::document::response::DocumentResponse;
+use arangors_lite::document::response::DocumentResponse;
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 
