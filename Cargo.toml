@@ -17,7 +17,8 @@ documentation = "https://docs.rs/aragog"
 homepage = "https://aragog.rs"
 
 [features]
-default = ["derive", "arangors_lite/openssl"]
+default = ["derive", "openssl"]
+openssl = ["arangors_lite/openssl"]
 rustls = ["arangors_lite/rustls"]
 blocking = ["arangors_lite/blocking", "maybe-async/is_sync", "aragog-macros/blocking"]
 entreprise = ["arangors_lite/enterprise"]
