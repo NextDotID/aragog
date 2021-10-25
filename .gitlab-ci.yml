@@ -96,8 +96,14 @@ test:features:
     - cargo test --features "derive" --no-default-features --tests -- --test-threads=1
     - cargo test --features "blocking derive" --no-default-features --tests -- --test-threads=1
     - cargo test --features "minimal_traits" --tests -- --test-threads=1
-    - cargo test --features "blocking rustls derive" --no-default-features --tests -- --test-threads=1
+
+test:rustls-features:
+  image: rust:latest
+  <<: *test_template
+  script:
+    - cargo test --features "rustls" --no-default-features --tests -- --test-threads=1
     - cargo test --features "rustls derive" --no-default-features --tests -- --test-threads=1
+    - cargo test --features "blocking rustls derive" --no-default-features --tests -- --test-threads=1
 
 test:packages:
   image: rust:latest
