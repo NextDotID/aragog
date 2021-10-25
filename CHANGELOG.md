@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* `openssl` explicit cargo feature
+* Improved book
+
 ## 0.15.0
 
 * Using `arangors_lite` instead of `arangors` driver:
