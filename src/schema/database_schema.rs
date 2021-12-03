@@ -6,9 +6,9 @@ use serde::{Deserialize, Serialize};
 use crate::schema::{CollectionSchema, GraphSchema, IndexSchema, SchemaDatabaseOperation};
 use crate::Error;
 
-/// Aragog schema representation of an ArangoDB Database.
+/// Aragog schema representation of an `ArangoDB` Database.
 /// This struct is meant to load/generate the schema file.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct DatabaseSchema {
     /// Schema version
     pub version: Option<u64>,
@@ -59,6 +59,8 @@ impl DatabaseSchema {
 
     /// Loads the YAML schema from the give `path`
     ///
+    /// # Errors
+    ///
     /// Will fail on wrong file path, file ACLs or content
     pub fn load(path: &str) -> Result<Self, Error> {
         let file = match fs::read_to_string(&path) {
@@ -83,17 +85,6 @@ impl DatabaseSchema {
     }
 }
 
-impl Default for DatabaseSchema {
-    fn default() -> Self {
-        Self {
-            version: None,
-            collections: vec![],
-            indexes: vec![],
-            graphs: vec![],
-        }
-    }
-}
-
 #[maybe_async::maybe_async]
 impl SchemaDatabaseOperation for DatabaseSchema {
     type PoolType = ();
@@ -103,33 +94,33 @@ impl SchemaDatabaseOperation for DatabaseSchema {
         database: &Database,
         silent: bool,
     ) -> Result<Option<Self::PoolType>, ClientError> {
-        for item in self.collections.iter() {
+        for item in &self.collections {
             Self::handle_error(item.apply_to_database(database, silent).await, silent)?;
         }
-        for item in self.indexes.iter() {
+        for item in &self.indexes {
             Self::handle_error(item.apply_to_database(database, silent).await, silent)?;
         }
-        for item in self.graphs.iter() {
+        for item in &self.graphs {
             Self::handle_error(item.apply_to_database(database, silent).await, silent)?;
         }
         Ok(Some(()))
     }
 
     async fn drop(&self, database: &Database) -> Result<(), ClientError> {
-        for item in self.collections.iter() {
+        for item in &self.collections {
             item.drop(database).await?;
         }
-        for item in self.indexes.iter() {
+        for item in &self.indexes {
             item.drop(database).await?;
         }
-        for item in self.graphs.iter() {
+        for item in &self.graphs {
             item.drop(database).await?;
         }
         Ok(())
     }
 
     async fn get(&self, _database: &Database) -> Result<Self::PoolType, ClientError> {
-        unimplemented!()
+        Ok(())
     }
 }
 

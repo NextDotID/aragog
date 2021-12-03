@@ -24,7 +24,7 @@ impl CollectionNameAttribute {
                     emit_error!(
                         meta.span(),
                         "Expected Named Value, add a correct collection name"
-                    )
+                    );
                 }
             },
             Err(error) => emit_error!(

@@ -21,7 +21,7 @@ impl OperationContainer {
     pub fn to_aql(&self, collection_id: &str) -> String {
         let mut res = String::new();
         let mut last_was_sort = false;
-        for operation in self.0.iter() {
+        for operation in &self.0 {
             match operation {
                 AqlOperation::Limit { skip, limit } => {
                     let skip_str = match skip {
@@ -40,10 +40,10 @@ impl OperationContainer {
                     last_was_sort = false;
                 }
                 AqlOperation::Sort { field, direction } => {
-                    if !last_was_sort {
-                        res += " SORT";
-                    } else {
+                    if last_was_sort {
                         res += ",";
+                    } else {
+                        res += " SORT";
                     }
                     res = format!("{} {}.{} {}", res, collection_id, field, direction);
                     last_was_sort = true;

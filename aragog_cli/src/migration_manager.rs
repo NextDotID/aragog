@@ -95,7 +95,7 @@ impl MigrationManager {
             LogLevel::Debug,
         );
         let mut i = 0;
-        for migration in self.migrations.into_iter() {
+        for migration in self.migrations {
             if migration.version > current_version {
                 migration.apply_up(db, false)?;
                 db.save()?;
@@ -120,7 +120,7 @@ impl MigrationManager {
         );
         let mut i = 0;
         self.migrations.reverse();
-        for migration in self.migrations.into_iter() {
+        for migration in self.migrations {
             if i >= count {
                 break;
             }

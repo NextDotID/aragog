@@ -13,7 +13,14 @@ impl<T: Clone + Record> QueryResult<T> {
     }
 
     /// Consumes and returns the only document of the current `QueryResult`.
+    ///
+    /// # Errors
+    ///
     /// If there is no document or more than one, an [`Error`]::[`NotFound`] is returned.
+    ///
+    /// # Panics
+    ///
+    /// Should not panic
     ///
     /// [`Error`]: enum.Error.html
     /// [`NotFound`]: enum.Error.html#variant.NotFound
@@ -76,9 +83,8 @@ impl QueryResult<UndefinedRecord> {
                     rev: db_record.rev.clone(),
                     record,
                 });
-            } else {
-                continue;
             }
+            continue;
         }
         res.into()
     }

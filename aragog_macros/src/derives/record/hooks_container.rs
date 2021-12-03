@@ -3,7 +3,7 @@ use crate::derives::record::hook_data::HookData;
 use crate::to_tokenstream::ToTokenStream;
 use proc_macro2::TokenStream;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct HooksContainer {
     pub before_create: Vec<HookData>,
     pub before_save: Vec<HookData>,
@@ -11,19 +11,6 @@ pub struct HooksContainer {
     pub after_create: Vec<HookData>,
     pub after_save: Vec<HookData>,
     pub after_delete: Vec<HookData>,
-}
-
-impl Default for HooksContainer {
-    fn default() -> Self {
-        Self {
-            before_create: vec![],
-            before_save: vec![],
-            before_delete: vec![],
-            after_create: vec![],
-            after_save: vec![],
-            after_delete: vec![],
-        }
-    }
 }
 
 impl From<Vec<Hook>> for HooksContainer {

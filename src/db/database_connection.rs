@@ -9,7 +9,7 @@ use crate::db::database_connection_builder::{
 use crate::schema::{DatabaseSchema, SchemaDatabaseOperation};
 use crate::{DatabaseAccess, Error, OperationOptions};
 
-/// Struct containing ArangoDB connections and information to access the database, collections and documents
+/// Struct containing `ArangoDB` connections and information to access the database, collections and documents
 #[derive(Clone, Debug)]
 pub struct DatabaseConnection {
     /// Map between a collection name and a `DatabaseCollection` instance
@@ -20,18 +20,18 @@ pub struct DatabaseConnection {
     operation_options: OperationOptions,
 }
 
-/// Defines which ArangoDB authentication mode will be used
-#[derive(Debug, Clone)]
+/// Defines which `ArangoDB` authentication mode will be used
+#[derive(Debug, Copy, Clone)]
 pub enum AuthMode {
     /// Basic Username/Password authentication mode
     Basic,
     /// Recommended JWT authentication.
     ///
     /// # Note:
-    /// The JWT has a 1 month validity (see [arangors_lite] documentation)
+    /// The JWT has a 1 month validity (see [`arangors_lite`] documentation)
     /// And can lead to issues on docker
     ///
-    /// [arangors_lite]: https://github.com/fMeow/arangors_lite
+    /// [`arangors_lite`]: https://github.com/fMeow/arangors_lite
     Jwt,
 }
 
@@ -145,7 +145,7 @@ impl DatabaseConnection {
     /// on collection truncate.
     #[maybe_async::maybe_async]
     pub async fn truncate(&self) {
-        for collection in self.collections.iter() {
+        for collection in &self.collections {
             collection.1.truncate().await.unwrap();
         }
     }
@@ -160,7 +160,7 @@ impl DatabaseConnection {
             schema.version.unwrap_or(0)
         );
         let mut collections = HashMap::new();
-        for collection in schema.collections.into_iter() {
+        for collection in schema.collections {
             let coll = collection.get(database).await?;
             collections.insert(collection.name, DatabaseCollection::from(coll));
         }

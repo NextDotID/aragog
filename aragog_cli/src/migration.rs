@@ -128,7 +128,7 @@ impl Migration {
             format!("Apply Migration {} ...", &self.name),
             LogLevel::Info,
         );
-        for operation in self.data.up.into_iter() {
+        for operation in self.data.up {
             operation.apply(db, silent)?;
         }
         db.schema.version = Some(self.version);
@@ -144,7 +144,7 @@ impl Migration {
             format!("Rollback Migration {} ...", &self.name),
             LogLevel::Info,
         );
-        for operation in self.data.down.unwrap_or_default().into_iter() {
+        for operation in self.data.down.unwrap_or_default() {
             operation.apply(db, false)?;
         }
         db.schema.version = Some(self.version - 1);

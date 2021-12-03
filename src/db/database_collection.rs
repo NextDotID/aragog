@@ -2,7 +2,7 @@ use crate::Error;
 use arangors_lite::Collection;
 use std::ops::Deref;
 
-/// Struct containing the connection information on a ArangoDB collection
+/// Struct containing the connection information on a `ArangoDB` collection
 #[derive(Debug, Clone)]
 pub struct DatabaseCollection {
     /// The collection wrapper accessor of `arangors_lite` crate driver

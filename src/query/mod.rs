@@ -69,7 +69,7 @@ impl Display for SortDirection {
     }
 }
 
-/// A query utility for ArangoDB to avoid writing simple AQL strings. After building can be rendered
+/// A query utility for `ArangoDB` to avoid writing simple AQL strings. After building can be rendered
 /// as an AQL string with the [`to_aql`] method.
 ///
 /// # Examples
@@ -309,7 +309,7 @@ impl Query {
         mut self,
         min: u16,
         max: u16,
-        mut query: Query,
+        mut query: Self,
         direction: GraphQueryDirection,
         named_graph: bool,
     ) -> Self {
@@ -351,7 +351,7 @@ impl Query {
     ///         return a\
     /// "));
     /// ```
-    pub fn join_outbound(self, min: u16, max: u16, named_graph: bool, query: Query) -> Self {
+    pub fn join_outbound(self, min: u16, max: u16, named_graph: bool, query: Self) -> Self {
         self.join(min, max, query, GraphQueryDirection::Outbound, named_graph)
     }
 
@@ -381,7 +381,7 @@ impl Query {
     ///         return a\
     /// "));
     /// ```
-    pub fn join_inbound(self, min: u16, max: u16, named_graph: bool, query: Query) -> Self {
+    pub fn join_inbound(self, min: u16, max: u16, named_graph: bool, query: Self) -> Self {
         self.join(min, max, query, GraphQueryDirection::Inbound, named_graph)
     }
 
@@ -411,7 +411,7 @@ impl Query {
     ///         return a\
     /// "));
     /// ```
-    pub fn join_any(self, min: u16, max: u16, named_graph: bool, query: Query) -> Self {
+    pub fn join_any(self, min: u16, max: u16, named_graph: bool, query: Self) -> Self {
         self.join(min, max, query, GraphQueryDirection::Any, named_graph)
     }
 
@@ -446,7 +446,7 @@ impl Query {
     ///
     /// If you add mutliple `sort` calls it will result in something like `SORT a.field, b.field, c.field`.
     /// If you separate the calls by a `limit` or other operation, the order will be respected and the resulting query
-    /// will look like `SORT a.field LIMIT 10 SORT b.field, c.field
+    /// will look like `SORT a.field LIMIT 10 SORT b.field, c.field`
     ///
     /// # Arguments
     ///
@@ -490,7 +490,7 @@ impl Query {
     ///
     /// # Note
     ///
-    /// The `prune` operation only works for graph queries (See ArangoDB documentation)
+    /// The `prune` operation only works for graph queries (See `ArangoDB` documentation)
     ///
     /// # Example
     ///
@@ -538,7 +538,7 @@ impl Query {
     ///     .filter(Filter::new(Comparison::field("age").greater_than(18)))
     ///     .distinct();
     /// ```
-    pub fn distinct(mut self) -> Self {
+    pub const fn distinct(mut self) -> Self {
         self.distinct = true;
         self
     }
@@ -560,8 +560,7 @@ impl Query {
     pub fn to_aql(&self) -> String {
         let collection_id = get_str_identifier(self.item_identifier);
         let mut res = self.with_collections.to_string();
-        if self.graph_data.is_some() {
-            let graph_data = self.graph_data.as_ref().unwrap();
+        if let Some(graph_data) = &self.graph_data {
             res = format!(
                 "{}FOR {} in {}..{} {} {} {}{}",
                 res,
@@ -579,8 +578,8 @@ impl Query {
         if !self.operations.0.is_empty() {
             res = format!("{} {}", res, self.operations.to_aql(&collection_id));
         }
-        if self.sub_query.is_some() {
-            res = format!("{} {}", res, self.sub_query.as_ref().unwrap())
+        if let Some(sub_query) = &self.sub_query {
+            res = format!("{} {}", res, sub_query);
         } else {
             res = format!(
                 "{} return {}{}",

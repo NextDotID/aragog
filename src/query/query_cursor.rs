@@ -53,6 +53,7 @@ pub struct QueryCursor<T> {
     pub(crate) cursor: Cursor<DatabaseRecord<T>>,
     pub(crate) database: Database,
     pub(crate) query: String,
+    #[cfg(feature = "blocking")]
     pending_result: Option<QueryResult<T>>,
 }
 
@@ -63,6 +64,7 @@ impl<T: Record> QueryCursor<T> {
         query: String,
     ) -> Self {
         Self {
+            #[cfg(feature = "blocking")]
             pending_result: Some(cursor.result.clone().into()),
             cursor,
             database,

@@ -5,7 +5,7 @@ authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
 ]
-edition = "2018"
+edition = "2021"
 description = "A simple lightweight object-document mapper for ArangoDB"
 keywords = ["ArangoDB", "Arango", "ORM", "ODM", "OGM"]
 exclude =  ["tests", ".gitlab-ci.yml", ".gitignore", "examples", "book", "docs", "book.toml"]
@@ -15,6 +15,7 @@ readme = "README.md"
 repository = "https://gitlab.com/qonfucius/aragog"
 documentation = "https://docs.rs/aragog"
 homepage = "https://aragog.rs"
+rust-version = "1.56.0"
 
 [features]
 default = ["derive", "openssl"]

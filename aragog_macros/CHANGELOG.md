@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* Clippy restrictions
+* Rust 2021 edition
+
 ## 0.7.2
 
 * Applied `ServiceError` -> `Error` rename

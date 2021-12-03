@@ -1,3 +1,4 @@
+#![allow(clippy::missing_const_for_fn)]
 use crate::Error;
 
 /// Output of a [`TransactionDatabaseConnection`][`safe_execute`]
@@ -14,7 +15,7 @@ pub enum TransactionOutput<T> {
 
 impl<T> TransactionOutput<T> {
     /// Was the transaction committed
-    pub fn is_committed(&self) -> bool {
+    pub const fn is_committed(&self) -> bool {
         matches!(self, TransactionOutput::Committed(_))
     }
 

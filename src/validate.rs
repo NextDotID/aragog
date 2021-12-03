@@ -39,9 +39,13 @@ use std::slice;
 /// ```
 /// [`Record`]: trait.Record.html
 pub trait Validate {
-    /// Validates the object field formats, logic or anything. Calls the [`validations`] method
-    /// and will render a complete [`Error`]::[`ValidationError`] on validation failure.
-    /// On success returns `()`
+    /// Validates the object field formats, logic or anything.
+    ///
+    /// Calls the [`validations`] method and return `()` on success.
+    ///
+    /// # Errors
+    ///
+    /// Will render a complete [`Error`]::[`ValidationError`] on validation failure.
     ///
     /// [`validations`]: trait.Validate.html#tymethod.validations
     /// [`Error`]: enum.Error.html
@@ -578,7 +582,7 @@ mod tests {
                     &mut errors
                 ));
                 assert!(errors.is_empty());
-                for wrong_str in wrong_strs.iter() {
+                for wrong_str in &wrong_strs {
                     assert!(!TestElem::validate_numeric_string(
                         STRING_EMPTY,
                         wrong_str,
@@ -606,7 +610,7 @@ mod tests {
                     "010203040005",
                 ];
 
-                for correct_str in correct_strs.iter() {
+                for correct_str in &correct_strs {
                     assert!(TestElem::validate_max_len(
                         STRING_EMPTY,
                         &String::from(correct_str.deref()),

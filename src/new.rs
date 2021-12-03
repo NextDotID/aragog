@@ -7,6 +7,9 @@ use crate::Error;
 /// [`Record`]: trait.Record.html
 pub trait New<T>: Sized {
     /// Instantiate and returns a new `Self` instance from `T`.
+    ///
+    /// # Errors
+    ///
     /// Can fail and return an error, the error is in most of the cases an [`Error`]::[`ValidationError`]
     /// on fields validation failure
     ///

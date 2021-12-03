@@ -103,7 +103,7 @@ impl Filter {
                 res,
                 comparison.to_aql(collection_id),
                 operator_str
-            )
+            );
         }
         String::from(res.trim_start())
     }

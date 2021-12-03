@@ -9,6 +9,7 @@ const LOCK_TIMEOUT: usize = 60000;
 /// Builder for Aragog [`Transaction`]
 ///
 /// [`Transaction`]: struct.Transaction.html
+#[derive(Debug, Default)]
 pub struct TransactionBuilder {
     collections: Option<Vec<String>>,
     wait_for_sync: Option<bool>,
@@ -31,13 +32,13 @@ impl TransactionBuilder {
     }
 
     /// The built transaction will wait for Database synchronization
-    pub fn wait_for_sync(mut self) -> Self {
+    pub const fn wait_for_sync(mut self) -> Self {
         self.wait_for_sync = Some(true);
         self
     }
 
     /// Defines the transaction lock timeout (default value: 60 000)
-    pub fn lock_timeout(mut self, lock_timeout: usize) -> Self {
+    pub const fn lock_timeout(mut self, lock_timeout: usize) -> Self {
         self.lock_timeout = Some(lock_timeout);
         self
     }
@@ -46,7 +47,7 @@ impl TransactionBuilder {
     /// By default the options set in the [`DatabaseConnection`] are used.
     ///
     /// [`DatabaseConnection`]: struct.DatabaseConnection.html
-    pub fn operation_options(mut self, options: OperationOptions) -> Self {
+    pub const fn operation_options(mut self, options: OperationOptions) -> Self {
         self.operation_options = Some(options);
         self
     }
@@ -73,7 +74,7 @@ impl TransactionBuilder {
             .await?;
         log::trace!("Initialized ArangoDB transaction {}", accessor.id());
         let mut collections = HashMap::new();
-        for collection in db_connection.collections().into_iter() {
+        for collection in db_connection.collections() {
             let inner_collection = collection.clone_with_transaction(accessor.id().clone())?;
             collections.insert(
                 collection.name().to_string(),
@@ -94,16 +95,5 @@ impl TransactionBuilder {
                 operation_options,
             },
         })
-    }
-}
-
-impl Default for TransactionBuilder {
-    fn default() -> Self {
-        Self {
-            collections: None,
-            wait_for_sync: None,
-            lock_timeout: None,
-            operation_options: None,
-        }
     }
 }

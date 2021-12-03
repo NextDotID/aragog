@@ -37,14 +37,8 @@ impl ParseOperation for HookOperation {
                 }
                 Self::Func(func)
             }
-            "db_access" => {
-                let value = expect_bool_lit(&lit)?;
-                Self::DbAccess(value)
-            }
-            "is_async" => {
-                let value = expect_bool_lit(&lit)?;
-                Self::IsAsync(value)
-            }
+            "db_access" => Self::DbAccess(expect_bool_lit(&lit)?),
+            "is_async" => Self::IsAsync(expect_bool_lit(&lit)?),
             _ => {
                 emit_error!(path.span(), "Can't find a valid operation");
                 return None;

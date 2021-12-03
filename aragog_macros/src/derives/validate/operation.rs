@@ -303,16 +303,15 @@ impl Operation {
             }
             Self::Function { func, field } => {
                 let func_ident = Ident::new(&func, Span::call_site());
-                match field {
-                    Some(field) => {
-                        let field_token = Self::field_token(&field, custom_token, false);
-                        quote! {
-                            Self::#func_ident(#field, &#field_token, errors);
-                        }
+                if let Some(field) = field {
+                    let field_token = Self::field_token(&field, custom_token, false);
+                    quote! {
+                        Self::#func_ident(#field, &#field_token, errors);
                     }
-                    None => quote! {
+                } else {
+                    quote! {
                         self.#func_ident(errors);
-                    },
+                    }
                 }
             }
         }

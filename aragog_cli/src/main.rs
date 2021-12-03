@@ -1,4 +1,14 @@
-// #![deny(warnings)]
+// TODO: unable this
+// #![forbid(unsafe_code)]
+#![warn(
+    clippy::all,
+    clippy::correctness,
+    clippy::suspicious,
+    clippy::style,
+    clippy::complexity,
+    clippy::perf,
+    nonstandard_style
+)]
 
 #[macro_use]
 extern crate prettytable;
@@ -92,7 +102,7 @@ fn handle_commands() -> Result<(), AragogCliError> {
                 );
                 db.drop_collection(&info.name)?;
             }
-            for graph in db.graphs()?.graphs.into_iter() {
+            for graph in db.graphs()?.graphs {
                 log(format!("Dropping Graph {}", &graph.name), LogLevel::Info);
                 db.drop_graph(&graph.name, false)?;
             }

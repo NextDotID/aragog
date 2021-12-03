@@ -36,12 +36,11 @@ impl HookData {
 
 impl ToTokenStream for HookData {
     fn token_stream(self) -> TokenStream {
-        let func = match self.func {
-            Some(f) => f,
-            None => {
-                emit_call_site_error!("Missing function for hook");
-                return TokenStream::new();
-            }
+        let func = if let Some(f) = self.func {
+            f
+        } else {
+            emit_call_site_error!("Missing function for hook");
+            return TokenStream::new();
         };
         #[cfg(feature = "blocking")]
         let is_async = false;
@@ -49,21 +48,23 @@ impl ToTokenStream for HookData {
         let is_async = self.is_async.unwrap_or(false);
         let db_access = self.database_access.unwrap_or(false);
         let func_ident = Ident::new(&func, Span::call_site());
-        let func = match db_access {
-            true => quote! {
+        let func = if db_access {
+            quote! {
                 self.#func_ident(db_accessor)
-            },
-            false => quote! {
+            }
+        } else {
+            quote! {
                 self.#func_ident()
-            },
+            }
         };
-        match is_async {
-            true => quote! {
+        if is_async {
+            quote! {
                 #func.await?;
-            },
-            false => quote! {
+            }
+        } else {
+            quote! {
               #func?;
-            },
+            }
         }
     }
 }

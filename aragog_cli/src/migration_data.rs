@@ -2,8 +2,7 @@ use crate::error::AragogCliError;
 use crate::migration_operation::MigrationOperation;
 
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::Read;
+use std::fs;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -15,9 +14,7 @@ pub struct MigrationData {
 
 impl MigrationData {
     pub fn load(file_path: &str) -> Result<Self, AragogCliError> {
-        let mut file = File::open(file_path)?;
-        let mut migration = String::new();
-        file.read_to_string(&mut migration)?;
+        let migration = fs::read_to_string(file_path)?;
         let res: Self = serde_yaml::from_str(&migration)?;
         Ok(res)
     }

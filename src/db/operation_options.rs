@@ -1,3 +1,4 @@
+#![allow(clippy::option_if_let_else)]
 use arangors_lite::document::options::{InsertOptions, RemoveOptions, UpdateOptions};
 
 #[derive(Clone, Debug)]
@@ -7,10 +8,10 @@ pub struct OperationOptions {
     ///
     /// If set on `true` the requests might be slower. By default, the collection behavior is picked
     pub wait_for_sync: Option<bool>,
-    /// Defines if aragog should ignore the ArangoDB document revision system (`_rev` field)
+    /// Defines if aragog should ignore the `ArangoDB` document revision system (`_rev` field)
     ///
     /// If set on `false` the requests might be slower. By default, `true` is used as it is the
-    /// default ArangoDB behaviour
+    /// default `ArangoDB` behaviour
     pub ignore_revs: bool,
     /// Defines if the operation should ignore [`Record`] hooks. By default set to `true`
     ///
@@ -20,19 +21,19 @@ pub struct OperationOptions {
 
 impl OperationOptions {
     /// Sets the `wait_for_sync` value
-    pub fn wait_for_sync(mut self, value: bool) -> Self {
+    pub const fn wait_for_sync(mut self, value: bool) -> Self {
         self.wait_for_sync = Some(value);
         self
     }
 
     /// Sets the `ignore_revs` value
-    pub fn ignore_revs(mut self, value: bool) -> Self {
+    pub const fn ignore_revs(mut self, value: bool) -> Self {
         self.ignore_revs = value;
         self
     }
 
     /// Sets the `ignore_hooks` value
-    pub fn ignore_hooks(mut self, value: bool) -> Self {
+    pub const fn ignore_hooks(mut self, value: bool) -> Self {
         self.ignore_hooks = value;
         self
     }

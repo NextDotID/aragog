@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* Clippy restrictions
+* Rust 2021 edition
+
 ## 0.4.0
 
 * Using `aragog` `rustls` new feature to avoid `openssl-sys` dependency

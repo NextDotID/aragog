@@ -91,15 +91,14 @@ impl Display for Error {
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Error::InternalError { .. } => None,
-            Error::ValidationError(_) => None,
-            Error::NotFound { source, .. } => source.as_ref().map(AsDynError::as_dyn_error),
+            Error::InternalError { .. } | Error::ValidationError(_) | Error::InitError { .. } => {
+                None
+            }
             Error::UnprocessableEntity { source } => Some(source.as_ref()),
-            Error::ArangoError(e) => Some(e),
-            Error::Conflict(e) => Some(e),
-            Error::InitError { .. } => None,
-            Error::Unauthorized(source) => source.as_ref().map(AsDynError::as_dyn_error),
-            Error::Forbidden(source) => source.as_ref().map(AsDynError::as_dyn_error),
+            Error::ArangoError(e) | Error::Conflict(e) => Some(e),
+            Error::Unauthorized(source)
+            | Error::Forbidden(source)
+            | Error::NotFound { source, .. } => source.as_ref().map(AsDynError::as_dyn_error),
         }
     }
 }
@@ -107,16 +106,14 @@ impl std::error::Error for Error {
 impl Error {
     /// get the matching http code
     #[allow(dead_code)]
-    pub fn http_code(&self) -> u16 {
+    pub const fn http_code(&self) -> u16 {
         match self {
             Self::ValidationError(_str) => 400,
             Self::UnprocessableEntity { .. } => 422,
             Self::NotFound { .. } => 404,
             Self::Forbidden(_) => 403,
             Self::Unauthorized(_) => 401,
-            Self::ArangoError(_db_error) => 500,
-            Self::InitError { .. } => 500,
-            Self::InternalError { .. } => 500,
+            Self::ArangoError(_) | Self::InitError { .. } | Self::InternalError { .. } => 500,
             Self::Conflict(_) => 409,
         }
     }
