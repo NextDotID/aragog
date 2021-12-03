@@ -712,7 +712,7 @@ impl Comparison {
     /// let b = Comparison::field("age").greater_than(10).and(Comparison::field("age").lesser_or_equal(18));
     /// assert_eq!(a.to_aql("i"), b.to_aql("i"));
     /// ```
-    pub fn and(self, comparison: Comparison) -> Filter {
+    pub fn and(self, comparison: Self) -> Filter {
         Filter::new(self).and(comparison)
     }
 
@@ -725,7 +725,7 @@ impl Comparison {
     /// let b = Comparison::field("age").greater_than(10).or(Comparison::field("age").lesser_or_equal(18));
     /// assert_eq!(a.to_aql("i"), b.to_aql("i"));
     /// ```
-    pub fn or(self, comparison: Comparison) -> Filter {
+    pub fn or(self, comparison: Self) -> Filter {
         Filter::new(self).or(comparison)
     }
 

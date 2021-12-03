@@ -14,7 +14,7 @@ mod transaction_builder;
 mod transaction_connection;
 mod transaction_output;
 
-/// Struct representing a ArangoDB transaction.
+/// Struct representing a `ArangoDB` transaction.
 ///
 /// Its `database_connection` is equivalent to a [`DatabaseConnection`] but for transactional operations.
 /// Use it instead of the classic connection to use the streaming transaction.
@@ -163,7 +163,7 @@ impl Transaction {
 
     /// Tries to abort all operations from the transaction.
     ///
-    /// If the operation succeeds, the ArangoDB transaction will be deleted and the current
+    /// If the operation succeeds, the `ArangoDB` transaction will be deleted and the current
     /// `Transaction` instance can't be used anymore.
     ///
     /// # Example
@@ -218,7 +218,11 @@ impl Transaction {
     }
 
     /// Allows to run multiple operations using the transaction connection. If an operation fails or an `Err`
-    /// is returned by the closure, all operations will be aborted
+    /// is returned by the closure, all operations will be aborted.
+    ///
+    /// # Errors
+    ///
+    /// The closure error is returned
     ///
     /// # Example
     ///
@@ -278,7 +282,11 @@ impl Transaction {
     }
 
     /// Allows to run multiple operations using the transaction connection. If an operation fails or an `Err`
-    /// is returned by the closure, all operations will be aborted
+    /// is returned by the closure, all operations will be aborted.
+    ///
+    /// # Errors
+    ///
+    /// The closure error is returned
     ///
     /// # Example
     ///
@@ -359,19 +367,7 @@ impl Transaction {
     /// This connection can be used exactly the same way was the classic database connection.
     ///
     /// [`DatabaseAccess`]: ../trait.DatabaseAccess.html
-    #[deprecated(
-        since = "0.12.0",
-        note = "Please use the `database_connection` function instead"
-    )]
-    pub fn pool(&self) -> &TransactionDatabaseConnection {
-        &self.database_connection
-    }
-
-    /// Retrieves the database connection of the transaction which implements [`DatabaseAccess`].
-    /// This connection can be used exactly the same way was the classic database connection.
-    ///
-    /// [`DatabaseAccess`]: ../trait.DatabaseAccess.html
-    pub fn database_connection(&self) -> &TransactionDatabaseConnection {
+    pub const fn database_connection(&self) -> &TransactionDatabaseConnection {
         &self.database_connection
     }
 }

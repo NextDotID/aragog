@@ -11,13 +11,13 @@
 //! [![Discord](https://img.shields.io/discord/763034131335741440.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Xyx3hUP)
 //! [![Gitter](https://badges.gitter.im/aragog-rs/community.svg)](https://gitter.im/aragog-rs/community)
 //!
-//! `aragog` is a fully featured ODM and OGM library for [ArangoDB][ArangoDB] using the [arangors_lite][arangors_lite] driver.
+//! `aragog` is a fully featured ODM and OGM library for [`ArangoDB`][ArangoDB] using the [`arangors_lite`][arangors_lite] driver.
 //!
-//! The main concept is to provide behaviors allowing to map your structs with ArangoDB documents as simply an lightly as possible.
+//! The main concept is to provide behaviors allowing to map your structs with `ArangoDB` documents as simply an lightly as possible.
 //! Inspired by Rails's [Active Record](https://github.com/rails/rails/tree/main/activerecord) library
 //! `aragog` also provides **hooks** and **validations** for your models.
 //!
-//! The crate also provides a powerful [AQL][AQL] querying tool allowing complex and safe ArangoDB queries in *Rust*.
+//! The crate also provides a powerful [AQL][AQL] querying tool allowing complex and safe `ArangoDB` queries in *Rust*.
 //!
 //! See the [official website](http://aragog.rs)
 //!
@@ -25,15 +25,15 @@
 //!
 //! ## Migrations CLI
 //!
-//! `aragog` provides a safe schema generation and migrations command line interface: [aragog_cli][CLI].
+//! `aragog` provides a safe schema generation and migrations command line interface: [`aragog_cli`][CLI].
 //!
 //! ## Features
 //!
 //! By now the available features are:
-//! * Creating a database connection from a defined `schema.yaml` (See [aragog_cli][CLI])
+//! * Creating a database connection from a defined `schema.yaml` (See [`aragog_cli`][CLI])
 //! * Structures can implement different behaviors:
-//!     * `Record`: The structure can be written and retrieved as an ArangoDB [collection document][collection_document]. This is the main trait for your models
-//!     * `EdgeRecord`: The structure can be written and retrieved as an ArangoDB [edge collection document][edge_document]
+//!     * `Record`: The structure can be written and retrieved as an `ArangoDB` [collection document][collection_document]. This is the main trait for your models
+//!     * `EdgeRecord`: The structure can be written and retrieved as an `ArangoDB` [edge collection document][edge_document]
 //!     * `Validate`: The structure can perform simple validations before being created or saved into the database.
 //!     * `Link`: The structure can define relations with other models based on defined queries.
 //!     * `ForeignLink`: The structure can define relations with other models based on defined foreign key.
@@ -50,7 +50,7 @@
 //!
 //! ### Schema and collections
 //!
-//! In order for everything to work you need a `schema.yaml` file. Use [aragog_cli][CLI] to create migrations and generate the file.
+//! In order for everything to work you need a `schema.yaml` file. Use [`aragog_cli`][CLI] to create migrations and generate the file.
 //!
 //! ### Creating a database connection
 //!
@@ -98,7 +98,7 @@
 //! The global architecture is simple, every *model* you define that can be synced with the database must implement `serde::Serialize`, `serde::Deserialize` and `Clone`.
 //! To declare a `struct` as a Model it must derive from `aragog::Record` (the collection name must be the same as the struct) or implement it.
 //!
-//! The final *model* structure will be an **Exact** representation of the content of a ArangoDB *document*, so without its `_key`, `_id` and `_rev`.
+//! The final *model* structure will be an **Exact** representation of the content of a `ArangoDB` *document*, so without its `_key`, `_id` and `_rev`.
 //! Your project should contain some `models` folder with every `struct` representation of your database documents.
 //!
 //! The real representation of a complete document is `DatabaseRecord<T>` where `T` is your model structure.
@@ -244,7 +244,7 @@
 //!
 //! ### Querying
 //!
-//! You can retrieve a document from the database as simply as it gets, from the unique ArangoDB `_key` or from multiple conditions.
+//! You can retrieve a document from the database as simply as it gets, from the unique `ArangoDB` `_key` or from multiple conditions.
 //! The example below show different ways to retrieve records, look at each function documentation for more exhaustive exaplanations.
 //!
 //! **Example**
@@ -370,7 +370,7 @@
 //! // Macro
 //! compare!(field "some_field").some_comparison("compared_value");
 //!
-//! // for field arrays (see ArangoDB operators)
+//! // for field arrays (see `ArangoDB` operators)
 //!
 //! // Explicit
 //! Comparison::all("some_field_array").some_comparison("compared_value");
@@ -387,7 +387,7 @@
 //! // Macro
 //! compare!(none "some_field_array").some_comparison("compared_value");
 //! ```
-//! All the currently implemented comparison methods are listed under [ComparisonBuilder][ComparisonBuilder] documentation page.
+//! All the currently implemented comparison methods are listed under [`ComparisonBuilder`][ComparisonBuilder] documentation page.
 //!
 //! Filters can be defined explicitely like this:
 //!
@@ -480,10 +480,19 @@
 //! [arango_doc]: https://www.arangodb.com/docs/stable/getting-started.html "Arango getting started"
 //! [AQL]: https://www.arangodb.com/docs/stable/aql/ "AQL"
 //!
-#![forbid(missing_docs)]
+#![doc(html_logo_url = "https://gitlab.com/qonfucius/aragog/-/snippets/2215922/raw/main/logo.svg")]
 #![forbid(unsafe_code)]
-#![deny(warnings)]
-// #![warn(rustdoc::broken_intra_doc_links)]
+#![warn(
+    clippy::all,
+    clippy::correctness,
+    clippy::suspicious,
+    clippy::style,
+    clippy::complexity,
+    clippy::perf,
+    nonstandard_style,
+    missing_docs,
+    rustdoc::broken_intra_doc_links
+)]
 
 pub extern crate async_trait;
 

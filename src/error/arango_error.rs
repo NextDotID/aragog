@@ -1,6 +1,7 @@
+#![allow(clippy::too_many_lines)]
 use thiserror::Error;
 
-/// Internal Aragog error based on ArangoDB error num
+/// Internal Aragog error based on `ArangoDB` error num
 #[derive(Debug, Clone, Error, PartialEq)]
 pub enum ArangoError {
     /// 1000 - ERROR_ARANGO_ILLEGAL_STATE
@@ -845,7 +846,7 @@ pub enum ArangoError {
     ValidationBadParameter,
     /// 1650 - ERROR_TRANSACTION_INTERNAL
     ///
-    /// Will be raised when a wrong usage of transactions is detected. this is an internal error and indicates a bug in ArangoDB.
+    /// Will be raised when a wrong usage of transactions is detected. this is an internal error and indicates a bug in `ArangoDB`.
     #[error("1650 - ERROR_TRANSACTION_INTERNAL")]
     TransactionInternalError,
     /// 1651 - ERROR_TRANSACTION_NESTED
@@ -879,7 +880,7 @@ pub enum ArangoError {
 }
 
 impl ArangoError {
-    pub(crate) fn from_error_num(num: u16) -> Self {
+    pub(crate) const fn from_error_num(num: u16) -> Self {
         match num {
             1000 => Self::ArangoIllegalState,
             1002 => Self::ArangoDatafileSealed,

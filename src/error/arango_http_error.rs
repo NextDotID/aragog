@@ -55,7 +55,7 @@ pub enum ArangoHttpError {
     ServiceUnavailable,
     /// 504 - ERROR_HTTP_GATEWAY_TIMEOUT
     ///
-    /// Will be raised when a service contacted by ArangoDB does not respond in a timely manner.
+    /// Will be raised when a service contacted by `ArangoDB` does not respond in a timely manner.
     #[error("504 - ERROR_HTTP_GATEWAY_TIMEOUT")]
     GatewayTimeout,
     /// 600 - ERROR_HTTP_CORRUPTED_JSON
@@ -73,7 +73,7 @@ pub enum ArangoHttpError {
     UnknownError(u16),
 }
 impl ArangoHttpError {
-    pub(crate) fn from_code(code: u16) -> Self {
+    pub(crate) const fn from_code(code: u16) -> Self {
         match code {
             400 => Self::BadParameter,
             401 => Self::Unauthorized,
@@ -93,7 +93,7 @@ impl ArangoHttpError {
     }
 
     /// The HTTP code matching the enum variant
-    pub fn http_code(&self) -> u16 {
+    pub const fn http_code(&self) -> u16 {
         match self {
             ArangoHttpError::BadParameter => 400,
             ArangoHttpError::Unauthorized => 401,

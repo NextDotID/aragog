@@ -28,11 +28,11 @@ build::default:
   cache:
     <<: *cache_template
 
-build::1.46:
+build::1.56.0:
   <<: *cache_pull_template
   needs:
     - build::default
-  image: rust:1.46
+  image: rust:1.56.0
   stage: build
   script:
     - cargo build
@@ -162,7 +162,7 @@ build::mdbook:
       - public
 
 build::website:
-  image: node:latest
+  image: node:lts
   stage: build_doc
   script:
       - cd docs/aragog-docs

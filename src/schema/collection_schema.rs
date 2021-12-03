@@ -1,3 +1,4 @@
+use arangors_lite::collection::options::CreateParameters;
 use arangors_lite::{
     collection::{options::CreateOptions, Collection, CollectionType},
     ClientError, Database,
@@ -6,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::schema::SchemaDatabaseOperation;
 
-/// Aragog schema representation of an ArangoDB Collection.
+/// Aragog schema representation of an `ArangoDB` Collection.
 /// This struct is meant to load/generate the schema file.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CollectionSchema {
@@ -53,7 +54,7 @@ impl SchemaDatabaseOperation for CollectionSchema {
             .wait_for_sync(true)
             .build();
         let res = database
-            .create_collection_with_options(creation_settings, Default::default())
+            .create_collection_with_options(creation_settings, CreateParameters::default())
             .await;
         Self::handle_pool_result(res, silent)
     }

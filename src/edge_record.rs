@@ -13,10 +13,10 @@ use std::ops::{Deref, DerefMut};
 /// [`Record`]: trait.Record.html
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EdgeRecord<T> {
-    /// The `_from` field of ArangoDB edge documents
+    /// The `_from` field of `ArangoDB` edge documents
     #[serde(rename(serialize = "_from", deserialize = "_from"))]
     from: String,
-    /// The `to` field of ArangoDB edge documents
+    /// The `to` field of `ArangoDB` edge documents
     #[serde(rename(serialize = "_to", deserialize = "_to"))]
     to: String,
     /// The main document data, must implement [`Record`].
@@ -37,7 +37,7 @@ impl<T: Record> EdgeRecord<T> {
     /// * `id_to` - The **to** document `id`
     /// * `data` - The main document data
     ///
-    /// # Failure
+    /// # Errors
     ///
     /// This function validates the format of the id fields which can result in an error.
     pub fn new(id_from: String, id_to: String, data: T) -> Result<Self, Error> {
@@ -82,7 +82,7 @@ impl<T: Record> EdgeRecord<T> {
 
     /// Parses the `from` value to retrieve only the `_key` part.
     ///
-    /// # Panic
+    /// # Panics
     ///
     /// This method may panic if the `from` value is not formatted correctly.
     pub fn key_from(&self) -> String {
@@ -91,7 +91,7 @@ impl<T: Record> EdgeRecord<T> {
 
     /// Parses the `to` value to retrieve only the `_key` part.
     ///
-    /// # Panic
+    /// # Panics
     ///
     /// This method may panic if the `to` value is not formatted correctly.
     pub fn key_to(&self) -> String {
@@ -100,7 +100,7 @@ impl<T: Record> EdgeRecord<T> {
 
     /// Parses the `from` value to retrieve only the collection name part.
     ///
-    /// # Panic
+    /// # Panics
     ///
     /// This method may panic if the `to` value is not formatted correctly.
     pub fn to_collection_name(&self) -> String {
@@ -109,7 +109,7 @@ impl<T: Record> EdgeRecord<T> {
 
     /// Parses the `to` value to retrieve only the collection name part.
     ///
-    /// # Panic
+    /// # Panics
     ///
     /// This method may panic if the `from` value is not formatted correctly.
     pub fn from_collection_name(&self) -> String {
@@ -118,7 +118,7 @@ impl<T: Record> EdgeRecord<T> {
 
     fn validate_edge_fields(&self, errors: &mut Vec<String>) {
         let array = [("from", self.id_from()), ("to", self.id_to())];
-        for (name, field) in array.iter() {
+        for (name, field) in array {
             let split = field.split('/').collect::<Vec<&str>>();
             if split.len() != 2 {
                 errors.push(format!(r#"{} "{}" has wrong format"#, name, field));

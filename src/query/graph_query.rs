@@ -24,7 +24,7 @@ impl Display for GraphQueryDirection {
             match self {
                 Self::Inbound => "INBOUND",
                 Self::Outbound => "OUTBOUND",
-                _ => "ANY",
+                Self::Any => "ANY",
             }
         )
     }

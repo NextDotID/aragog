@@ -41,7 +41,7 @@ pub fn discover_migration(
         }
     }
     for (name, _) in collections_to_create.iter() {
-        for index in db.indexes(name)?.indexes.into_iter() {
+        for index in db.indexes(name)?.indexes {
             let index: Index = index;
             if let IndexSettings::Primary { .. } | IndexSettings::Edge { .. } = index.settings {
                 continue;
@@ -61,7 +61,7 @@ pub fn discover_migration(
             )
         }
     }
-    for graph in db.graphs()?.graphs.into_iter() {
+    for graph in db.graphs()?.graphs {
         if db.schema.graph_index(&graph.name).is_none() {
             operations_up.push(MigrationOperation::CreateGraph {
                 name: graph.name.clone(),

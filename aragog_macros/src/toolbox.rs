@@ -2,61 +2,54 @@ use proc_macro2::Span;
 use syn::{spanned::Spanned, Field, Lit, Path};
 
 pub fn get_ident(path: &Path) -> Option<String> {
-    match path.get_ident() {
-        None => {
-            emit_error!(path.span(), "Expected identifier");
-            None
-        }
-        Some(i) => Some(i.to_string()),
+    let res = path.get_ident();
+    if res.is_none() {
+        emit_error!(path.span(), "Expected identifier");
     }
+    res.map(ToString::to_string)
 }
 
 pub fn expect_field_name(span: Span, field: Option<&Field>) -> Option<String> {
-    match field {
-        Some(v) => Some(v.ident.as_ref().unwrap().to_string()),
-        None => {
-            emit_error!(span, "This attribute must be placed on a field");
-            None
-        }
+    if let Some(v) = field {
+        Some(v.ident.as_ref().unwrap().to_string())
+    } else {
+        emit_error!(span, "This attribute must be placed on a field");
+        None
     }
 }
 
 pub fn expect_no_field_name(span: Span, field: Option<&Field>) -> Option<()> {
-    match field {
-        Some(_) => {
-            emit_error!(span, "This attribute must be placed on a field");
-            None
-        }
-        None => Some(()),
+    if field.is_some() {
+        emit_error!(span, "This attribute must be placed on a field");
+        None
+    } else {
+        Some(())
     }
 }
 
 pub fn expect_usize_lit(lit: &Lit) -> Option<usize> {
-    match lit {
-        Lit::Int(val) => Some(val.base10_parse().unwrap()),
-        _ => {
-            emit_error!(lit.span(), "Expected an usize value");
-            None
-        }
+    if let Lit::Int(val) = lit {
+        Some(val.base10_parse().unwrap())
+    } else {
+        emit_error!(lit.span(), "Expected an usize value");
+        None
     }
 }
 
 pub fn expect_str_lit(lit: &Lit) -> Option<String> {
-    match lit {
-        Lit::Str(val) => Some(val.value()),
-        _ => {
-            emit_error!(lit.span(), "Expected a string value");
-            None
-        }
+    if let Lit::Str(val) = lit {
+        Some(val.value())
+    } else {
+        emit_error!(lit.span(), "Expected a string value");
+        None
     }
 }
 
 pub fn expect_bool_lit(lit: &Lit) -> Option<bool> {
-    match lit {
-        Lit::Bool(val) => Some(val.value),
-        _ => {
-            emit_error!(lit.span(), "Expected a boolean value");
-            None
-        }
+    if let Lit::Bool(val) = lit {
+        Some(val.value)
+    } else {
+        emit_error!(lit.span(), "Expected a boolean value");
+        None
     }
 }

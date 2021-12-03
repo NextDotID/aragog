@@ -1,3 +1,4 @@
+#![allow(clippy::redundant_pub_crate)]
 use std::convert::{TryFrom, TryInto};
 
 use crate::schema::{DatabaseSchema, SCHEMA_DEFAULT_FILE_NAME, SCHEMA_DEFAULT_PATH};
@@ -91,8 +92,8 @@ impl DatabaseConnectionBuilder {
     /// The builder will use the following:
     /// - The schema will be loaded though `SCHEMA_PATH` env var or the default value: `./src/config/db/schema.yaml`
     /// - The credentials will be loaded through the following env vars:
-    ///     * `DB_HOST` - The ArangoDB host to connect to (`http://localhost:8529` by default or `http://arangodb:8529` on docker containers)
-    ///     * `DB_NAME` - The name of the ArangoDB database to connect to
+    ///     * `DB_HOST` - The `ArangoDB` host to connect to (`http://localhost:8529` by default or `http://arangodb:8529` on docker containers)
+    ///     * `DB_NAME` - The name of the `ArangoDB` database to connect to
     ///     * `DB_USER` - The username of a ArangoDb user with access to the database
     ///     * `DB_PASSWORD` - The password associated with `DB_USER`
     /// - The auth mode will be `AuthMode::Basic`
@@ -119,7 +120,7 @@ impl DatabaseConnectionBuilder {
         DatabaseConnection::new(database, schema, apply_schema, operation_options).await
     }
 
-    /// Specifies a custom authentication mode for ArangoDB connection.
+    /// Specifies a custom authentication mode for `ArangoDB` connection.
     ///
     /// If not specified `AuthMode::Basic` will be used.
     pub fn with_auth_mode(mut self, mode: AuthMode) -> Self {
@@ -131,13 +132,13 @@ impl DatabaseConnectionBuilder {
         self
     }
 
-    /// Specifies custom credentials for ArangoDB connection
+    /// Specifies custom credentials for `ArangoDB` connection
     ///
     /// # Arguments
     ///
-    /// * `db_host` - The ArangoDB host to connect to (`http://localhost:8529` by default or `http://arangodb:8529` on docker containers)
-    /// * `db_name` - The name of the ArangoDB database to connect to
-    /// * `db_user` - The username of a ArangoDb user with access to the database
+    /// * `db_host` - The `ArangoDB` host to connect to (`http://localhost:8529` by default or `http://arangodb:8529` on docker containers)
+    /// * `db_name` - The name of the `ArangoDB` database to connect to
+    /// * `db_user` - The username of a `ArangoDB` user with access to the database
     /// * `db_password` - The password associated with `db_user`
     pub fn with_credentials(
         mut self,
@@ -147,7 +148,7 @@ impl DatabaseConnectionBuilder {
         db_password: &str,
     ) -> Self {
         log::debug!(
-            "[Database Connection Builder] Custom credentials for ArangoDB host {} will be used",
+            "[Database Connection Builder] Custom credentials for `ArangoDB` host {} will be used",
             db_host
         );
         self.credentials = DbCredentialsOption::Custom(DbCredentials {
@@ -159,7 +160,7 @@ impl DatabaseConnectionBuilder {
         self
     }
 
-    /// Specifies a custom schema for ArangoDB initialization.
+    /// Specifies a custom schema for `ArangoDB` initialization.
     ///
     /// If not specified,`SCHEMA_PATH` env var will be used or the default value: `./src/config/db/schema.yaml`
     pub fn with_schema(mut self, schema: DatabaseSchema) -> Self {
@@ -178,7 +179,7 @@ impl DatabaseConnectionBuilder {
         self
     }
 
-    /// Specifies a custom schema path for ArangoDB initialization.
+    /// Specifies a custom schema path for `ArangoDB` initialization.
     ///
     /// If not specified,`SCHEMA_PATH` env var will be used or the default value: `./src/config/db/schema.yaml`
     pub fn with_schema_path(mut self, path: &str) -> Self {
@@ -217,7 +218,7 @@ impl DatabaseConnectionBuilder {
         self.schema.try_into()
     }
 
-    fn auth_mode(&self) -> AuthMode {
-        self.auth_mode.clone()
+    const fn auth_mode(&self) -> AuthMode {
+        self.auth_mode
     }
 }

@@ -64,7 +64,7 @@ where
         Err(error) => {
             let err = Error::from(error);
             if let Error::ArangoError(ref db_error) = err {
-                if let ArangoHttpError::NotFound = db_error.http_error {
+                if ArangoHttpError::NotFound == db_error.http_error {
                     return Err(Error::NotFound {
                         item: collection_name.to_string(),
                         id: key.to_string(),

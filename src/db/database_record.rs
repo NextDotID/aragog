@@ -871,7 +871,7 @@ impl<T: Record> DatabaseRecord<T> {
         }
     }
 
-    /// Getter for the Document `_id` built as `$collection_name/$_key
+    /// Getter for the Document `_id` built as `$collection_name/$_key`
     pub fn id(&self) -> &String {
         &self.id
     }
@@ -887,6 +887,7 @@ impl<T: Record> DatabaseRecord<T> {
     }
 }
 
+#[allow(clippy::used_underscore_binding)]
 impl<T: Record> From<Document<T>> for DatabaseRecord<T> {
     fn from(doc: Document<T>) -> Self {
         Self {

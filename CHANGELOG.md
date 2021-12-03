@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+* Rust 2021 edition
 * `openssl` explicit cargo feature
 * Improved book
+* Clippy restrictions
+* removed deprecated `Transaction::pool` method. Use `Transaction::database_connection`
 
 ## 0.15.0
 

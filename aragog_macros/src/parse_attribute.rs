@@ -28,12 +28,11 @@ pub trait ParseAttribute: Sized {
                     );
                     return None;
                 }
-                let nested_meta = match list.nested.first() {
-                    Some(m) => m,
-                    None => {
-                        emit_error!(list.span(), "Wrong format, empty parenthesis");
-                        return None;
-                    }
+                let nested_meta = if let Some(m) = list.nested.first() {
+                    m
+                } else {
+                    emit_error!(list.span(), "Wrong format, empty parenthesis");
+                    return None;
                 };
                 let value = OperationValue::parse(nested_meta)?;
                 Self::AttributeOperation::parse(&list.path, Some(value), self.field())?
@@ -55,11 +54,11 @@ pub trait ParseAttribute: Sized {
                         match nest {
                             NestedMeta::Meta(meta) => {
                                 if let Some(op) = cmd.parse_operation(meta) {
-                                    cmd.add_operation(meta.span(), op)
+                                    cmd.add_operation(meta.span(), op);
                                 }
                             }
                             NestedMeta::Lit(_) => {
-                                emit_error!(nest.span(), "Expected meta item, not a Rust Literal")
+                                emit_error!(nest.span(), "Expected meta item, not a Rust Literal");
                             }
                         }
                     }
@@ -68,7 +67,7 @@ pub trait ParseAttribute: Sized {
                     }
                 }
                 _ => {
-                    emit_error!(meta.span(), "Expected a meta list. Add valid operations")
+                    emit_error!(meta.span(), "Expected a meta list. Add valid operations");
                 }
             },
             Err(error) => emit_error!(

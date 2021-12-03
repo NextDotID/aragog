@@ -5,7 +5,7 @@ authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
 ]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 description = "CLI for Aragog Crate"
 exclude= ["example"]
@@ -13,6 +13,7 @@ categories = ["web-programming", "database"]
 repository = "https://gitlab.com/qonfucius/aragog/-/tree/master/aragog_cli"
 readme = "README.md"
 homepage = "https://aragog.rs"
+rust-version = "1.56.0"
 
 [[bin]]
 name = "aragog"

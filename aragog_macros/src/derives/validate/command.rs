@@ -46,8 +46,8 @@ impl ParseAttribute for ValidateCommand {
     fn field(&self) -> Option<String> {
         match &self.command_type {
             ValidateCommandType::Validate => None,
-            ValidateCommandType::ValidateField { field } => Some(field.clone()),
-            ValidateCommandType::ValidateFieldEach { field } => Some(field.clone()),
+            ValidateCommandType::ValidateField { field }
+            | ValidateCommandType::ValidateFieldEach { field } => Some(field.clone()),
         }
     }
 
@@ -87,7 +87,7 @@ impl ToTokenStream for ValidateCommand {
             ValidateCommandType::ValidateFieldEach { .. } => Some(Self::field_each_token()),
             _ => None,
         };
-        for operation in self.operations.into_iter() {
+        for operation in self.operations {
             let operation_quote = operation.token_stream(custom_token.clone());
             quote = quote! {
                #quote

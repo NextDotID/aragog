@@ -18,7 +18,7 @@ where
     for (i, element) in array.iter().enumerate() {
         array_str = format!("{}{}", array_str, element);
         if i < array.len() - 1 {
-            array_str += ", "
+            array_str += ", ";
         }
     }
     array_str
@@ -32,7 +32,7 @@ where
     for (i, element) in array.iter().enumerate() {
         array_str = format!(r#"{}"{}""#, array_str, element);
         if i < array.len() - 1 {
-            array_str += ", "
+            array_str += ", ";
         }
     }
     array_str += "]";

@@ -1,3 +1,4 @@
+#![allow(clippy::used_underscore_binding)]
 use crate::{DatabaseRecord, Error, Record};
 use arangors_lite::document::response::DocumentResponse;
 use serde::{Deserialize, Serialize};
@@ -5,12 +6,15 @@ use std::convert::TryInto;
 
 #[derive(Serialize, Deserialize)]
 pub struct DatabaseRecordDto<T> {
+    #[serde(rename(serialize = "_key", deserialize = "_key"))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    _key: Option<String>,
+    key: Option<String>,
+    #[serde(rename(serialize = "_key", deserialize = "_key"))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    _id: Option<String>,
+    id: Option<String>,
+    #[serde(rename(serialize = "_key", deserialize = "_key"))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    _rev: Option<String>,
+    rev: Option<String>,
     #[serde(flatten)]
     pub record: T,
 }
@@ -18,9 +22,9 @@ pub struct DatabaseRecordDto<T> {
 impl<T: Record> DatabaseRecordDto<T> {
     pub fn new(record: T) -> Self {
         Self {
-            _key: None,
-            _id: None,
-            _rev: None,
+            key: None,
+            id: None,
+            rev: None,
             record,
         }
     }
@@ -38,7 +42,7 @@ impl<T: Record> TryInto<DatabaseRecord<T>> for DocumentResponse<DatabaseRecord<T
                 Some(value) => Ok(value),
                 None => Err(Error::InternalError {
                     message: Some(format!(
-                        "Expected ArangoDB to return the new {} document",
+                        "Expected `ArangoDB` to return the new {} document",
                         header._id
                     )),
                 }),
@@ -61,7 +65,7 @@ impl<T: Record> TryInto<DatabaseRecord<T>> for DocumentResponse<DatabaseRecordDt
                     None => {
                         return Err(Error::InternalError {
                             message: Some(format!(
-                                "Expected ArangoDB to return the new {} document",
+                                "Expected `ArangoDB` to return the new {} document",
                                 header._id
                             )),
                         });

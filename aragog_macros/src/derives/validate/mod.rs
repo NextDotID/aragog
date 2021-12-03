@@ -14,15 +14,15 @@ pub fn impl_validate_macro(ast: &syn::DeriveInput) -> TokenStream {
 
     let mut commands = Vec::new();
     // We parse the struct attributes (#[validate(func("my_func"))])
-    for attr in ast.attrs.iter() {
+    for attr in &ast.attrs {
         ValidateCommand::parse_attribute(attr, None, &mut commands);
     }
     match ast.data.borrow() {
         Data::Struct(data) => {
             if let Fields::Named(named_fields) = data.fields.borrow() {
                 // We parse the field attributes
-                for field in named_fields.named.iter() {
-                    for attr in field.attrs.iter() {
+                for field in &named_fields.named {
+                    for attr in &field.attrs {
                         ValidateCommand::parse_attribute(attr, Some(field), &mut commands);
                     }
                 }
@@ -36,8 +36,8 @@ pub fn impl_validate_macro(ast: &syn::DeriveInput) -> TokenStream {
                         "validation attributes on enum variants are not supported"
                     );
                 }
-                for field in variant.fields.iter() {
-                    for attr in field.attrs.iter() {
+                for field in &variant.fields {
+                    for attr in &field.attrs {
                         emit_error!(
                             attr.span(),
                             "validation attributes on enum variants are not supported"
@@ -46,11 +46,11 @@ pub fn impl_validate_macro(ast: &syn::DeriveInput) -> TokenStream {
                 }
             }
         }
-        _ => {}
+        Data::Union(_) => {}
     }
 
     let mut validation_quote = quote! {};
-    for command in commands.into_iter() {
+    for command in commands {
         let operation = command.token_stream();
         validation_quote = quote! {
             #validation_quote

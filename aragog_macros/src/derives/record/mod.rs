@@ -16,10 +16,10 @@ pub fn impl_record_macro(ast: &syn::DeriveInput) -> TokenStream {
 
     let mut hooks = Vec::new();
     let mut collection_names = Vec::new();
-    for attr in ast.attrs.iter() {
+    for attr in &ast.attrs {
         Hook::parse_attribute(attr, None, &mut hooks);
         if let Some(cn) = CollectionNameAttribute::parse_attribute(attr) {
-            collection_names.push(cn)
+            collection_names.push(cn);
         }
     }
     if collection_names.len() > 1 {

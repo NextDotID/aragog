@@ -3,7 +3,7 @@ use arangors_lite::graph::Graph;
 use arangors_lite::{ClientError, Database};
 use serde::{Deserialize, Serialize};
 
-/// Aragog schema representation of an ArangoDB Named Graph.
+/// Aragog schema representation of an `ArangoDB` Named Graph.
 /// This struct is meant to load/generate the schema file.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GraphSchema(pub Graph);

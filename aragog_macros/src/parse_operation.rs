@@ -40,23 +40,19 @@ pub trait ParseOperation: Sized {
     fn parse(path: &Path, lit: Option<OperationValue>, field: Option<String>) -> Option<Self>;
 
     fn expect_no_field(path: &Path, field: Option<String>) -> Option<()> {
-        match field {
-            None => Some(()),
-            Some(_) => {
-                emit_error!(path.span(), "This operation can't be placed on a field");
-                None
-            }
+        if field.is_none() {
+            Some(())
+        } else {
+            emit_error!(path.span(), "This operation can't be placed on a field");
+            None
         }
     }
 
     fn expect_field(path: &Path, field: Option<String>) -> Option<String> {
-        match field {
-            None => {
-                emit_error!(path.span(), "This operation must be placed on a field");
-                None
-            }
-            Some(f) => Some(f),
+        if field.is_none() {
+            emit_error!(path.span(), "This operation must be placed on a field");
         }
+        field
     }
 
     fn expect_literal_value(path: &Path, value: Option<OperationValue>) -> Option<Lit> {
@@ -70,22 +66,18 @@ pub trait ParseOperation: Sized {
     }
 
     fn expect_value(path: &Path, value: Option<OperationValue>) -> Option<OperationValue> {
-        match value {
-            Some(v) => Some(v),
-            None => {
-                emit_error!(path.span(), "Operation requires value");
-                None
-            }
+        if value.is_none() {
+            emit_error!(path.span(), "Operation requires value");
         }
+        value
     }
 
     fn expect_no_value(value: Option<OperationValue>) -> Option<()> {
-        match value {
-            Some(l) => {
-                emit_error!(l.span(), "Unexpected value");
-                None
-            }
-            None => Some(()),
+        if let Some(l) = value {
+            emit_error!(l.span(), "Unexpected value");
+            None
+        } else {
+            Some(())
         }
     }
 }

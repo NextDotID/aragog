@@ -3,7 +3,7 @@ use arangors_lite::index::{Index, IndexSettings};
 use arangors_lite::{ClientError, Database};
 use serde::{Deserialize, Serialize};
 
-/// Aragog schema representation of an ArangoDB Index.
+/// Aragog schema representation of an `ArangoDB` Index.
 /// This struct is meant to load/generate the schema file.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IndexSchema {
