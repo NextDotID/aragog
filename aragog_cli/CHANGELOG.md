@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
 
+* Bumped clap dependency to release candidates
 * Clippy restrictions
 * Rust 2021 edition
 
