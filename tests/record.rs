@@ -617,7 +617,7 @@ mod collection_name {
 mod all_hooks {
     use super::*;
 
-    #[derive(Serialize, Deserialize, Clone, Record)]
+    #[derive(Serialize, Deserialize, Clone, Record, Default)]
     #[before_create(func = "before_create")]
     #[before_save(func = "before_save")]
     #[before_delete(func = "before_delete")]
@@ -681,23 +681,6 @@ mod all_hooks {
         fn after_all(&mut self) -> Result<(), Error> {
             self.after_all_count += 1;
             Ok(())
-        }
-    }
-
-    impl Default for Dish {
-        fn default() -> Self {
-            Self {
-                before_create_count: 0,
-                before_save_count: 0,
-                before_delete_count: 0,
-                before_write_count: 0,
-                before_all_count: 0,
-                after_create_count: 0,
-                after_save_count: 0,
-                after_delete_count: 0,
-                after_write_count: 0,
-                after_all_count: 0,
-            }
         }
     }
 
