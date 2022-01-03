@@ -73,20 +73,24 @@ impl QueryResult<UndefinedRecord> {
     /// # }
     /// ```
     pub fn get_records<T: Record>(&self) -> QueryResult<T> {
-        let mut res = Vec::new();
-        for db_record in self.iter() {
-            let doc = serde_json::from_value(db_record.0.clone());
-            if let Ok(record) = doc {
-                res.push(DatabaseRecord {
-                    key: db_record.key.clone(),
-                    id: db_record.id.clone(),
-                    rev: db_record.rev.clone(),
-                    record,
-                });
-            }
-            continue;
-        }
-        res.into()
+        self.iter()
+            .filter_map(|db_record| {
+                serde_json::from_value(db_record.0.clone())
+                    .ok()
+                    .map(|record| DatabaseRecord {
+                        key: db_record.key.clone(),
+                        id: db_record.id.clone(),
+                        rev: db_record.rev.clone(),
+                        record,
+                    })
+            })
+            .collect()
+    }
+}
+
+impl<T: Record> FromIterator<DatabaseRecord<T>> for QueryResult<T> {
+    fn from_iter<I: IntoIterator<Item = DatabaseRecord<T>>>(iter: I) -> Self {
+        Self::new(iter.into_iter().collect())
     }
 }
 

@@ -1,6 +1,6 @@
 [package]
 name = "aragog_cli"
-version = "0.5.0"
+version = "0.5.1"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -42,10 +42,10 @@ thiserror = "1.0"
 exitcode = "1.1"
 
 # CLI lib
-clap_generate = "3.0.0-rc"
+clap_complete = "3.0"
 
 [dependencies.clap]
-version = "3.0.0-rc"
+version = "3.0"
 features = ["derive"]
 
 [dependencies.aragog]

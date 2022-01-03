@@ -73,11 +73,9 @@ pub trait ParseOperation: Sized {
     }
 
     fn expect_no_value(value: Option<OperationValue>) -> Option<()> {
-        if let Some(l) = value {
-            emit_error!(l.span(), "Unexpected value");
+        value.map_or(Some(()), |v| {
+            emit_error!(v.span(), "Unexpected value");
             None
-        } else {
-            Some(())
-        }
+        })
     }
 }

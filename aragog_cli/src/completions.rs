@@ -1,7 +1,7 @@
 use crate::app::AragogCliApp;
 use clap::{App, ArgEnum, IntoApp, Parser};
-use clap_generate::generators::{Bash, Elvish, Fish, PowerShell, Zsh};
-use clap_generate::{generate, Generator};
+use clap_complete::Shell::{Bash, Elvish, Fish, PowerShell, Zsh};
+use clap_complete::{generate, Generator};
 
 #[derive(Parser, Debug)]
 pub struct CompletionOptions {
