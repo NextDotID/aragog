@@ -1,4 +1,4 @@
-// TODO: unable this
+// TODO: enable this
 // #![forbid(unsafe_code)]
 #![warn(
     clippy::all,
