@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1
+
+* `clap` v3.0.0
+* clippy cleanup
+
 ## 0.5.0
 
 * Bumped clap dependency to release candidates

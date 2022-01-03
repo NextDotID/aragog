@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.16.1
+
+* Clippy fixes
+* `aragog_macros` 0.7.3
+
+## 0.16.0
 
 * Rust 2021 edition
 * `openssl` explicit cargo feature

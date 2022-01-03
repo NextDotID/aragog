@@ -10,12 +10,13 @@ pub fn get_ident(path: &Path) -> Option<String> {
 }
 
 pub fn expect_field_name(span: Span, field: Option<&Field>) -> Option<String> {
-    if let Some(v) = field {
-        Some(v.ident.as_ref().unwrap().to_string())
-    } else {
-        emit_error!(span, "This attribute must be placed on a field");
-        None
-    }
+    field.map_or_else(
+        || {
+            emit_error!(span, "This attribute must be placed on a field");
+            None
+        },
+        |v| Some(v.ident.as_ref().unwrap().to_string()),
+    )
 }
 
 pub fn expect_no_field_name(span: Span, field: Option<&Field>) -> Option<()> {

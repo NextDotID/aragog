@@ -3,9 +3,8 @@ use crate::error::AragogCliError;
 use crate::migration::Migration;
 use crate::migration_operation::MigrationOperation;
 use crate::versioned_database::VersionedDatabase;
-use arangors_lite::collection::response::Info;
-use arangors_lite::collection::CollectionType;
-use arangors_lite::index::{Index, IndexSettings};
+use arangors_lite::collection::{response::Info, CollectionType};
+use arangors_lite::index::IndexSettings;
 
 pub fn discover_migration(
     db: &mut VersionedDatabase,
@@ -22,45 +21,44 @@ pub fn discover_migration(
         .map(|i| (i.name, matches!(i.collection_type, CollectionType::Edge)))
         .collect();
     let mut migration = Migration::new("discover_migration", &config.schema_path, false)?;
-    let mut operations_up = Vec::new();
-    let mut operations_down = Vec::new();
 
-    for (name, is_edge) in collections_to_create.iter() {
-        if *is_edge {
-            operations_up.push(MigrationOperation::CreateEdgeCollection {
-                name: name.clone(),
-                wait_for_sync: None,
-            });
-            operations_down.push(MigrationOperation::DeleteEdgeCollection { name: name.clone() });
-        } else {
-            operations_up.push(MigrationOperation::CreateCollection {
-                name: name.clone(),
-                wait_for_sync: None,
-            });
-            operations_down.push(MigrationOperation::DeleteCollection { name: name.clone() });
-        }
-    }
-    for (name, _) in collections_to_create.iter() {
-        for index in db.indexes(name)?.indexes {
-            let index: Index = index;
-            if let IndexSettings::Primary { .. } | IndexSettings::Edge { .. } = index.settings {
-                continue;
+    let (mut operations_up, mut operations_down) = collections_to_create.iter().try_fold(
+        (vec![], vec![]),
+        |(mut up, mut down), (name, is_edge)| {
+            if *is_edge {
+                up.push(MigrationOperation::CreateEdgeCollection {
+                    name: name.clone(),
+                    wait_for_sync: None,
+                });
+                down.push(MigrationOperation::DeleteEdgeCollection { name: name.clone() });
+            } else {
+                up.push(MigrationOperation::CreateCollection {
+                    name: name.clone(),
+                    wait_for_sync: None,
+                });
+                down.push(MigrationOperation::DeleteCollection { name: name.clone() });
             }
-            operations_up.push(MigrationOperation::CreateIndex {
-                name: index.name.clone(),
-                collection: name.clone(),
-                fields: index.fields,
-                settings: index.settings,
-            });
-            operations_down.insert(
-                0,
-                MigrationOperation::DeleteIndex {
-                    name: index.name,
+            for index in db.indexes(name)?.indexes {
+                if let IndexSettings::Primary { .. } | IndexSettings::Edge { .. } = index.settings {
+                    continue;
+                }
+                up.push(MigrationOperation::CreateIndex {
+                    name: index.name.clone(),
                     collection: name.clone(),
-                },
-            )
-        }
-    }
+                    fields: index.fields,
+                    settings: index.settings,
+                });
+                down.insert(
+                    0,
+                    MigrationOperation::DeleteIndex {
+                        name: index.name,
+                        collection: name.clone(),
+                    },
+                )
+            }
+            Result::<_, AragogCliError>::Ok((up, down))
+        },
+    )?;
     for graph in db.graphs()?.graphs {
         if db.schema.graph_index(&graph.name).is_none() {
             operations_up.push(MigrationOperation::CreateGraph {

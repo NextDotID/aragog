@@ -56,7 +56,7 @@ impl From<serde_yaml::Error> for AragogCliError {
 }
 
 impl AragogCliError {
-    pub fn exit_code(&self) -> ExitCode {
+    pub const fn exit_code(&self) -> ExitCode {
         match self {
             Self::InvalidFileName { .. } | Self::ParsingError { .. } => exitcode::DATAERR,
             Self::IOError { .. } => exitcode::IOERR,
