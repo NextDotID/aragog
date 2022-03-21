@@ -8,6 +8,8 @@ pub struct QueryResult<T>(pub Vec<DatabaseRecord<T>>);
 
 impl<T: Clone + Record> QueryResult<T> {
     /// Instantiates a new `QueryResult` from a document collection
+    #[must_use]
+    #[inline]
     pub fn new(documents: Vec<DatabaseRecord<T>>) -> Self {
         Self(documents)
     }
@@ -41,6 +43,7 @@ impl<T: Clone + Record> QueryResult<T> {
     }
 
     /// Consumes and returns the first document of the current `QueryResult`
+    #[must_use]
     pub fn first_record(self) -> Option<DatabaseRecord<T>> {
         self.0.into_iter().next()
     }
@@ -72,6 +75,7 @@ impl QueryResult<UndefinedRecord> {
     /// let role_results = json_results.get_records::<Role>();
     /// # }
     /// ```
+    #[must_use]
     pub fn get_records<T: Record>(&self) -> QueryResult<T> {
         self.iter()
             .filter_map(|db_record| {

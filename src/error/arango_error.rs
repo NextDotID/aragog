@@ -2,7 +2,7 @@
 use thiserror::Error;
 
 /// Internal Aragog error based on `ArangoDB` error num
-#[derive(Debug, Clone, Error, PartialEq)]
+#[derive(Debug, Copy, Clone, Error, PartialEq)]
 pub enum ArangoError {
     /// 1000 - ERROR_ARANGO_ILLEGAL_STATE
     ///
@@ -880,6 +880,8 @@ pub enum ArangoError {
 }
 
 impl ArangoError {
+    #[must_use]
+    #[inline]
     pub(crate) const fn from_error_num(num: u16) -> Self {
         match num {
             1000 => Self::ArangoIllegalState,

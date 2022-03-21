@@ -40,6 +40,6 @@ mod tests {
         assert_eq!(get_str_identifier(132), "aaa");
         assert_eq!(get_str_identifier(133), "aab");
 
-        assert_eq!(get_str_identifier(1000000), "fbcceb");
+        assert_eq!(get_str_identifier(1_000_000), "fbcceb");
     }
 }

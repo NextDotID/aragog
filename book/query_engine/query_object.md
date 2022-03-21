@@ -18,7 +18,7 @@ You can customize the query with the following methods:
 
 Then you can call a query in the following ways:
 * `query.call::<Object>(&database_connection)`
-* `Object::get(query, &database_connection`
+* `Object::get(&query, &database_connection`
 
 Which will return a `JsonQueryResult` containing a `Vec` of `serde_json::Value`.
 `JsonQueryResult` can return deserialized models as `DatabaseRecord` by calling `.get_records::<T>()`

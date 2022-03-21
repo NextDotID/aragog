@@ -34,6 +34,6 @@ impl Display for LogLevel {
             LogLevel::Debug => "[Debug]",
             LogLevel::Verbose => "[Trace]",
         };
-        write!(f, "{}", format!("[Aragog]{}", str))
+        write!(f, "[Aragog]{}", str)
     }
 }

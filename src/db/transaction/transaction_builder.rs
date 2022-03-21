@@ -21,23 +21,31 @@ impl TransactionBuilder {
     /// Instantiates a new builder for a [`Transaction`]
     ///
     /// [`Transaction`]: struct.Transaction.html
+    #[must_use]
+    #[inline]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// The built transaction will be restricted to the specified collection names
+    #[must_use]
+    #[inline]
     pub fn collections(mut self, collections: Vec<String>) -> Self {
         self.collections = Some(collections);
         self
     }
 
     /// The built transaction will wait for Database synchronization
+    #[must_use]
+    #[inline]
     pub const fn wait_for_sync(mut self) -> Self {
         self.wait_for_sync = Some(true);
         self
     }
 
     /// Defines the transaction lock timeout (default value: 60 000)
+    #[must_use]
+    #[inline]
     pub const fn lock_timeout(mut self, lock_timeout: usize) -> Self {
         self.lock_timeout = Some(lock_timeout);
         self
@@ -47,6 +55,8 @@ impl TransactionBuilder {
     /// By default the options set in the [`DatabaseConnection`] are used.
     ///
     /// [`DatabaseConnection`]: struct.DatabaseConnection.html
+    #[must_use]
+    #[inline]
     pub const fn operation_options(mut self, options: OperationOptions) -> Self {
         self.operation_options = Some(options);
         self

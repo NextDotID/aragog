@@ -33,6 +33,7 @@ pub trait DatabaseAccess: Sync {
     /// [`create`]: struct.DatabaseRecord.html#method.create
     /// [`save`]: struct.DatabaseRecord.html#method.save
     /// [`delete`]: struct.DatabaseRecord.html#method.delete
+    #[must_use]
     fn operation_options(&self) -> OperationOptions {
         OperationOptions::default()
     }
@@ -50,6 +51,7 @@ pub trait DatabaseAccess: Sync {
     }
 
     /// Retrieves the database object
+    #[must_use]
     fn database(&self) -> &Database;
 
     /// Runs an AQL query and returns the found documents as undefined records.
@@ -64,8 +66,8 @@ pub trait DatabaseAccess: Sync {
     /// [`Record`]: trait.Record.html
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`get`]: struct.DatabaseRecord.html#method.get
-    async fn query(&self, query: Query) -> Result<QueryResult<UndefinedRecord>, Error> {
-        query_records(self, query.to_aql().as_str()).await
+    async fn query(&self, query: &Query) -> Result<QueryResult<UndefinedRecord>, Error> {
+        query_records(self, query.aql_str().as_str()).await
     }
 
     /// Runs an AQL query using batches and returns a cursor on the found documents as undefined records.
@@ -82,9 +84,9 @@ pub trait DatabaseAccess: Sync {
     /// [`get_in_batches`]: struct.DatabaseRecord.html#method.get_in_batches
     async fn query_in_batches(
         &self,
-        query: Query,
+        query: &Query,
         batch_size: u32,
     ) -> Result<QueryCursor<UndefinedRecord>, Error> {
-        query_records_in_batches(self, query.to_aql().as_str(), batch_size).await
+        query_records_in_batches(self, query.aql_str().as_str(), batch_size).await
     }
 }

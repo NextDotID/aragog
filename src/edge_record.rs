@@ -71,11 +71,13 @@ impl<T: Record> EdgeRecord<T> {
     }
 
     /// Retrieves the document `_from` field, storing the target documents `id`.
+    #[must_use]
     pub fn id_from(&self) -> &String {
         &self.from
     }
 
     /// Retrieves the document `_to` field, storing the target documents `id`.
+    #[must_use]
     pub fn id_to(&self) -> &String {
         &self.to
     }
@@ -85,6 +87,7 @@ impl<T: Record> EdgeRecord<T> {
     /// # Panics
     ///
     /// This method may panic if the `from` value is not formatted correctly.
+    #[must_use]
     pub fn key_from(&self) -> String {
         self.id_from().split('/').last().unwrap().to_string()
     }
@@ -94,6 +97,7 @@ impl<T: Record> EdgeRecord<T> {
     /// # Panics
     ///
     /// This method may panic if the `to` value is not formatted correctly.
+    #[must_use]
     pub fn key_to(&self) -> String {
         self.id_to().split('/').last().unwrap().to_string()
     }
@@ -103,6 +107,7 @@ impl<T: Record> EdgeRecord<T> {
     /// # Panics
     ///
     /// This method may panic if the `to` value is not formatted correctly.
+    #[must_use]
     pub fn to_collection_name(&self) -> String {
         self.id_to().split('/').next().unwrap().to_string()
     }
@@ -112,6 +117,7 @@ impl<T: Record> EdgeRecord<T> {
     /// # Panics
     ///
     /// This method may panic if the `from` value is not formatted correctly.
+    #[must_use]
     pub fn from_collection_name(&self) -> String {
         self.id_from().split('/').next().unwrap().to_string()
     }

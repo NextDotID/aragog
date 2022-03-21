@@ -21,18 +21,24 @@ pub struct OperationOptions {
 
 impl OperationOptions {
     /// Sets the `wait_for_sync` value
+    #[inline]
+    #[must_use]
     pub const fn wait_for_sync(mut self, value: bool) -> Self {
         self.wait_for_sync = Some(value);
         self
     }
 
     /// Sets the `ignore_revs` value
+    #[inline]
+    #[must_use]
     pub const fn ignore_revs(mut self, value: bool) -> Self {
         self.ignore_revs = value;
         self
     }
 
     /// Sets the `ignore_hooks` value
+    #[inline]
+    #[must_use]
     pub const fn ignore_hooks(mut self, value: bool) -> Self {
         self.ignore_hooks = value;
         self

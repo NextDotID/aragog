@@ -61,7 +61,7 @@ mod transaction_output;
 /// assert!(result.is_committed());
 /// // We retrieve our document from the classic connection to check if it worked
 /// let result = User::get(
-///     User::query().filter(Comparison::field("field1").equals_str("not foo").into()),
+///     &User::query().filter(Comparison::field("field1").equals_str("not foo").into()),
 ///     &db_connection
 /// ).await.unwrap();
 /// assert_eq!(result.len(), 1);
@@ -82,6 +82,8 @@ pub struct Transaction {
 
 impl Transaction {
     /// Transaction unique identifier
+    #[must_use]
+    #[inline]
     pub fn id(&self) -> &str {
         self.accessor.id()
     }
@@ -367,6 +369,8 @@ impl Transaction {
     /// This connection can be used exactly the same way was the classic database connection.
     ///
     /// [`DatabaseAccess`]: ../trait.DatabaseAccess.html
+    #[must_use]
+    #[inline]
     pub const fn database_connection(&self) -> &TransactionDatabaseConnection {
         &self.database_connection
     }

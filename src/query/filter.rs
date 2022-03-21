@@ -22,9 +22,7 @@ impl Display for Operator {
 }
 
 /// Allows to filter a query according to different [`Comparison`].
-/// as an AQL string with the [`to_aql`] method.
 ///
-/// [`to_aql`]: struct.Filter.html#method.to_aql
 /// [`Comparison`]: struct.Comparison.html
 #[derive(Clone, Debug)]
 pub struct Filter {
@@ -41,6 +39,8 @@ impl Filter {
     /// # use aragog::query::{Comparison, Filter};
     /// let filter = Filter::new(Comparison::field("age").greater_than(10));
     /// ```
+    #[must_use]
+    #[inline]
     pub fn new(comparison: Comparison) -> Self {
         Self {
             comparisons: vec![comparison],
@@ -58,6 +58,8 @@ impl Filter {
     /// filter = filter.and(Comparison::field("username").in_str_array(&["felix", "felixm"]));
     /// ```
     ///
+    #[must_use]
+    #[inline]
     pub fn and(mut self, comparison: Comparison) -> Self {
         self.comparisons.push(comparison);
         self.operators.push(Operator::And);
@@ -74,6 +76,8 @@ impl Filter {
     /// filter = filter.or(Comparison::field("username").in_str_array(&["felix", "felixm"]));
     /// ```
     ///
+    #[must_use]
+    #[inline]
     pub fn or(mut self, comparison: Comparison) -> Self {
         self.comparisons.push(comparison);
         self.operators.push(Operator::Or);
@@ -90,18 +94,35 @@ impl Filter {
     ///     or(Comparison::field("username").in_str_array(&["felix", "felixm"]));
     /// assert_eq!(filter.to_aql("i"), String::from(r#"i.age > 10 || i.username IN ["felix", "felixm"]"#));
     /// ```
+    #[must_use]
+    #[deprecated(note = "use `aql_str` instead")]
     pub fn to_aql(&self, collection_id: &str) -> String {
+        self.aql_str(collection_id)
+    }
+
+    /// Renders the AQL string corresponding to the current `Filter`. The query will go out of scope.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::{Comparison, Filter};
+    /// let mut filter = Filter::new(Comparison::field("age").greater_than(10)).
+    ///     or(Comparison::field("username").in_str_array(&["felix", "felixm"]));
+    /// assert_eq!(filter.aql_str("i"), String::from(r#"i.age > 10 || i.username IN ["felix", "felixm"]"#));
+    /// ```
+    #[must_use]
+    pub fn aql_str(&self, collection_id: &str) -> String {
         let mut res = String::new();
         for (i, comparison) in self.comparisons.iter().enumerate() {
             let operator_str = if i >= self.operators.len() {
                 String::new()
             } else {
-                format!(" {}", self.operators[i].to_string())
+                format!(" {}", self.operators[i])
             };
             res = format!(
                 "{} {}{}",
                 res,
-                comparison.to_aql(collection_id),
+                comparison.aql_str(collection_id),
                 operator_str
             );
         }

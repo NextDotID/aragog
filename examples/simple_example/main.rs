@@ -140,12 +140,11 @@ async fn main() {
         Filter::new(compare!(field "last_name").equals_str("Surcouf"))
             .and(Comparison::field("age").greater_than(15)),
     );
-    let query_b = query.clone();
     // Call the query and get safe JSON results to parse
     let json_result = query.call(&db_connection).await.unwrap();
     let _user_results = json_result.get_records::<User>();
     // OR Retrieve only the USer records (unsafe on graph queries)
-    let _user_results = User::get(query_b, &db_connection).await.unwrap();
+    let _user_results = User::get(&query, &db_connection).await.unwrap();
 
     // Get an unique record (fails otherwise):
     let _user = _user_results.uniq().unwrap();

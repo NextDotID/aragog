@@ -280,16 +280,15 @@
 //! // .. Generate a query and..
 //! let query = User::query().filter(Filter::new(Comparison::field("last_name").equals_str("Surcouf")).and(Comparison::field("age").greater_than(15)));
 //! // get the only record (fails if no or multiple records)
-//! let user_record = User::get(query, &database_connection).await.unwrap().uniq().unwrap();
+//! let user_record = User::get(&query, &database_connection).await.unwrap().uniq().unwrap();
 //!
 //! // Find all users with multiple conditions
 //! let query = User::query().filter(Filter::new(Comparison::field("last_name").like("%Surc%")).and(Comparison::field("age").in_array(&[15,16,17,18])));
-//! let clone_query = query.clone(); // we clone the query
 //!
 //! // This syntax is valid...
-//! let user_records = User::get(query, &database_connection).await.unwrap();
+//! let user_records = User::get(&query, &database_connection).await.unwrap();
 //! // ... This one too
-//! let user_records = clone_query.call(&database_connection).await.unwrap().get_records::<User>();
+//! let user_records = query.call(&database_connection).await.unwrap().get_records::<User>();
 //! # }
 //! ```
 //! You can simplify the previous queries with some tweaks and macros:
@@ -325,12 +324,12 @@
 //! let query = User::query().filter(compare!(field "last_name").equals_str("Surcouf").and(compare!(field "age").greater_than(15)));
 //!
 //! // get the only record (fails if no or multiple records)
-//! let user_record = User::get(query, &database_connection).await.unwrap().uniq().unwrap();
+//! let user_record = User::get(&query, &database_connection).await.unwrap().uniq().unwrap();
 //!
 //! // Find all users with multiple conditions
 //! let query = User::query().filter(compare!(field "last_name").like("%Surc%").and(compare!(field "age").in_array(&[15,16,17,18])));
 //! // This syntax is valid...
-//! let user_records :QueryResult<User> = User::get(query.clone(), &database_connection).await.unwrap();
+//! let user_records :QueryResult<User> = User::get(&query, &database_connection).await.unwrap();
 //! // ... This one too
 //! let user_records :QueryResult<User> = query.call(&database_connection).await.unwrap();
 //! # }
@@ -483,16 +482,14 @@
 #![doc(html_logo_url = "https://gitlab.com/qonfucius/aragog/-/snippets/2215922/raw/main/logo.svg")]
 #![forbid(unsafe_code)]
 #![warn(
-    clippy::all,
-    clippy::correctness,
-    clippy::suspicious,
-    clippy::style,
-    clippy::complexity,
-    clippy::perf,
+    clippy::nursery,
+    clippy::pedantic,
     nonstandard_style,
     missing_docs,
     rustdoc::broken_intra_doc_links
 )]
+// TODO: investigate `future_not_send` warning
+#![allow(clippy::future_not_send, clippy::module_name_repetitions)]
 
 pub extern crate async_trait;
 

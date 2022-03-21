@@ -11,6 +11,8 @@ pub struct DatabaseCollection {
 
 impl DatabaseCollection {
     /// Name of the collection, exactly as defined in database
+    #[must_use]
+    #[inline]
     pub fn name(&self) -> &str {
         self.collection.name()
     }
