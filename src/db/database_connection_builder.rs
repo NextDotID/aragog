@@ -123,6 +123,8 @@ impl DatabaseConnectionBuilder {
     /// Specifies a custom authentication mode for `ArangoDB` connection.
     ///
     /// If not specified `AuthMode::Basic` will be used.
+    #[must_use]
+    #[inline]
     pub fn with_auth_mode(mut self, mode: AuthMode) -> Self {
         log::debug!(
             "[Database Connection Builder] Auth mode {:?} will be used",
@@ -140,6 +142,8 @@ impl DatabaseConnectionBuilder {
     /// * `db_name` - The name of the `ArangoDB` database to connect to
     /// * `db_user` - The username of a `ArangoDB` user with access to the database
     /// * `db_password` - The password associated with `db_user`
+    #[must_use]
+    #[inline]
     pub fn with_credentials(
         mut self,
         db_host: &str,
@@ -163,6 +167,8 @@ impl DatabaseConnectionBuilder {
     /// Specifies a custom schema for `ArangoDB` initialization.
     ///
     /// If not specified,`SCHEMA_PATH` env var will be used or the default value: `./src/config/db/schema.yaml`
+    #[must_use]
+    #[inline]
     pub fn with_schema(mut self, schema: DatabaseSchema) -> Self {
         log::debug!("[Database Connection Builder] Custom schema will be used");
         self.schema = DatabaseSchemaOption::Custom(schema);
@@ -173,6 +179,8 @@ impl DatabaseConnectionBuilder {
     /// This will ignore any errors, so check the `debug` to find a hidden issue.
     ///
     /// Use it when you use your own custom schema and no `aragog_cli` migrations.
+    #[must_use]
+    #[inline]
     pub fn apply_schema(mut self) -> Self {
         log::debug!("[Database Connection Builder] Schema will be silently applied");
         self.apply_schema = true;
@@ -182,6 +190,8 @@ impl DatabaseConnectionBuilder {
     /// Specifies a custom schema path for `ArangoDB` initialization.
     ///
     /// If not specified,`SCHEMA_PATH` env var will be used or the default value: `./src/config/db/schema.yaml`
+    #[must_use]
+    #[inline]
     pub fn with_schema_path(mut self, path: &str) -> Self {
         log::debug!(
             "[Database Connection Builder] Schema from {} will be used",
@@ -201,6 +211,8 @@ impl DatabaseConnectionBuilder {
     /// If you set `ignore_hooks` here, every [`DatabaseRecord`] operation will skip hooks.
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    #[must_use]
+    #[inline]
     pub fn with_operation_options(mut self, options: OperationOptions) -> Self {
         log::debug!(
             "[Database Connection Builder] custom operation options will be used: {:?}",
@@ -210,6 +222,8 @@ impl DatabaseConnectionBuilder {
         self
     }
 
+    #[must_use]
+    #[inline]
     fn credentials(&self) -> DbCredentials {
         self.credentials.clone().into()
     }
@@ -218,6 +232,8 @@ impl DatabaseConnectionBuilder {
         self.schema.try_into()
     }
 
+    #[must_use]
+    #[inline]
     const fn auth_mode(&self) -> AuthMode {
         self.auth_mode
     }

@@ -347,7 +347,11 @@ mod read {
                 .and(Comparison::field("price").equals(7)),
         );
 
-        let found_record = Dish::get(query, &connection).await.unwrap().uniq().unwrap();
+        let found_record = Dish::get(&query, &connection)
+            .await
+            .unwrap()
+            .uniq()
+            .unwrap();
         common::expect_assert_eq(dish_record.record, found_record.record)?;
         Ok(())
     }
@@ -362,7 +366,11 @@ mod read {
         let query =
             Dish::query().filter(Filter::new(Comparison::field("name").equals_str("Quiche")));
 
-        Dish::get(query, &connection).await.unwrap().uniq().unwrap();
+        Dish::get(&query, &connection)
+            .await
+            .unwrap()
+            .uniq()
+            .unwrap();
     }
 
     #[should_panic(expected = "NotFound")]
@@ -375,7 +383,11 @@ mod read {
         create_dishes(&connection).await;
         let query = Dish::query().filter(Filter::new(Comparison::field("price").equals(10)));
 
-        Dish::get(query, &connection).await.unwrap().uniq().unwrap();
+        Dish::get(&query, &connection)
+            .await
+            .unwrap()
+            .uniq()
+            .unwrap();
     }
 
     #[maybe_async::test(
@@ -390,7 +402,7 @@ mod read {
                 .and(Comparison::field("price").equals(7)),
         );
 
-        let found_records = Dish::get(query, &connection).await.unwrap();
+        let found_records = Dish::get(&query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 1)?;
         common::expect_assert_eq(dish_record.record, found_records[0].record.clone())?;
         Ok(())
@@ -403,12 +415,12 @@ mod read {
     async fn query_on_batches() -> Result<(), String> {
         let connection = common::setup_db().await;
         create_dishes(&connection).await;
-        let cursor: QueryCursor<Dish> = Dish::get_in_batches(Dish::query(), &connection, 2)
+        let cursor: QueryCursor<Dish> = Dish::get_in_batches(&Dish::query(), &connection, 2)
             .await
             .unwrap();
         common::expect_assert_eq(cursor.result().len(), 2)?;
         common::expect_assert(cursor.has_more())?;
-        let cursor: QueryCursor<Dish> = Dish::get_in_batches(Dish::query(), &connection, 10)
+        let cursor: QueryCursor<Dish> = Dish::get_in_batches(&Dish::query(), &connection, 10)
             .await
             .unwrap();
         common::expect_assert_eq(cursor.result().len(), 4)?;
@@ -424,7 +436,7 @@ mod read {
         let connection = common::setup_db().await;
         let query =
             Dish::query().filter(Filter::new(Comparison::field("name").equals_str("Quiche")));
-        let found_records = Dish::get(query, &connection).await.unwrap();
+        let found_records = Dish::get(&query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 0).unwrap();
     }
 
@@ -437,32 +449,32 @@ mod read {
         create_dishes(&connection).await;
         // Can return multiple
         let query = Dish::query().filter(Filter::new(Comparison::field("price").equals(10)));
-        let found_records = Dish::get(query, &connection).await.unwrap();
+        let found_records = Dish::get(&query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 2)?;
 
         // Limit features
         let query = Dish::query()
             .filter(Filter::new(Comparison::field("price").equals(10)))
             .limit(1, None);
-        let found_records = Dish::get(query, &connection).await.unwrap();
+        let found_records = Dish::get(&query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 1)?;
 
         let query = Dish::query();
-        let found_records = Dish::get(query, &connection).await.unwrap();
+        let found_records = Dish::get(&query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 4)?;
 
         let query = Dish::query().limit(2, Some(3));
-        let found_records = Dish::get(query, &connection).await.unwrap();
+        let found_records = Dish::get(&query, &connection).await.unwrap();
         common::expect_assert_eq(found_records.len(), 1)?;
 
         // Sorting
         let query = Dish::query().sort("name", None);
-        let found_records = Dish::get(query, &connection).await.unwrap();
+        let found_records = Dish::get(&query, &connection).await.unwrap();
         for (i, value) in ["Pasta", "Pizza", "Quiche", "Steak"].iter().enumerate() {
             common::expect_assert_eq(*value, &found_records[i].name)?;
         }
         let query = Dish::query().sort("price", None).sort("name", None);
-        let found_records = Dish::get(query, &connection).await.unwrap();
+        let found_records = Dish::get(&query, &connection).await.unwrap();
         for (i, value) in ["Pasta", "Quiche", "Pizza", "Steak"].iter().enumerate() {
             common::expect_assert_eq(*value, &found_records[i].name)?;
         }
@@ -481,7 +493,7 @@ mod read {
                 .and(Comparison::field("price").equals(7)),
         );
 
-        let res = Dish::exists(query, &connection).await;
+        let res = Dish::exists(&query, &connection).await;
         common::expect_assert_eq(res, true)?;
         Ok(())
     }
@@ -503,7 +515,7 @@ mod read {
                 let dish = create_dishes(&connection).await;
                 let query = dish.outbound_query(2, 5, "edges");
                 common::expect_assert_eq(
-                    query.to_aql(),
+                    query.aql_str(),
                     format!(
                         "\
                         FOR a in 2..5 OUTBOUND \'{}\' edges \
@@ -524,7 +536,7 @@ mod read {
                 let dish = create_dishes(&connection).await;
                 let query = Query::outbound(2, 5, "edges", dish.id());
                 common::expect_assert_eq(
-                    query.to_aql(),
+                    query.aql_str(),
                     format!(
                         "\
                         FOR a in 2..5 OUTBOUND \'{}\' edges \
@@ -548,7 +560,7 @@ mod read {
                     .filter(compare!(field "price").greater_than(10).into())
                     .sort("_id", None);
                 common::expect_assert_eq(
-                    query.to_aql(),
+                    query.aql_str(),
                     format!(
                         "\
                         FOR a in 2..5 OUTBOUND \'{}\' edges \

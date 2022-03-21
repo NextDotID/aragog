@@ -7,6 +7,7 @@ use crate::parse_attribute::ParseAttribute;
 use crate::to_tokenstream::ToTokenStream;
 use crate::toolbox::expect_field_name;
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Clone)]
 pub enum ValidateCommandType {
     Validate,

@@ -1,5 +1,5 @@
 use crate::app::AragogCliApp;
-use clap::{App, ArgEnum, IntoApp, Parser};
+use clap::{ArgEnum, Command, IntoApp, Parser};
 use clap_complete::Shell::{Bash, Elvish, Fish, PowerShell, Zsh};
 use clap_complete::{generate, Generator};
 
@@ -19,20 +19,20 @@ pub enum ShellType {
     Zsh,
 }
 
-fn print_completions<G: Generator>(generator: G, app: &mut App) {
-    let name = app.get_name().to_string();
-    generate(generator, app, name, &mut std::io::stdout());
+fn print_completions<G: Generator>(generator: G, command: &mut Command) {
+    let name = command.get_name().to_string();
+    generate(generator, command, name, &mut std::io::stdout());
 }
 
 impl CompletionOptions {
     pub fn generate(&self) {
-        let mut app = AragogCliApp::into_app();
+        let mut command = AragogCliApp::command();
         match self.shell_type {
-            ShellType::Bash => print_completions(Bash, &mut app),
-            ShellType::Elvish => print_completions(Elvish, &mut app),
-            ShellType::Fish => print_completions(Fish, &mut app),
-            ShellType::PowerShell => print_completions(PowerShell, &mut app),
-            ShellType::Zsh => print_completions(Zsh, &mut app),
+            ShellType::Bash => print_completions(Bash, &mut command),
+            ShellType::Elvish => print_completions(Elvish, &mut command),
+            ShellType::Fish => print_completions(Fish, &mut command),
+            ShellType::PowerShell => print_completions(PowerShell, &mut command),
+            ShellType::Zsh => print_completions(Zsh, &mut command),
         };
     }
 }

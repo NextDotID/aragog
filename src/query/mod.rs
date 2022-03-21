@@ -69,8 +69,8 @@ impl Display for SortDirection {
     }
 }
 
-/// A query utility for `ArangoDB` to avoid writing simple AQL strings. After building can be rendered
-/// as an AQL string with the [`to_aql`] method.
+/// A query utility for `ArangoDB` to avoid writing simple AQL strings.
+/// After building can be rendered as an AQL string with the [`aql_str`] method.
 ///
 /// # Examples
 ///
@@ -93,7 +93,7 @@ impl Display for SortDirection {
 /// # }
 /// ```
 ///
-/// [`to_aql`]: struct.Query.html#method.to_aql
+/// [`aql_str`]: struct.Query.html#method.aql_str
 #[derive(Clone, Debug)]
 pub struct Query {
     with_collections: OptionalQueryString,
@@ -119,6 +119,8 @@ impl Query {
     /// # use aragog::query::Query;
     /// let query = Query::new("User");
     /// ```
+    #[inline]
+    #[must_use]
     pub fn new(collection_name: &str) -> Self {
         Self {
             with_collections: OptionalQueryString(None),
@@ -147,6 +149,8 @@ impl Query {
     /// # use aragog::query::Query;
     /// let query = Query::outbound(1, 2, "ChildOf", "User/123");
     /// ```
+    #[inline]
+    #[must_use]
     pub fn outbound(min: u16, max: u16, edge_collection: &str, vertex: &str) -> Self {
         Self {
             graph_data: Some(GraphQueryData {
@@ -176,6 +180,8 @@ impl Query {
     /// # use aragog::query::Query;
     /// let query = Query::outbound_graph(1, 2, "SomeGraph", "User/123");
     /// ```
+    #[inline]
+    #[must_use]
     pub fn outbound_graph(min: u16, max: u16, named_graph: &str, vertex: &str) -> Self {
         Self {
             graph_data: Some(GraphQueryData {
@@ -205,6 +211,8 @@ impl Query {
     /// # use aragog::query::Query;
     /// let query = Query::outbound(1, 2, "ChildOf", "User/123");
     /// ```
+    #[inline]
+    #[must_use]
     pub fn any(min: u16, max: u16, edge_collection: &str, vertex: &str) -> Self {
         Self {
             graph_data: Some(GraphQueryData {
@@ -234,6 +242,8 @@ impl Query {
     /// # use aragog::query::Query;
     /// let query = Query::outbound_graph(1, 2, "SomeGraph", "User/123");
     /// ```
+    #[inline]
+    #[must_use]
     pub fn any_graph(min: u16, max: u16, named_graph: &str, vertex: &str) -> Self {
         Self {
             graph_data: Some(GraphQueryData {
@@ -263,6 +273,8 @@ impl Query {
     /// # use aragog::query::Query;
     /// let query = Query::inbound(1, 2, "ChildOf", "User/123");
     /// ```
+    #[inline]
+    #[must_use]
     pub fn inbound(min: u16, max: u16, edge_collection: &str, vertex: &str) -> Self {
         Self {
             graph_data: Some(GraphQueryData {
@@ -292,6 +304,8 @@ impl Query {
     /// # use aragog::query::Query;
     /// let query = Query::inbound_graph(1, 2, "SomeGraph", "User/123");
     /// ```
+    #[inline]
+    #[must_use]
     pub fn inbound_graph(min: u16, max: u16, named_graph: &str, vertex: &str) -> Self {
         Self {
             graph_data: Some(GraphQueryData {
@@ -321,7 +335,7 @@ impl Query {
             max,
             named_graph,
         });
-        self.sub_query = Some(query.to_aql());
+        self.sub_query = Some(query.aql_str());
         self
     }
 
@@ -339,18 +353,20 @@ impl Query {
     /// ```rust
     /// # use aragog::query::Query;
     /// let query = Query::new("User").join_outbound(1, 2, false, Query::new("ChildOf"));
-    /// assert_eq!(query.to_aql(), String::from("\
+    /// assert_eq!(query.aql_str(), String::from("\
     ///     FOR b in User \
     ///         FOR a in 1..2 OUTBOUND b ChildOf \
     ///         return a\
     /// "));
     /// let query = Query::new("User").join_outbound(1, 2, true, Query::new("NamedGraph"));
-    /// assert_eq!(query.to_aql(), String::from("\
+    /// assert_eq!(query.aql_str(), String::from("\
     ///     FOR b in User \
     ///         FOR a in 1..2 OUTBOUND b GRAPH NamedGraph \
     ///         return a\
     /// "));
     /// ```
+    #[inline]
+    #[must_use]
     pub fn join_outbound(self, min: u16, max: u16, named_graph: bool, query: Self) -> Self {
         self.join(min, max, query, GraphQueryDirection::Outbound, named_graph)
     }
@@ -369,18 +385,20 @@ impl Query {
     /// ```rust
     /// # use aragog::query::Query;
     /// let query = Query::new("User").join_inbound(1, 2, false, Query::new("ChildOf"));
-    /// assert_eq!(query.to_aql(), String::from("\
+    /// assert_eq!(query.aql_str(), String::from("\
     ///     FOR b in User \
     ///         FOR a in 1..2 INBOUND b ChildOf \
     ///         return a\
     /// "));
     /// let query = Query::new("User").join_inbound(1, 2, true, Query::new("NamedGraph"));
-    /// assert_eq!(query.to_aql(), String::from("\
+    /// assert_eq!(query.aql_str(), String::from("\
     ///     FOR b in User \
     ///         FOR a in 1..2 INBOUND b GRAPH NamedGraph \
     ///         return a\
     /// "));
     /// ```
+    #[inline]
+    #[must_use]
     pub fn join_inbound(self, min: u16, max: u16, named_graph: bool, query: Self) -> Self {
         self.join(min, max, query, GraphQueryDirection::Inbound, named_graph)
     }
@@ -399,18 +417,20 @@ impl Query {
     /// ```rust
     /// # use aragog::query::Query;
     /// let query = Query::new("User").join_any(1, 2, false, Query::new("ChildOf"));
-    /// assert_eq!(query.to_aql(), String::from("\
+    /// assert_eq!(query.aql_str(), String::from("\
     ///     FOR b in User \
     ///         FOR a in 1..2 ANY b ChildOf \
     ///         return a\
     /// "));
     /// let query = Query::new("User").join_any(1, 2, true, Query::new("NamedGraph"));
-    /// assert_eq!(query.to_aql(), String::from("\
+    /// assert_eq!(query.aql_str(), String::from("\
     ///     FOR b in User \
     ///         FOR a in 1..2 ANY b GRAPH NamedGraph \
     ///         return a\
     /// "));
     /// ```
+    #[inline]
+    #[must_use]
     pub fn join_any(self, min: u16, max: u16, named_graph: bool, query: Self) -> Self {
         self.join(min, max, query, GraphQueryDirection::Any, named_graph)
     }
@@ -426,13 +446,15 @@ impl Query {
     /// ```rust
     /// # use aragog::query::Query;
     /// let query = Query::new("User").with_collections(&["User", "Client"]).join_any(1, 2, false, Query::new("ChildOf"));
-    /// assert_eq!(query.to_aql(), String::from("\
+    /// assert_eq!(query.aql_str(), String::from("\
     ///     WITH User, Client \
     ///     FOR b in User \
     ///         FOR a in 1..2 ANY b ChildOf \
     ///         return a\
     /// "));
     /// ```
+    #[inline]
+    #[must_use]
     pub fn with_collections(mut self, collections: &[&str]) -> Self {
         self.with_collections =
             OptionalQueryString(Some(format!("WITH {} ", string_from_array(collections))));
@@ -463,6 +485,8 @@ impl Query {
     ///     .sort("age", Some(SortDirection::Asc)
     /// );
     /// ```
+    #[inline]
+    #[must_use]
     pub fn sort(mut self, field: &str, direction: Option<SortDirection>) -> Self {
         self.operations.0.push(AqlOperation::Sort {
             field: field.to_string(),
@@ -481,6 +505,8 @@ impl Query {
     /// // or
     /// let query = Query::new("User").filter(Comparison::field("age").greater_than(18).into());
     /// ```
+    #[inline]
+    #[must_use]
     pub fn filter(mut self, filter: Filter) -> Self {
         self.operations.0.push(AqlOperation::Filter(filter));
         self
@@ -500,6 +526,8 @@ impl Query {
     /// // or
     /// let query = Query::outbound(1, 2, "ChildOf", "User/123").prune(Comparison::field("age").greater_than(18).into());
     /// ```
+    #[inline]
+    #[must_use]
     pub fn prune(mut self, filter: Filter) -> Self {
         self.operations.0.push(AqlOperation::Prune(filter));
         self
@@ -519,6 +547,8 @@ impl Query {
     /// // We want maximum 10 elements but skip the first 5
     /// let query = Query::new("User").limit(10, Some(5));
     /// ```
+    #[inline]
+    #[must_use]
     pub fn limit(mut self, limit: u32, skip: Option<u32>) -> Self {
         self.operations.0.push(AqlOperation::Limit { skip, limit });
         self
@@ -538,6 +568,8 @@ impl Query {
     ///     .filter(Filter::new(Comparison::field("age").greater_than(18)))
     ///     .distinct();
     /// ```
+    #[inline]
+    #[must_use]
     pub const fn distinct(mut self) -> Self {
         self.distinct = true;
         self
@@ -557,7 +589,30 @@ impl Query {
     ///         return DISTINCT a\
     /// "));
     /// ```
+    #[inline]
+    #[must_use]
+    #[deprecated(note = "use `aql_str` instead")]
     pub fn to_aql(&self) -> String {
+        self.aql_str()
+    }
+
+    /// Renders the AQL string corresponding to the current `Query`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use aragog::query::{Comparison, Query, Filter};
+    /// let mut query = Query::new("User").filter(Filter::new(Comparison::field("age").greater_than(10)).
+    ///     or(Comparison::field("username").in_str_array(&["Felix", "Bianca"]))).distinct();
+    /// assert_eq!(query.aql_str(), String::from("\
+    ///     FOR a in User \
+    ///         FILTER a.age > 10 || a.username IN [\"Felix\", \"Bianca\"] \
+    ///         return DISTINCT a\
+    /// "));
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn aql_str(&self) -> String {
         let collection_id = get_str_identifier(self.item_identifier);
         let mut res = self.with_collections.to_string();
         if let Some(graph_data) = &self.graph_data {
@@ -576,7 +631,7 @@ impl Query {
             res = format!("{}FOR {} in {}", res, collection_id, &self.collection);
         }
         if !self.operations.0.is_empty() {
-            res = format!("{} {}", res, self.operations.to_aql(&collection_id));
+            res = format!("{} {}", res, self.operations.aql_str(&collection_id));
         }
         if let Some(sub_query) = &self.sub_query {
             res = format!("{} {}", res, sub_query);
@@ -601,7 +656,7 @@ impl Query {
     /// [`DatabaseAccess`]: trait.DatabaseAccess.html
     /// [`query`]: trait.DatabaseAccess.html#method.query
     #[maybe_async::maybe_async]
-    pub async fn raw_call<D>(self, db_accessor: &D) -> Result<QueryResult<UndefinedRecord>, Error>
+    pub async fn raw_call<D>(&self, db_accessor: &D) -> Result<QueryResult<UndefinedRecord>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -616,7 +671,7 @@ impl Query {
     /// [`Record`]: trait.Record.html
     /// [`get`]: trait.Record.html#method.get
     #[maybe_async::maybe_async]
-    pub async fn call<D, T>(self, db_accessor: &D) -> Result<QueryResult<T>, Error>
+    pub async fn call<D, T>(&self, db_accessor: &D) -> Result<QueryResult<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
         T: Record + Send,
@@ -635,7 +690,7 @@ impl Query {
     /// [`query_in_batches`]: trait.DatabaseAccess.html#method.query_in_batches
     #[maybe_async::maybe_async]
     pub async fn raw_call_in_batches<D>(
-        self,
+        &self,
         db_accessor: &D,
         batch_size: u32,
     ) -> Result<QueryCursor<UndefinedRecord>, Error>
@@ -654,7 +709,7 @@ impl Query {
     /// [`get_in_batches`]: trait.DatabaseAccess.html#method.get_in_batches
     #[maybe_async::maybe_async]
     pub async fn call_in_batches<D, T>(
-        self,
+        &self,
         db_accessor: &D,
         batch_size: u32,
     ) -> Result<QueryCursor<T>, Error>
@@ -668,6 +723,6 @@ impl Query {
 
 impl Display for Query {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.to_aql())
+        write!(f, "{}", self.aql_str())
     }
 }

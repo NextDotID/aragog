@@ -38,7 +38,7 @@ use crate::{DatabaseRecord, Record};
 /// // Define a query
 /// let query = User::query().filter(Filter::new(Comparison::field("age").greater_than(10)));
 /// // Retrieve a cursor
-/// let mut cursor = User::get_in_batches(query, &db_accessor, 100).await.unwrap();
+/// let mut cursor = User::get_in_batches(&query, &db_accessor, 100).await.unwrap();
 ///
 /// // Retrieve the first result of the query
 /// handle_result(cursor.result());
@@ -58,6 +58,7 @@ pub struct QueryCursor<T> {
 }
 
 impl<T: Record> QueryCursor<T> {
+    #[must_use]
     pub(crate) fn new(
         cursor: Cursor<DatabaseRecord<T>>,
         database: Database,
@@ -73,21 +74,28 @@ impl<T: Record> QueryCursor<T> {
     }
 
     /// Get the current cursor result
+    #[must_use]
+    #[inline]
     pub fn result(&self) -> QueryResult<T> {
         self.cursor.result.clone().into()
     }
 
     /// Does the cursor have more batches
+    #[must_use]
+    #[inline]
     pub fn has_more(&self) -> bool {
         self.cursor.more
     }
 
     /// Get the current cursor AQL query
+    #[must_use]
+    #[inline]
     pub fn query(&self) -> &str {
         &self.query
     }
 
     /// Total number of documents that matched the search condition
+    #[must_use]
     pub fn full_count(&self) -> Option<usize> {
         self.cursor.extra.as_ref()?.stats.as_ref()?.full_count
     }

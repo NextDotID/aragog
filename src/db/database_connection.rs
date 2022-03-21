@@ -79,6 +79,8 @@ impl DatabaseConnection {
     /// ```
     ///
     /// You can also specify a custom `DatabaseSchema` using `with_schema`.
+    #[must_use]
+    #[inline]
     pub fn builder() -> DatabaseConnectionBuilder {
         DatabaseConnectionBuilder {
             apply_schema: false,
@@ -126,10 +128,12 @@ impl DatabaseConnection {
     }
 
     /// retrieves a vector of all collection names from the database
+    #[must_use]
     pub fn collections_names(&self) -> Vec<String> {
         self.collections.keys().cloned().collect()
     }
 
+    #[must_use]
     pub(crate) fn collections(&self) -> Vec<&DatabaseCollection> {
         self.collections.values().collect()
     }

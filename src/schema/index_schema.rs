@@ -29,6 +29,8 @@ impl From<IndexSchema> for Index {
 
 impl IndexSchema {
     /// Retrieve the index id
+    #[must_use]
+    #[inline]
     pub fn id(&self) -> String {
         format!("{}/{}", &self.collection, &self.name)
     }

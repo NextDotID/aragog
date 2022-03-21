@@ -25,6 +25,8 @@ pub struct CollectionSchema {
 impl CollectionSchema {
     /// Initializes a new collection schema with the collection name and a flag to define if
     /// it's an edge collection or not.
+    #[must_use]
+    #[inline]
     pub fn new(name: &str, is_edge_collection: bool, wait_for_sync: Option<bool>) -> Self {
         Self {
             name: name.to_string(),

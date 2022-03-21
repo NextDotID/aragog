@@ -217,7 +217,7 @@ async fn main() {
 
     // Find catelyn children
     let children =
-        DatabaseRecord::<Character>::get(catelyn.inbound_query(1, 1, "ChildOf"), &db_connection)
+        DatabaseRecord::<Character>::get(&catelyn.inbound_query(1, 1, "ChildOf"), &db_connection)
             .await
             .unwrap();
     assert_eq!(
@@ -229,7 +229,7 @@ async fn main() {
     );
     // Find ned children
     let children =
-        DatabaseRecord::<Character>::get(ned.inbound_query(1, 1, "ChildOf"), &db_connection)
+        DatabaseRecord::<Character>::get(&ned.inbound_query(1, 1, "ChildOf"), &db_connection)
             .await
             .unwrap();
     assert_eq!(
@@ -242,7 +242,7 @@ async fn main() {
 
     // Find joffrey ancestors
     let ancestors = DatabaseRecord::<Character>::get(
-        joffrey.outbound_query(1, 2, "ChildOf").distinct(),
+        &joffrey.outbound_query(1, 2, "ChildOf").distinct(),
         &db_connection,
     )
     .await
@@ -257,7 +257,7 @@ async fn main() {
 
     // Find all brothers and nephews, returns self
     let relatives = DatabaseRecord::<Character>::get(
-        tyrion.outbound_query(1, 2, "ChildOf").join_inbound(
+        &tyrion.outbound_query(1, 2, "ChildOf").join_inbound(
             1,
             2,
             false,

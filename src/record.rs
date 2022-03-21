@@ -34,7 +34,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`get`]: struct.DatabaseRecord.html#method.get
-    async fn get<D>(query: Query, db_accessor: &D) -> Result<QueryResult<Self>, Error>
+    async fn get<D>(query: &Query, db_accessor: &D) -> Result<QueryResult<Self>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -47,7 +47,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`get_in_batches`]: struct.DatabaseRecord.html#method.get_in_batches
     async fn get_in_batches<D>(
-        query: Query,
+        query: &Query,
         db_accessor: &D,
         batch_size: u32,
     ) -> Result<QueryCursor<Self>, Error>
@@ -62,7 +62,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// [`DatabaseRecord`]: struct.DatabaseRecord.html
     /// [`exists`]: struct.DatabaseRecord.html#method.exists
-    async fn exists<D>(query: Query, db_accessor: &D) -> bool
+    #[must_use]
+    async fn exists<D>(query: &Query, db_accessor: &D) -> bool
     where
         D: DatabaseAccess + ?Sized,
     {
@@ -122,6 +123,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// let q = Query::new(User::COLLECTION_NAME);
     /// let q = Query::new("User");
     /// ```
+    #[must_use]
     fn query() -> Query {
         Query::new(Self::COLLECTION_NAME)
     }
@@ -193,6 +195,7 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
         D: DatabaseAccess + ?Sized;
 
     /// Returns a transaction builder on this collection only.
+    #[must_use]
     fn transaction_builder() -> TransactionBuilder {
         TransactionBuilder::new().collections(vec![Self::COLLECTION_NAME.to_string()])
     }

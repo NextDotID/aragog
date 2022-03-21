@@ -24,16 +24,19 @@ pub struct DatabaseSchema {
 
 impl DatabaseSchema {
     /// Find a Collection index from the schema instance
+    #[must_use]
     pub fn collection_index(&self, name: &str) -> Option<usize> {
         self.collections.iter().position(|c| c.name == name)
     }
 
     /// Find a Collection from the schema instance
+    #[must_use]
     pub fn collection(&self, name: &str) -> Option<&CollectionSchema> {
         self.collections.iter().find(|c| c.name == name)
     }
 
     /// Find an index index from the schema instance
+    #[must_use]
     pub fn index_index(&self, collection: &str, name: &str) -> Option<usize> {
         self.indexes
             .iter()
@@ -41,6 +44,7 @@ impl DatabaseSchema {
     }
 
     /// Find an Index from the schema instance
+    #[must_use]
     pub fn index(&self, collection: &str, name: &str) -> Option<&IndexSchema> {
         self.indexes
             .iter()
@@ -48,11 +52,13 @@ impl DatabaseSchema {
     }
 
     /// Find an index index from the schema instance
+    #[must_use]
     pub fn graph_index(&self, name: &str) -> Option<usize> {
         self.graphs.iter().position(|c| c.0.name == name)
     }
 
     /// Find an Index from the schema instance
+    #[must_use]
     pub fn graph(&self, name: &str) -> Option<&GraphSchema> {
         self.graphs.iter().find(|c| c.0.name == name)
     }

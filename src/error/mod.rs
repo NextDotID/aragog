@@ -106,6 +106,8 @@ impl std::error::Error for Error {
 impl Error {
     /// get the matching http code
     #[allow(dead_code)]
+    #[must_use]
+    #[inline]
     pub const fn http_code(&self) -> u16 {
         match self {
             Self::ValidationError(_str) => 400,

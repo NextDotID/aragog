@@ -1,14 +1,6 @@
 // TODO: enable this
 // #![forbid(unsafe_code)]
-#![warn(
-    clippy::all,
-    clippy::correctness,
-    clippy::suspicious,
-    clippy::style,
-    clippy::complexity,
-    clippy::perf,
-    nonstandard_style
-)]
+#![warn(clippy::cargo, clippy::nursery, nonstandard_style)]
 
 #[macro_use]
 extern crate prettytable;

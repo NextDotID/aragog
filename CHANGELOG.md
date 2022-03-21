@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+* `inline` and `must_use` attributes
+* Deprecated `Comparison::is_null`, `Comparison::is_false` and `Comparison::is_true`
+* Added `Comparison::eq_null`, `Comparison::eq_false` and `Comparison::eq_true`
+* Deprecated `Query::to_aql`, `Filter::to_aql`, `Comparison::to_aql`
+* Added `Query::aql_str`, `Filter::aql_str`, `Comparison::aql_str`
+* (**BREAKING**) `DatabaseRecord::get`, `DatabaseRecord::get_in_batches` and `DatabaseRecord::exists` now take a borrowed `Query` parameter
+* (**BREAKING**) `Record::get`, `Record::get_in_batches` and `Record::exists` now take a borrowed `Query` parameter
+* (**BREAKING**) `DatabaseAccess::query` and `DatabaseAccess::query_in_batches` now take a borrowed `Query` parameter
+
 ## 0.16.1
 
 * Clippy fixes

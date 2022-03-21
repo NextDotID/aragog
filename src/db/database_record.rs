@@ -565,8 +565,8 @@ impl<T: Record> DatabaseRecord<T> {
     ///     .and(Comparison::field("age").greater_than(10)));
     ///
     /// // Both lines are equivalent:
-    /// DatabaseRecord::<User>::get(query.clone(), &db_accessor).await.unwrap();
-    /// User::get(query.clone(), &db_accessor).await.unwrap();
+    /// DatabaseRecord::<User>::get(&query, &db_accessor).await.unwrap();
+    /// User::get(&query, &db_accessor).await.unwrap();
     /// # }
     /// ```
     ///
@@ -574,11 +574,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`NotFound`]: enum.Error.html#variant.NotFound
     /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
-    pub async fn get<D>(query: Query, db_accessor: &D) -> Result<QueryResult<T>, Error>
+    pub async fn get<D>(query: &Query, db_accessor: &D) -> Result<QueryResult<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
-        Self::aql_get(&query.to_aql(), db_accessor).await
+        Self::aql_get(&query.aql_str(), db_accessor).await
     }
 
     /// Retrieves all records from the database matching the associated conditions in batches.
@@ -621,8 +621,8 @@ impl<T: Record> DatabaseRecord<T> {
     /// let query = User::query().filter(Filter::new(Comparison::field("age").greater_than(10)));
     ///
     /// // Both lines are equivalent:
-    /// DatabaseRecord::<User>::get_in_batches(query.clone(), &db_accessor, 100).await.unwrap();
-    /// User::get_in_batches(query.clone(), &db_accessor, 100).await.unwrap();
+    /// DatabaseRecord::<User>::get_in_batches(&query, &db_accessor, 100).await.unwrap();
+    /// User::get_in_batches(&query, &db_accessor, 100).await.unwrap();
     /// # }
     /// ```
     ///
@@ -631,14 +631,14 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn get_in_batches<D>(
-        query: Query,
+        query: &Query,
         db_accessor: &D,
         batch_size: u32,
     ) -> Result<QueryCursor<T>, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
-        query_records_in_batches(db_accessor, &query.to_aql(), batch_size).await
+        query_records_in_batches(db_accessor, &query.aql_str(), batch_size).await
     }
 
     /// Retrieves all records from the database matching the associated conditions.
@@ -844,15 +844,15 @@ impl<T: Record> DatabaseRecord<T> {
     /// let query = User::query().filter(
     ///     Filter::new(Comparison::field("username").equals_str("MichelDu93"))
     ///         .and(Comparison::field("age").greater_than(10)));
-    /// User::exists(query, &db_accessor).await;
+    /// User::exists(&query, &db_accessor).await;
     /// # }
     /// ```
     #[maybe_async::maybe_async]
-    pub async fn exists<D>(query: Query, db_accessor: &D) -> bool
+    pub async fn exists<D>(query: &Query, db_accessor: &D) -> bool
     where
         D: DatabaseAccess + ?Sized,
     {
-        let aql_string = query.to_aql();
+        let aql_string = query.aql_str();
         let aql_query = AqlQuery::builder()
             .query(&aql_string)
             .batch_size(1)

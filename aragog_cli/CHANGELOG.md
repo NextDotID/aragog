@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Removed deprecated calls to `clap`
+
 ## 0.5.1
 
 * `clap` v3.0.0

@@ -42,12 +42,12 @@ Typed querying will allow only **one** type of document to be retrieved, in this
 
 - Through `Record::get`:
 ```rust
- let result = User::get(query, &database_connection).await.unwrap();
+ let result = User::get(&query, &database_connection).await.unwrap();
 ```
 
 - Through `DatabaseRecord::get` (requires type):
 ```rust
- let result :QueryResult<User> = DatabaseRecord::get(query, &database_connection).await.unwrap();
+ let result :QueryResult<User> = DatabaseRecord::get(&query, &database_connection).await.unwrap();
 ```
 
 - Through `Query::call` (requires type):

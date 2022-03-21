@@ -18,7 +18,8 @@ pub enum AqlOperation {
 pub struct OperationContainer(pub Vec<AqlOperation>);
 
 impl OperationContainer {
-    pub fn to_aql(&self, collection_id: &str) -> String {
+    #[must_use]
+    pub fn aql_str(&self, collection_id: &str) -> String {
         let mut res = String::new();
         let mut last_was_sort = false;
         for operation in &self.0 {
@@ -32,11 +33,11 @@ impl OperationContainer {
                     last_was_sort = false;
                 }
                 AqlOperation::Filter(filter) => {
-                    res = format!("{} FILTER {}", res, filter.to_aql(collection_id));
+                    res = format!("{} FILTER {}", res, filter.aql_str(collection_id));
                     last_was_sort = false;
                 }
                 AqlOperation::Prune(filter) => {
-                    res = format!("{} PRUNE {}", res, filter.to_aql(collection_id));
+                    res = format!("{} PRUNE {}", res, filter.aql_str(collection_id));
                     last_was_sort = false;
                 }
                 AqlOperation::Sort { field, direction } => {

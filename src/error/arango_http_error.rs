@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 /// Arango Http error based on the response http code
-#[derive(Debug, Clone, Error, PartialEq)]
+#[derive(Debug, Copy, Clone, Error, PartialEq)]
 pub enum ArangoHttpError {
     /// 400 - ERROR_HTTP_BAD_PARAMETER
     ///
@@ -73,6 +73,8 @@ pub enum ArangoHttpError {
     UnknownError(u16),
 }
 impl ArangoHttpError {
+    #[inline]
+    #[must_use]
     pub(crate) const fn from_code(code: u16) -> Self {
         match code {
             400 => Self::BadParameter,
@@ -93,6 +95,8 @@ impl ArangoHttpError {
     }
 
     /// The HTTP code matching the enum variant
+    #[inline]
+    #[must_use]
     pub const fn http_code(&self) -> u16 {
         match self {
             ArangoHttpError::BadParameter => 400,

@@ -267,12 +267,12 @@ mod safe_execute {
 
             let query =
                 User::query().filter(compare!(field "name").equals_str("Robert Surcouf").into());
-            let res = User::get(query.clone(), transaction.database_connection())
+            let res = User::get(&query, transaction.database_connection())
                 .await
                 .unwrap();
             assert_eq!(res.len(), 0);
             transaction.commit().await.unwrap();
-            let res = User::get(query, &db_connection).await.unwrap();
+            let res = User::get(&query, &db_connection).await.unwrap();
             assert_eq!(res.len(), 1);
             Ok(())
         }

@@ -1,6 +1,6 @@
 use std::fmt::{self, Display, Formatter};
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum GraphQueryDirection {
     Outbound,
     Inbound,

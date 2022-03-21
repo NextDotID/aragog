@@ -89,7 +89,7 @@ pub trait Link<T: Record + Send>: Sized {
         D: DatabaseAccess + ?Sized,
         T: 'async_trait,
     {
-        DatabaseRecord::get(self.link_query(), db_access).await
+        DatabaseRecord::get(&self.link_query(), db_access).await
     }
 
     /// Retrieves the records matching the defined `link_query`. Type inference may be required.
@@ -98,6 +98,6 @@ pub trait Link<T: Record + Send>: Sized {
     where
         D: DatabaseAccess + ?Sized,
     {
-        DatabaseRecord::get(self.link_query(), db_access)
+        DatabaseRecord::get(&self.link_query(), db_access)
     }
 }

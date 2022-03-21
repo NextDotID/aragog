@@ -68,6 +68,7 @@ pub trait Validate {
     fn validations(&self, errors: &mut Vec<String>);
 
     /// Runs all validations and returns a `false` if they failed, on success `true` is returned
+    #[must_use]
     fn is_valid(&self) -> bool {
         match self.validate() {
             Ok(()) => true,
@@ -552,8 +553,6 @@ pub trait Validate {
 
 #[cfg(test)]
 mod tests {
-    use std::ops::Deref;
-
     use super::*;
 
     const STRING_EMPTY: &str = "";
@@ -582,7 +581,7 @@ mod tests {
                     &mut errors
                 ));
                 assert!(errors.is_empty());
-                for wrong_str in &wrong_strs {
+                for wrong_str in wrong_strs {
                     assert!(!TestElem::validate_numeric_string(
                         STRING_EMPTY,
                         wrong_str,
@@ -610,19 +609,19 @@ mod tests {
                     "010203040005",
                 ];
 
-                for correct_str in &correct_strs {
+                for correct_str in correct_strs {
                     assert!(TestElem::validate_max_len(
                         STRING_EMPTY,
-                        &String::from(correct_str.deref()),
+                        correct_str,
                         max,
                         &mut errors,
                     ));
                     assert!(errors.is_empty());
                 }
-                for wrong_str in wrong_strs.iter() {
+                for wrong_str in wrong_strs {
                     assert!(!TestElem::validate_max_len(
                         STRING_EMPTY,
-                        &String::from(wrong_str.deref()),
+                        wrong_str,
                         max,
                         &mut errors,
                     ));
@@ -648,19 +647,19 @@ mod tests {
                 ];
                 let wrong_strs = ["hello", "foo1", "bar-++", "010203040"];
 
-                for correct_str in correct_strs.iter() {
+                for correct_str in correct_strs {
                     assert!(TestElem::validate_min_len(
                         STRING_EMPTY,
-                        &String::from(correct_str.deref()),
+                        correct_str,
                         min,
                         &mut errors,
                     ));
                     assert!(errors.is_empty());
                 }
-                for wrong_str in wrong_strs.iter() {
+                for wrong_str in wrong_strs {
                     assert!(!TestElem::validate_min_len(
                         STRING_EMPTY,
-                        &String::from(wrong_str.deref()),
+                        wrong_str,
                         min,
                         &mut errors,
                     ));
@@ -681,19 +680,19 @@ mod tests {
                 let correct_strs = ["0102030405", "a-bct09a=(", "felix faur"];
                 let wrong_strs = ["hello", "foo1barbarbar", "bar-++", "01020304051123"];
 
-                for correct_str in correct_strs.iter() {
+                for correct_str in correct_strs {
                     assert!(TestElem::validate_len(
                         STRING_EMPTY,
-                        &String::from(correct_str.deref()),
+                        correct_str,
                         length,
                         &mut errors,
                     ));
                     assert!(errors.is_empty());
                 }
-                for wrong_str in wrong_strs.iter() {
+                for wrong_str in wrong_strs {
                     assert!(!TestElem::validate_len(
                         STRING_EMPTY,
-                        &String::from(wrong_str.deref()),
+                        wrong_str,
                         length,
                         &mut errors,
                     ));
@@ -715,19 +714,19 @@ mod tests {
                 let valid_strs = ["abc", "hellothere", "felix"];
                 let wrong_strs = ["abc1", "hellotherebro", "felix de_manevi11e", "a bc"];
 
-                for valid_str in valid_strs.iter() {
+                for valid_str in valid_strs {
                     assert!(TestElem::validate_regex(
                         STRING_EMPTY,
-                        valid_str.deref(),
+                        valid_str,
                         REGEX,
                         &mut errors
                     ));
                     assert!(errors.is_empty());
                 }
-                for wrong_str in wrong_strs.iter() {
+                for wrong_str in wrong_strs {
                     assert!(!TestElem::validate_regex(
                         STRING_EMPTY,
-                        wrong_str.deref(),
+                        wrong_str,
                         REGEX,
                         &mut errors
                     ));

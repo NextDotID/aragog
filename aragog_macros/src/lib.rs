@@ -1,13 +1,5 @@
 #![forbid(unsafe_code)]
-#![warn(
-    clippy::all,
-    clippy::correctness,
-    clippy::suspicious,
-    clippy::style,
-    clippy::complexity,
-    clippy::perf,
-    nonstandard_style
-)]
+#![warn(clippy::nursery, nonstandard_style)]
 
 extern crate proc_macro;
 extern crate proc_macro2;
