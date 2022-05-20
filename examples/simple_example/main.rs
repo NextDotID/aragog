@@ -143,11 +143,12 @@ async fn main() {
     // Call the query and get safe JSON results to parse
     let json_result = query.call(&db_connection).await.unwrap();
     let _user_results = json_result.get_records::<User>();
-    // OR Retrieve only the USer records (unsafe on graph queries)
-    let _user_results = User::get(&query, &db_connection).await.unwrap();
+    // OR Retrieve only the User records (unsafe on graph queries)
+    let user_results = User::get(&query, &db_connection).await.unwrap();
 
     // Get an unique record (fails otherwise):
-    let _user = _user_results.uniq().unwrap();
+    let user = user_results.uniq().unwrap();
+    assert_eq!(user.first_name.as_str(), "Robert");
 
     println!("Done !");
 }

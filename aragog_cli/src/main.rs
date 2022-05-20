@@ -1,6 +1,6 @@
 // TODO: enable this
 // #![forbid(unsafe_code)]
-#![warn(clippy::cargo, clippy::nursery, nonstandard_style)]
+#![warn(clippy::nursery, nonstandard_style, rustdoc::broken_intra_doc_links)]
 
 #[macro_use]
 extern crate prettytable;

@@ -53,7 +53,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Error, Record};
 /// # }
 /// ```
 #[maybe_async::must_be_async]
-pub trait Link<T: Record + Send>: Sized {
+pub trait Link<T: Record + Send> {
     /// Defines the query to execute to find the `T` models linked to `Self`
     ///
     /// # Example

@@ -15,11 +15,13 @@ pub enum TransactionOutput<T> {
 
 impl<T> TransactionOutput<T> {
     /// Was the transaction committed
+    #[inline]
     pub const fn is_committed(&self) -> bool {
         matches!(self, TransactionOutput::Committed(_))
     }
 
     /// Was the transaction aborted
+    #[inline]
     pub fn is_aborted(&self) -> bool {
         !self.is_committed()
     }
@@ -32,6 +34,7 @@ impl<T> TransactionOutput<T> {
     ///
     /// [Committed]: enum.TransactionOutput.html#variant.Committed
     /// [Aborted]: enum.TransactionOutput.html#variant.Aborted
+    #[inline]
     pub fn unwrap(self) -> T {
         match self {
             TransactionOutput::Committed(v) => v,
@@ -43,6 +46,7 @@ impl<T> TransactionOutput<T> {
     }
 
     /// transform the output to a `Option<T>`
+    #[inline]
     pub fn ok(self) -> Option<T> {
         match self {
             TransactionOutput::Committed(v) => Some(v),
@@ -51,6 +55,7 @@ impl<T> TransactionOutput<T> {
     }
 
     /// transform the output to a `Option<Error>`
+    #[inline]
     pub fn err(self) -> Option<Error> {
         match self {
             TransactionOutput::Committed(_) => None,
@@ -66,6 +71,7 @@ impl<T> TransactionOutput<T> {
     ///
     /// [Committed]: enum.TransactionOutput.html#variant.Committed
     /// [Aborted]: enum.TransactionOutput.html#variant.Aborted
+    #[inline]
     pub fn expect(self, msg: &str) -> T {
         match self {
             TransactionOutput::Committed(v) => v,

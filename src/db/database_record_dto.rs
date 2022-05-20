@@ -6,27 +6,18 @@ use std::convert::TryInto;
 
 #[derive(Serialize, Deserialize)]
 pub struct DatabaseRecordDto<T> {
-    #[serde(rename(serialize = "_key", deserialize = "_key"))]
+    #[serde(rename = "_key")]
     #[serde(skip_serializing_if = "Option::is_none")]
     key: Option<String>,
-    #[serde(rename(serialize = "_key", deserialize = "_key"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    id: Option<String>,
-    #[serde(rename(serialize = "_key", deserialize = "_key"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    rev: Option<String>,
     #[serde(flatten)]
     pub record: T,
 }
 
 impl<T: Record> DatabaseRecordDto<T> {
-    pub fn new(record: T) -> Self {
-        Self {
-            key: None,
-            id: None,
-            rev: None,
-            record,
-        }
+    #[inline]
+    #[must_use]
+    pub fn new(record: T, key: Option<String>) -> Self {
+        Self { key, record }
     }
 }
 
@@ -60,8 +51,8 @@ impl<T: Record> TryInto<DatabaseRecord<T>> for DocumentResponse<DatabaseRecordDt
                 message: Some(String::from("Received unexpected silent document response")),
             }),
             DocumentResponse::Response { header, new, .. } => {
-                let doc: T = match new {
-                    Some(value) => value.record,
+                let record = match new {
+                    Some(doc) => doc.record,
                     None => {
                         return Err(Error::InternalError {
                             message: Some(format!(
@@ -75,7 +66,7 @@ impl<T: Record> TryInto<DatabaseRecord<T>> for DocumentResponse<DatabaseRecordDt
                     key: header._key.clone(),
                     id: header._id.clone(),
                     rev: header._rev,
-                    record: doc,
+                    record,
                 })
             }
         }

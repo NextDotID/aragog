@@ -29,6 +29,7 @@ where
 #[maybe_async::maybe_async]
 pub async fn create_record<T, D>(
     obj: T,
+    key: Option<String>,
     db_accessor: &D,
     collection_name: &str,
     options: OperationOptions,
@@ -39,7 +40,7 @@ where
 {
     let collection = db_accessor.get_collection(collection_name)?;
     log::debug!("Creating new {} document", collection.name());
-    let dto = DatabaseRecordDto::new(obj);
+    let dto = DatabaseRecordDto::new(obj, key);
     let response = match collection.create_document(dto, options.into()).await {
         Ok(resp) => resp,
         Err(error) => return Err(Error::from(error)),
@@ -62,6 +63,7 @@ where
     let record = match collection.document(key).await {
         Ok(doc) => doc,
         Err(error) => {
+            println!("{}", error);
             let err = Error::from(error);
             if let Error::ArangoError(ref db_error) = err {
                 if ArangoHttpError::NotFound == db_error.http_error {

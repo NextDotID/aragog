@@ -600,7 +600,7 @@ mod call {
         factory(&connection).await;
         let query = Query::new("Dish");
 
-        let raw_result = query.clone().raw_call(&connection).await.unwrap();
+        let raw_result = query.raw_call(&connection).await.unwrap();
         common::expect_assert_eq(raw_result.len(), 5)?;
         let typed_result: QueryResult<Dish> = query.call(&connection).await.unwrap();
         common::expect_assert_eq(typed_result.len(), 5)?;
@@ -639,11 +639,7 @@ mod call {
         let connection = common::setup_db().await;
         factory(&connection).await;
         let query = Query::new("Dish");
-        let mut raw_cursor = query
-            .clone()
-            .raw_call_in_batches(&connection, 1)
-            .await
-            .unwrap();
+        let mut raw_cursor = query.raw_call_in_batches(&connection, 1).await.unwrap();
         let mut typed_cursor: QueryCursor<Dish> =
             query.call_in_batches(&connection, 1).await.unwrap();
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Dropped support of enums for `Record` derive macro
+
 ## 0.7.3
 
 * Clippy restrictions
