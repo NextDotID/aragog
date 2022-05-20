@@ -95,7 +95,7 @@ impl Filter {
     /// assert_eq!(filter.to_aql("i"), String::from(r#"i.age > 10 || i.username IN ["felix", "felixm"]"#));
     /// ```
     #[must_use]
-    #[deprecated(note = "use `aql_str` instead")]
+    #[deprecated(since = "0.17.0", note = "use `aql_str` instead")]
     pub fn to_aql(&self, collection_id: &str) -> String {
         self.aql_str(collection_id)
     }

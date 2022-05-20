@@ -4,6 +4,7 @@ use crate::derives::record::hooks_container::HooksContainer;
 use crate::parse_attribute::ParseAttribute;
 use crate::to_tokenstream::ToTokenStream;
 use proc_macro::TokenStream;
+use syn::Data;
 
 mod collection_attribute;
 mod hook;
@@ -14,6 +15,9 @@ mod operation;
 pub fn impl_record_macro(ast: &syn::DeriveInput) -> TokenStream {
     let target_name = &ast.ident;
 
+    if let Data::Enum(_) = ast.data {
+        emit_call_site_error!("`Record` doesn't support enums");
+    }
     let mut hooks = Vec::new();
     let mut collection_names = Vec::new();
     for attr in &ast.attrs {

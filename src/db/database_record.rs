@@ -21,13 +21,13 @@ use std::ops::{Deref, DerefMut};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DatabaseRecord<T> {
     /// The Document unique and indexed `_key`
-    #[serde(rename(serialize = "_key", deserialize = "_key"))]
+    #[serde(rename = "_key")]
     pub(crate) key: String,
     /// The Document unique and indexed `_id`
-    #[serde(rename(serialize = "_id", deserialize = "_id"))]
+    #[serde(rename = "_id")]
     pub(crate) id: String,
     /// The Document revision `_rev`
-    #[serde(rename(serialize = "_rev", deserialize = "_rev"))]
+    #[serde(rename = "_rev")]
     pub(crate) rev: String,
     /// The deserialized stored document
     #[serde(flatten)]
@@ -36,12 +36,35 @@ pub struct DatabaseRecord<T> {
 
 #[allow(dead_code)]
 impl<T: Record> DatabaseRecord<T> {
+    #[maybe_async::maybe_async]
+    async fn __create_with_options<D>(
+        mut record: T,
+        key: Option<String>,
+        db_accessor: &D,
+        options: OperationOptions,
+    ) -> Result<Self, Error>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        let launch_hooks = !options.ignore_hooks;
+        if launch_hooks {
+            record.before_create_hook(db_accessor).await?;
+        }
+        let mut res =
+            database_service::create_record(record, key, db_accessor, T::COLLECTION_NAME, options)
+                .await?;
+        if launch_hooks {
+            res.record.after_create_hook(db_accessor).await?;
+        }
+        Ok(res)
+    }
+
     /// Creates a document in database.
     /// The function will write a new document and return a database record containing the newly created key
     ///
     /// # Note
     ///
-    /// This method should be used for very specific cases, prefer using `delete` instead.
+    /// This method should be used for very specific cases, prefer using `create` instead.
     /// If you want global operation options (always wait for sync, always ignore hooks, etc)
     /// configure your [`DatabaseConnection`] with `with_operation_options` to have a customs set
     /// of default options.
@@ -67,24 +90,57 @@ impl<T: Record> DatabaseRecord<T> {
     /// [`DatabaseConnection`]: struct.DatabaseConnection.html
     #[maybe_async::maybe_async]
     pub async fn create_with_options<D>(
-        mut record: T,
+        record: T,
         db_accessor: &D,
         options: OperationOptions,
     ) -> Result<Self, Error>
     where
         D: DatabaseAccess + ?Sized,
     {
-        let launch_hooks = !options.ignore_hooks;
-        if launch_hooks {
-            record.before_create_hook(db_accessor).await?;
-        }
-        let mut res =
-            database_service::create_record(record, db_accessor, T::COLLECTION_NAME, options)
-                .await?;
-        if launch_hooks {
-            res.record.after_create_hook(db_accessor).await?;
-        }
-        Ok(res)
+        Self::__create_with_options(record, None, db_accessor, options).await
+    }
+
+    /// Creates a document in database with a custom key.
+    /// The function will write a new document and return a database record containing the newly created key
+    ///
+    /// # Note
+    ///
+    /// This method should be used for very specific cases, prefer using `create_with_key` instead.
+    /// If you want global operation options (always wait for sync, always ignore hooks, etc)
+    /// configure your [`DatabaseConnection`] with `with_operation_options` to have a customs set
+    /// of default options.
+    ///
+    /// # Hooks
+    ///
+    /// This function will launch `T` hooks `before_create` and `after_create` unless the `options`
+    /// argument disables hooks.
+    ///
+    /// # Arguments
+    ///
+    /// * `record` - The document to create, it will be returned exactly as the `DatabaseRecord<T>` record
+    /// * `key` - The custom key to apply
+    /// * `db_accessor` - database connection reference
+    /// * `options` - Operation options to apply
+    ///
+    /// # Returns
+    ///
+    /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
+    /// argument value
+    /// A [`Error`] is returned if the operation or the hooks failed.
+    ///
+    /// [`Error`]: enum.Error.html
+    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
+    #[maybe_async::maybe_async]
+    pub async fn create_with_key_and_options<D>(
+        record: T,
+        key: String,
+        db_accessor: &D,
+        options: OperationOptions,
+    ) -> Result<Self, Error>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        Self::__create_with_options(record, Some(key), db_accessor, options).await
     }
 
     /// Creates a document in database.
@@ -113,6 +169,35 @@ impl<T: Record> DatabaseRecord<T> {
         D: DatabaseAccess + ?Sized,
     {
         Self::create_with_options(record, db_accessor, db_accessor.operation_options()).await
+    }
+
+    /// Creates a document in database with a custom key.
+    /// The function will write a new document and return a database record containing the newly created key
+    ///
+    /// # Hooks
+    ///
+    /// This function will launch `T` hooks `before_create` and `after_create` unless the `db_accessor`
+    /// operations options specifically disable hooks.
+    ///
+    /// # Arguments
+    ///
+    /// * `record` - The document to create, it will be returned exactly as the `DatabaseRecord<T>` record
+    /// * `db_accessor` - database connection reference
+    ///
+    /// # Returns
+    ///
+    /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
+    /// argument value
+    /// A [`Error`] is returned if the operation or the hooks failed.
+    ///
+    /// [`Error`]: enum.Error.html
+    #[maybe_async::maybe_async]
+    pub async fn create_with_key<D>(record: T, key: String, db_accessor: &D) -> Result<Self, Error>
+    where
+        D: DatabaseAccess + ?Sized,
+    {
+        Self::create_with_key_and_options(record, key, db_accessor, db_accessor.operation_options())
+            .await
     }
 
     /// Creates a document in database.

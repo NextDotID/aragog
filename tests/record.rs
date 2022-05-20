@@ -577,36 +577,63 @@ mod read {
     }
 }
 
-mod enum_record {
-    use super::*;
-
-    #[derive(Clone, Debug, Serialize, Deserialize, Record)]
-    enum Dish {
-        Adult {
-            price: u16,
-            alcohol: bool,
-            name: String,
-        },
-        Child {
-            price: u16,
-            name: String,
-        },
-    }
-
-    #[maybe_async::test(
-        feature = "blocking",
-        async(all(not(feature = "blocking")), tokio::test)
-    )]
-    async fn can_be_create() {
-        let conn = common::setup_db().await;
-        let dish = Dish::Adult {
-            price: 20,
-            alcohol: true,
-            name: "Baba au rhum".to_string(),
-        };
-        DatabaseRecord::create(dish, &conn).await.unwrap();
-    }
-}
+// mod enum_record {
+//     use super::*;
+//
+//     #[derive(Clone, Debug, Serialize, Deserialize, Record)]
+//     enum Dish {
+//         Adult {
+//             price: u16,
+//             alcohol: bool,
+//             name: String,
+//         },
+//         Child {
+//             price: u16,
+//             name: String,
+//         },
+//     }
+//
+//     #[maybe_async::test(
+//         feature = "blocking",
+//         async(all(not(feature = "blocking")), tokio::test)
+//     )]
+//     async fn works() {
+//         let conn = common::setup_db().await;
+//         let dish = Dish::Adult {
+//             price: 20,
+//             alcohol: true,
+//             name: "Baba au rhum".to_string(),
+//         };
+//         // Store
+//         let db_record = DatabaseRecord::create(dish, &conn).await.unwrap();
+//         if let Dish::Adult {
+//             price,
+//             alcohol,
+//             name,
+//         } = &db_record.record
+//         {
+//             assert_eq!(*price, 20);
+//             assert!(*alcohol);
+//             assert_eq!(name, "Baba au rhum");
+//         } else {
+//             panic!()
+//         }
+//         // Query
+//         let queried: Dish = Dish::find(db_record.key(), &conn).await.unwrap().record;
+//         if let Dish::Adult {
+//             price,
+//             alcohol,
+//             name,
+//         } = queried
+//         {
+//             assert_eq!(price, 20);
+//             assert!(alcohol);
+//             assert_eq!(&name, "Baba au rhum");
+//         } else {
+//             panic!()
+//         }
+//     }
+// }
 
 mod collection_name {
     use super::*;

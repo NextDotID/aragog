@@ -49,7 +49,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Error, Record};
 /// # }
 /// ```
 #[maybe_async::maybe_async]
-pub trait ForeignLink<T: Record>: Sized {
+pub trait ForeignLink<T: Record> {
     /// Defines the foreign key field to the linked `T` model.
     ///
     /// # Example

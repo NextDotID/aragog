@@ -116,8 +116,8 @@ test:clippy:
   <<: *test_template
   script:
     - rustup component add clippy
-    - cargo clippy --all-targets -- -D warnings
-    - cargo clippy --all -- -D warnings
+    - cargo clippy --all --tests -- -D warnings
+    - cargo clippy --all --tests --all-features -- -D warnings
 
 test:examples:
   image: rust:latest

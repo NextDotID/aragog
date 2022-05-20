@@ -591,7 +591,7 @@ impl Query {
     /// ```
     #[inline]
     #[must_use]
-    #[deprecated(note = "use `aql_str` instead")]
+    #[deprecated(since = "0.17.0", note = "use `aql_str` instead")]
     pub fn to_aql(&self) -> String {
         self.aql_str()
     }

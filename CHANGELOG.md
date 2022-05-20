@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* (**BREAKING**) Dropped support for enum records
+* custom `key` support for records:
+  * Added `DatabaseRecord::create_with_key`
+  * Added `DatabaseRecord::create_with_key_and_options`
 * `inline` and `must_use` attributes
 * Deprecated `Comparison::is_null`, `Comparison::is_false` and `Comparison::is_true`
 * Added `Comparison::eq_null`, `Comparison::eq_false` and `Comparison::eq_true`

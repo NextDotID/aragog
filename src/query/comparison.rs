@@ -572,7 +572,7 @@ impl ComparisonBuilder {
     #[inline]
     #[must_use]
     #[allow(clippy::wrong_self_convention)]
-    #[deprecated(note = "use `eq_null` instead")]
+    #[deprecated(since = "0.17.0", note = "use `eq_null` instead")]
     pub fn is_null(self) -> Comparison {
         Comparison {
             is_field: self.is_field,
@@ -641,7 +641,7 @@ impl ComparisonBuilder {
     #[inline]
     #[must_use]
     #[allow(clippy::wrong_self_convention)]
-    #[deprecated(note = "use `eq_true` instead")]
+    #[deprecated(since = "0.17.0", note = "use `eq_true` instead")]
     pub fn is_true(self) -> Comparison {
         Comparison {
             is_field: self.is_field,
@@ -689,7 +689,7 @@ impl ComparisonBuilder {
     #[inline]
     #[must_use]
     #[allow(clippy::wrong_self_convention)]
-    #[deprecated(note = "use `eq_false` instead")]
+    #[deprecated(since = "0.17.0", note = "use `eq_false` instead")]
     pub fn is_false(self) -> Comparison {
         Comparison {
             is_field: self.is_field,
@@ -877,7 +877,7 @@ impl Comparison {
     /// [`Query`]: struct.Query.html
     /// [`aql_str`]: struct.Query.html#method.aql_str
     #[must_use]
-    #[deprecated(note = "use `aql_str` instead")]
+    #[deprecated(since = "0.17.0", note = "use `aql_str` instead")]
     pub fn to_aql(&self, collection_id: &str) -> String {
         self.aql_str(collection_id)
     }

@@ -1,7 +1,9 @@
 # The `Record` trait
 
 This trait defines `aragog` ODM (Object-Document mapper).
-Every type (struct or enum) implementing this trait becomes a **Model** that can be mapped to an ArangoDB [collection document](https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#document).
+Every type implementing this trait becomes a **Model** that can be mapped to an ArangoDB [collection document](https://www.arangodb.com/docs/stable/data-modeling-documents-document-methods.html#document).
+
+> Note: enums don't work as records but can be record fields
 
 When declaring a model like the following:
 
