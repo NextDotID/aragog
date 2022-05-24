@@ -7,8 +7,6 @@ use std::collections::HashMap;
 const LOCK_TIMEOUT: usize = 60000;
 
 /// Builder for Aragog [`Transaction`]
-///
-/// [`Transaction`]: struct.Transaction.html
 #[derive(Debug, Default)]
 pub struct TransactionBuilder {
     collections: Option<Vec<String>>,
@@ -19,8 +17,6 @@ pub struct TransactionBuilder {
 
 impl TransactionBuilder {
     /// Instantiates a new builder for a [`Transaction`]
-    ///
-    /// [`Transaction`]: struct.Transaction.html
     #[must_use]
     #[inline]
     pub fn new() -> Self {
@@ -54,7 +50,7 @@ impl TransactionBuilder {
     /// Defines custom `write` operation options for this transaction.
     /// By default the options set in the [`DatabaseConnection`] are used.
     ///
-    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
+    /// [`DatabaseConnection`]: crate::DatabaseConnection
     #[must_use]
     #[inline]
     pub const fn operation_options(mut self, options: OperationOptions) -> Self {

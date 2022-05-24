@@ -23,7 +23,7 @@ pub enum Error {
     /// Validations failed (see model validation as implemented in [`Validate`].
     /// Can be interpreted as a HTTP code `400` bad request.
     ///
-    /// [`Validate`]: trait.Validate.html
+    /// [`Validate`]: crate::Validate
     ValidationError(String),
     /// An Item (document or collection) could not be found.
     /// Can be interpreted as a HTTP code `404` not found.

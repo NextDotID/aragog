@@ -2,15 +2,28 @@
 
 ## Unreleased
 
-* (**BREAKING**) Dropped support for enum records
+### Miscellaneous
+
+* Rustdoc links update
+* rust 1.61 clippy fixes
+* `inline` and `must_use` attributes
+
+### DatabaseRecord
+
 * custom `key` support for records:
   * Added `DatabaseRecord::create_with_key`
   * Added `DatabaseRecord::create_with_key_and_options`
-* `inline` and `must_use` attributes
+
+### Query
+
 * Deprecated `Comparison::is_null`, `Comparison::is_false` and `Comparison::is_true`
 * Added `Comparison::eq_null`, `Comparison::eq_false` and `Comparison::eq_true`
 * Deprecated `Query::to_aql`, `Filter::to_aql`, `Comparison::to_aql`
 * Added `Query::aql_str`, `Filter::aql_str`, `Comparison::aql_str`
+
+### Breaking
+
+* (**BREAKING**) Dropped support for enum records, which didn't work on retrieval
 * (**BREAKING**) `DatabaseRecord::get`, `DatabaseRecord::get_in_batches` and `DatabaseRecord::exists` now take a borrowed `Query` parameter
 * (**BREAKING**) `Record::get`, `Record::get_in_batches` and `Record::exists` now take a borrowed `Query` parameter
 * (**BREAKING**) `DatabaseAccess::query` and `DatabaseAccess::query_in_batches` now take a borrowed `Query` parameter

@@ -23,33 +23,64 @@ struct SerializedDishRecord {
     pub price: u16,
 }
 
-#[maybe_async::test(
-    feature = "blocking",
-    async(all(not(feature = "blocking")), tokio::test)
-)]
-async fn custom_key() {
-    let connection = common::setup_db().await;
-    let doc = Dish {
-        name: "Pizza".to_string(),
-        description: "Italian Dish".to_string(),
-        price: 13,
-    };
-    let record = DatabaseRecord::create_with_key(doc, "CustomKey".to_string(), &connection)
-        .await
-        .unwrap();
-    assert_eq!(record.key(), "CustomKey");
-    let queried: DatabaseRecord<Dish> = DatabaseRecord::find("CustomKey", &connection)
-        .await
-        .unwrap();
-    assert_eq!(queried.key(), "CustomKey");
-    let json = serde_json::to_string(&queried).unwrap();
-    let serialized_dish: SerializedDishRecord = serde_json::from_str(&json).unwrap();
-    assert_eq!(serialized_dish.price, record.price);
-    assert_eq!(serialized_dish.name, record.name);
-    assert_eq!(serialized_dish.description, record.description);
-    assert_eq!(&serialized_dish._key, "CustomKey");
-    assert_eq!(&serialized_dish._id, "Dish/CustomKey");
-    assert_eq!(&serialized_dish._rev, record.rev());
+mod custom_key {
+    use super::*;
+
+    #[maybe_async::test(
+        feature = "blocking",
+        async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn can_work() {
+        let connection = common::setup_db().await;
+        let doc = Dish {
+            name: "Pizza".to_string(),
+            description: "Italian Dish".to_string(),
+            price: 13,
+        };
+        let record = DatabaseRecord::create_with_key(doc, "CustomKey".to_string(), &connection)
+            .await
+            .unwrap();
+        assert_eq!(record.key(), "CustomKey");
+        let queried: DatabaseRecord<Dish> = DatabaseRecord::find("CustomKey", &connection)
+            .await
+            .unwrap();
+        assert_eq!(queried.key(), "CustomKey");
+        let json = serde_json::to_string(&queried).unwrap();
+        let serialized_dish: SerializedDishRecord = serde_json::from_str(&json).unwrap();
+        assert_eq!(serialized_dish.price, record.price);
+        assert_eq!(serialized_dish.name, record.name);
+        assert_eq!(serialized_dish.description, record.description);
+        assert_eq!(&serialized_dish._key, "CustomKey");
+        assert_eq!(&serialized_dish._id, "Dish/CustomKey");
+        assert_eq!(&serialized_dish._rev, record.rev());
+    }
+
+    #[maybe_async::test(
+        feature = "blocking",
+        async(all(not(feature = "blocking")), tokio::test)
+    )]
+    async fn can_fail_on_existing_key() {
+        let connection = common::setup_db().await;
+        let doc = Dish {
+            name: "Pizza".to_string(),
+            description: "Italian Dish".to_string(),
+            price: 13,
+        };
+        let _ = DatabaseRecord::create_with_key(doc.clone(), "CustomKey".to_string(), &connection)
+            .await
+            .unwrap();
+        let res = DatabaseRecord::create_with_key(doc, "CustomKey".to_string(), &connection).await;
+        if let Err(Error::Conflict(db_error)) = res {
+            assert_eq!(
+                db_error.arango_error,
+                ArangoError::ArangoUniqueConstraintViolated
+            );
+            assert_eq!(db_error.http_error, ArangoHttpError::Conflict);
+            assert_eq!(db_error.message, "unique constraint violated - in index primary of type primary over '_key'; conflicting key: CustomKey")
+        } else {
+            panic!("Duplicate unique key should raise a conflict error")
+        }
+    }
 }
 
 #[maybe_async::test(

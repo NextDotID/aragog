@@ -99,20 +99,20 @@ impl ArangoHttpError {
     #[must_use]
     pub const fn http_code(&self) -> u16 {
         match self {
-            ArangoHttpError::BadParameter => 400,
-            ArangoHttpError::Unauthorized => 401,
-            ArangoHttpError::Forbidden => 403,
-            ArangoHttpError::NotFound => 404,
-            ArangoHttpError::MethodNotAllowed => 405,
-            ArangoHttpError::NotAcceptable => 406,
-            ArangoHttpError::Conflict => 409,
-            ArangoHttpError::PreconditionFailed => 412,
-            ArangoHttpError::ServerError => 500,
-            ArangoHttpError::ServiceUnavailable => 503,
-            ArangoHttpError::GatewayTimeout => 504,
-            ArangoHttpError::CorruptedJson => 600,
-            ArangoHttpError::SuperfluousSuffices => 601,
-            ArangoHttpError::UnknownError(code) => *code,
+            Self::BadParameter => 400,
+            Self::Unauthorized => 401,
+            Self::Forbidden => 403,
+            Self::NotFound => 404,
+            Self::MethodNotAllowed => 405,
+            Self::NotAcceptable => 406,
+            Self::Conflict => 409,
+            Self::PreconditionFailed => 412,
+            Self::ServerError => 500,
+            Self::ServiceUnavailable => 503,
+            Self::GatewayTimeout => 504,
+            Self::CorruptedJson => 600,
+            Self::SuperfluousSuffices => 601,
+            Self::UnknownError(code) => *code,
         }
     }
 }

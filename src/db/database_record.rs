@@ -17,7 +17,7 @@ use std::ops::{Deref, DerefMut};
 ///
 /// `DatabaseRecord` implements `Deref` and `DerefMut` into `T`
 ///
-/// [`Record`]: trait.Record.html
+/// [`Record`]: crate::Record
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DatabaseRecord<T> {
     /// The Document unique and indexed `_key`
@@ -83,11 +83,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
-    /// argument value
-    /// A [`Error`] is returned if the operation or the hooks failed.
+    /// argument value.
+    /// An [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
+    /// [`Error`]: crate::Error
+    /// [`DatabaseConnection`]: crate::DatabaseConnection
     #[maybe_async::maybe_async]
     pub async fn create_with_options<D>(
         record: T,
@@ -125,11 +125,11 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
-    /// argument value
-    /// A [`Error`] is returned if the operation or the hooks failed.
+    /// argument value.
+    /// An [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
+    /// [`Error`]: crate::Error
+    /// [`DatabaseConnection`]: crate::DatabaseConnection
     #[maybe_async::maybe_async]
     pub async fn create_with_key_and_options<D>(
         record: T,
@@ -159,10 +159,10 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
-    /// argument value
-    /// A [`Error`] is returned if the operation or the hooks failed.
+    /// argument value.
+    /// An [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`Error`]: enum.Error.html
+    /// [`Error`]: crate::Error
     #[maybe_async::maybe_async]
     pub async fn create<D>(record: T, db_accessor: &D) -> Result<Self, Error>
     where
@@ -182,15 +182,16 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Arguments
     ///
     /// * `record` - The document to create, it will be returned exactly as the `DatabaseRecord<T>` record
+    /// * `key` - the custom document key
     /// * `db_accessor` - database connection reference
     ///
     /// # Returns
     ///
     /// On success a new instance of `Self` is returned, with the `key` value filled and `record` filled with the
-    /// argument value
-    /// A [`Error`] is returned if the operation or the hooks failed.
+    /// argument value.
+    /// An [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`Error`]: enum.Error.html
+    /// [`Error`]: crate::Error
     #[maybe_async::maybe_async]
     pub async fn create_with_key<D>(record: T, key: String, db_accessor: &D) -> Result<Self, Error>
     where
@@ -225,7 +226,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// argument value
     /// On failure an [`Error`] is returned.
     ///
-    /// [`Error`]: enum.Error.html
+    /// [`Error`]: crate::Error
     #[maybe_async::maybe_async]
     pub async fn force_create<D>(record: T, db_accessor: &D) -> Result<Self, Error>
     where
@@ -264,10 +265,10 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the current instance is up to date with the database state.
-    /// A [`Error`] is returned if the operation or the hooks failed.
+    /// An [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
+    /// [`Error`]: crate::Error
+    /// [`DatabaseConnection`]: crate::DatabaseConnection
     #[maybe_async::maybe_async]
     pub async fn save_with_options<D>(
         &mut self,
@@ -310,9 +311,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the current instance is up to date with the database state.
-    /// A [`Error`] is returned if the operation or the hooks failed.
+    /// An [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`Error`]: enum.Error.html
+    /// [`Error`]: crate::Error
     #[maybe_async::maybe_async]
     pub async fn save<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
@@ -344,7 +345,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// On success `()` is returned, meaning that the current instance is up to date with the database state.
     /// On failure an [`Error`] is returned.
     ///
-    /// [`Error`]: enum.Error.html
+    /// [`Error`]: crate::Error
     #[maybe_async::maybe_async]
     pub async fn force_save<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
@@ -382,10 +383,10 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
-    /// A [`Error`] is returned if the operation or the hooks failed.
+    /// An [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`DatabaseConnection`]: struct.DatabaseConnection.html
+    /// [`Error`]: crate::Error
+    /// [`DatabaseConnection`]: crate::DatabaseConnection
     #[maybe_async::maybe_async]
     pub async fn delete_with_options<D>(
         &mut self,
@@ -427,9 +428,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// # Returns
     ///
     /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
-    /// A [`Error`] is returned if the operation or the hooks failed.
+    /// An [`Error`] is returned if the operation or the hooks failed.
     ///
-    /// [`Error`]: enum.Error.html
+    /// [`Error`]: crate::Error
     #[maybe_async::maybe_async]
     pub async fn delete<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
@@ -462,7 +463,7 @@ impl<T: Record> DatabaseRecord<T> {
     /// On success `()` is returned, meaning that the record is now deleted, the structure should not be used afterwards.
     /// On failure an [`Error`] is returned.
     ///
-    /// [`Error`]: enum.Error.html
+    /// [`Error`]: crate::Error
     #[maybe_async::maybe_async]
     pub async fn force_delete<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
@@ -549,9 +550,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`NotFound`]: enum.Error.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
+    /// [`Error`]: crate::Error
+    /// [`NotFound`]: crate::Error::NotFound
+    /// [`UnprocessableEntity`]: crate::Error::UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn find<D>(key: &str, db_accessor: &D) -> Result<Self, Error>
     where
@@ -573,9 +574,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`NotFound`]: enum.Error.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
+    /// [`Error`]: crate::Error
+    /// [`NotFound`]:crate::Error::NotFound
+    /// [`UnprocessableEntity`]:crate::Error::UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn reload<D>(self, db_accessor: &D) -> Result<Self, Error>
     where
@@ -594,9 +595,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// * [`NotFound`] on invalid document key
     /// * [`UnprocessableEntity`] on data corruption
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`NotFound`]: enum.Error.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
+    /// [`Error`]: crate::Error
+    /// [`NotFound`]:crate::Error::NotFound
+    /// [`UnprocessableEntity`]:crate::Error::UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn reload_mut<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
@@ -655,9 +656,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// # }
     /// ```
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`NotFound`]: enum.Error.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
+    /// [`Error`]: crate::Error
+    /// [`NotFound`]:crate::Error::NotFound
+    /// [`UnprocessableEntity`]:crate::Error::UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn get<D>(query: &Query, db_accessor: &D) -> Result<QueryResult<T>, Error>
     where
@@ -711,9 +712,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// # }
     /// ```
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`NotFound`]: enum.Error.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
+    /// [`Error`]: crate::Error
+    /// [`NotFound`]:crate::Error::NotFound
+    /// [`UnprocessableEntity`]:crate::Error::UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn get_in_batches<D>(
         query: &Query,
@@ -766,9 +767,9 @@ impl<T: Record> DatabaseRecord<T> {
     /// # }
     /// ```
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`NotFound`]: enum.Error.html#variant.NotFound
-    /// [`UnprocessableEntity`]: enum.Error.html#variant.UnprocessableEntity
+    /// [`Error`]: crate::Error
+    /// [`NotFound`]:crate::Error::NotFound
+    /// [`UnprocessableEntity`]:crate::Error::UnprocessableEntity
     #[maybe_async::maybe_async]
     pub async fn aql_get<D>(query: &str, db_accessor: &D) -> Result<QueryResult<T>, Error>
     where
@@ -957,16 +958,22 @@ impl<T: Record> DatabaseRecord<T> {
     }
 
     /// Getter for the Document `_id` built as `$collection_name/$_key`
+    #[inline]
+    #[allow(clippy::missing_const_for_fn)] // Can't be const in 1.56
     pub fn id(&self) -> &String {
         &self.id
     }
 
     /// Getter for the Document `_key`
+    #[inline]
+    #[allow(clippy::missing_const_for_fn)] // Can't be const in 1.56
     pub fn key(&self) -> &String {
         &self.key
     }
 
     /// Getter for the Document `_rev`
+    #[inline]
+    #[allow(clippy::missing_const_for_fn)] // Can't be const in 1.56
     pub fn rev(&self) -> &String {
         &self.rev
     }

@@ -19,7 +19,7 @@ use crate::{Error, OperationOptions};
 /// # Note:
 /// this trait is meant for development purposes, for a classic use of the library you don't need this trait.
 ///
-/// [`DatabaseConnection`]: struct.DatabaseConnection.html
+/// [`DatabaseConnection`]: crate::DatabaseConnection
 #[maybe_async::maybe_async]
 pub trait DatabaseAccess: Sync {
     /// Defines the default operation options to use on `write` operations.
@@ -29,10 +29,10 @@ pub trait DatabaseAccess: Sync {
     /// * [`DatabaseRecord`]::[`save`] ,
     /// * [`DatabaseRecord`]::[`delete`] ,
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`create`]: struct.DatabaseRecord.html#method.create
-    /// [`save`]: struct.DatabaseRecord.html#method.save
-    /// [`delete`]: struct.DatabaseRecord.html#method.delete
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`create`]: crate::DatabaseRecord::create
+    /// [`save`]: crate::DatabaseRecord::save
+    /// [`delete`]: crate::DatabaseRecord::delete
     #[must_use]
     fn operation_options(&self) -> OperationOptions {
         OperationOptions::default()
@@ -63,9 +63,9 @@ pub trait DatabaseAccess: Sync {
     ///
     /// If you want a specific [`Record`] type use [`DatabaseRecord`]::[`get`] directly.
     ///
-    /// [`Record`]: trait.Record.html
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`get`]: struct.DatabaseRecord.html#method.get
+    /// [`Record`]: crate::Record
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`get`]: crate::DatabaseRecord::get
     async fn query(&self, query: &Query) -> Result<QueryResult<UndefinedRecord>, Error> {
         query_records(self, query.aql_str().as_str()).await
     }
@@ -79,9 +79,9 @@ pub trait DatabaseAccess: Sync {
     ///
     /// If you want a specific [`Record`] type use [`DatabaseRecord`]::[`get_in_batches`] directly.
     ///
-    /// [`Record`]: trait.Record.html
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`get_in_batches`]: struct.DatabaseRecord.html#method.get_in_batches
+    /// [`Record`]: crate::Record
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`get_in_batches`]: crate::DatabaseRecord::get_in_batches
     async fn query_in_batches(
         &self,
         query: &Query,

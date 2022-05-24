@@ -40,7 +40,7 @@ use crate::{DatabaseRecord, Error, Record};
 /// }
 /// ```
 ///
-/// [`Record`]: trait.Record.html
+/// [`Record`]: crate::Record
 pub trait AuthorizeAction<T: Record> {
     /// The action type to be authorized, like a custom enum of ACL actions (write, read) or more
     /// logic operations.
@@ -51,8 +51,8 @@ pub trait AuthorizeAction<T: Record> {
     /// # Errors
     /// On failure an [`Error`]::[`Forbidden`] is returned.
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`Forbidden`]: enum.Error.html#variant.Forbidden
+    /// [`Error`]: crate::Error
+    /// [`Forbidden`]: crate::Error::Forbidden
     fn authorize_action(
         &self,
         action: Self::Action,

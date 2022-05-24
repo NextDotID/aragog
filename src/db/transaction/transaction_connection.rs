@@ -7,7 +7,7 @@ use crate::{DatabaseAccess, OperationOptions};
 
 /// Struct equivalent to [`DatabaseConnection`] for transactional operations.
 ///
-/// [`DatabaseConnection`]: ../struct.DatabaseConnection.html
+/// [`DatabaseConnection`]: crate::DatabaseConnection
 #[derive(Debug, Clone)]
 pub struct TransactionDatabaseConnection {
     pub(crate) collections: HashMap<String, DatabaseCollection>,

@@ -1,10 +1,9 @@
 #![allow(clippy::missing_const_for_fn)]
 use crate::Error;
 
-/// Output of a [`TransactionDatabaseConnection`][`safe_execute`]
+/// Output of a [`TransactionDatabaseConnection`]`::safe_execute`
 ///
-/// [`TransactionDatabaseConnection`]: transaction/struct.TransactionDatabaseConnection.html
-/// [`safe_execute`]: transaction/struct.TransactionDatabaseConnection.html#method.safe_execute
+/// [`TransactionDatabaseConnection`]: crate::transaction::TransactionDatabaseConnection
 #[must_use]
 pub enum TransactionOutput<T> {
     /// The transaction was committed
@@ -26,19 +25,16 @@ impl<T> TransactionOutput<T> {
         !self.is_committed()
     }
 
-    /// Returns the contained [Committed] value, consuming the self value.
+    /// Returns the contained [`Self::Committed`] value, consuming the self value.
     ///
     /// # Panics
     ///
-    /// Panics if the self value equals [Aborted].
-    ///
-    /// [Committed]: enum.TransactionOutput.html#variant.Committed
-    /// [Aborted]: enum.TransactionOutput.html#variant.Aborted
+    /// Panics if the self value equals [`Self::Aborted`].
     #[inline]
     pub fn unwrap(self) -> T {
         match self {
-            TransactionOutput::Committed(v) => v,
-            TransactionOutput::Aborted(err) => panic!(
+            Self::Committed(v) => v,
+            Self::Aborted(err) => panic!(
                 "called `TransactionOuput::unwrap()` on an `Aborted` value {}",
                 err
             ),
@@ -49,8 +45,8 @@ impl<T> TransactionOutput<T> {
     #[inline]
     pub fn ok(self) -> Option<T> {
         match self {
-            TransactionOutput::Committed(v) => Some(v),
-            TransactionOutput::Aborted(_) => None,
+            Self::Committed(v) => Some(v),
+            Self::Aborted(_) => None,
         }
     }
 
@@ -69,8 +65,8 @@ impl<T> TransactionOutput<T> {
     ///
     /// Panics if the value is a [Aborted] with a custom panic message provided by msg
     ///
-    /// [Committed]: enum.TransactionOutput.html#variant.Committed
-    /// [Aborted]: enum.TransactionOutput.html#variant.Aborted
+    /// [Committed]: Self::Committed
+    /// [Aborted]: Self::Aborted
     #[inline]
     pub fn expect(self, msg: &str) -> T {
         match self {

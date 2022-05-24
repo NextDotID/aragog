@@ -1,3 +1,4 @@
+#![allow(clippy::use_self)]
 use crate::query::graph_query::{GraphQueryData, GraphQueryDirection};
 use crate::query::operations::{AqlOperation, OperationContainer};
 use crate::query::query_id_helper::get_str_identifier;
@@ -35,8 +36,6 @@ mod utils;
 /// let query = query!("Users");
 /// # }
 /// ```
-///
-/// [`Query`]: struct.Query.html
 #[macro_export]
 macro_rules! query {
     ($collection:expr) => {
@@ -44,10 +43,7 @@ macro_rules! query {
     };
 }
 
-/// The direction for [`Query`] [`sort`] method
-///
-/// [`Query`]: struct.Query.html
-/// [`sort`]: struct.Query.html#method.sort
+/// The direction for [`Query::sort`] method
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum SortDirection {
     /// Ascending
@@ -62,8 +58,8 @@ impl Display for SortDirection {
             f,
             "{}",
             match self {
-                SortDirection::Asc => "ASC",
-                SortDirection::Desc => "DESC",
+                Self::Asc => "ASC",
+                Self::Desc => "DESC",
             }
         )
     }
@@ -93,7 +89,7 @@ impl Display for SortDirection {
 /// # }
 /// ```
 ///
-/// [`aql_str`]: struct.Query.html#method.aql_str
+/// [`aql_str`]: Self::aql_str
 #[derive(Clone, Debug)]
 pub struct Query {
     with_collections: OptionalQueryString,
@@ -653,8 +649,8 @@ impl Query {
     /// Simple wrapper for [`DatabaseAccess`]::[`query`].
     /// Useful for queries returning various collection records.
     ///
-    /// [`DatabaseAccess`]: trait.DatabaseAccess.html
-    /// [`query`]: trait.DatabaseAccess.html#method.query
+    /// [`DatabaseAccess`]: crate::DatabaseAccess
+    /// [`query`]: crate::DatabaseAccess::query
     #[maybe_async::maybe_async]
     pub async fn raw_call<D>(&self, db_accessor: &D) -> Result<QueryResult<UndefinedRecord>, Error>
     where
@@ -668,8 +664,8 @@ impl Query {
     /// # Note
     /// Simple wrapper for [`Record`]::[`get`]
     ///
-    /// [`Record`]: trait.Record.html
-    /// [`get`]: trait.Record.html#method.get
+    /// [`Record`]: crate::Record
+    /// [`get`]: crate::Record::get
     #[maybe_async::maybe_async]
     pub async fn call<D, T>(&self, db_accessor: &D) -> Result<QueryResult<T>, Error>
     where
@@ -686,8 +682,8 @@ impl Query {
     /// Simple wrapper for [`DatabaseAccess`]::[`query_in_batches`].
     /// Useful for queries returning various collection records.
     ///
-    /// [`DatabaseAccess`]: trait.DatabaseAccess.html
-    /// [`query_in_batches`]: trait.DatabaseAccess.html#method.query_in_batches
+    /// [`DatabaseAccess`]: crate::DatabaseAccess
+    /// [`query_in_batches`]: crate::DatabaseAccess::query_in_batches
     #[maybe_async::maybe_async]
     pub async fn raw_call_in_batches<D>(
         &self,
@@ -705,8 +701,8 @@ impl Query {
     /// # Note
     /// Simple wrapper for [`Record`]::[`get_in_batches`]
     ///
-    /// [`Record`]: trait.Record.html
-    /// [`get_in_batches`]: trait.DatabaseAccess.html#method.get_in_batches
+    /// [`Record`]: crate::Record
+    /// [`get_in_batches`]: crate::Record::get_in_batches
     #[maybe_async::maybe_async]
     pub async fn call_in_batches<D, T>(
         &self,
