@@ -16,6 +16,7 @@ pub struct DatabaseRecordDto<T> {
 impl<T: Record> DatabaseRecordDto<T> {
     #[inline]
     #[must_use]
+    #[allow(clippy::missing_const_for_fn)] // Can't be const in 1.56
     pub fn new(record: T, key: Option<String>) -> Self {
         Self { key, record }
     }
@@ -26,10 +27,10 @@ impl<T: Record> TryInto<DatabaseRecord<T>> for DocumentResponse<DatabaseRecord<T
 
     fn try_into(self) -> Result<DatabaseRecord<T>, Self::Error> {
         match self {
-            DocumentResponse::Silent => Err(Error::InternalError {
+            Self::Silent => Err(Error::InternalError {
                 message: Some(String::from("Received unexpected silent document response")),
             }),
-            DocumentResponse::Response { new, header, .. } => match new {
+            Self::Response { new, header, .. } => match new {
                 Some(value) => Ok(value),
                 None => Err(Error::InternalError {
                     message: Some(format!(
@@ -47,10 +48,10 @@ impl<T: Record> TryInto<DatabaseRecord<T>> for DocumentResponse<DatabaseRecordDt
 
     fn try_into(self) -> Result<DatabaseRecord<T>, Self::Error> {
         match self {
-            DocumentResponse::Silent => Err(Error::InternalError {
+            Self::Silent => Err(Error::InternalError {
                 message: Some(String::from("Received unexpected silent document response")),
             }),
-            DocumentResponse::Response { header, new, .. } => {
+            Self::Response { header, new, .. } => {
                 let record = match new {
                     Some(doc) => doc.record,
                     None => {

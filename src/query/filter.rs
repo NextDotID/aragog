@@ -22,8 +22,6 @@ impl Display for Operator {
 }
 
 /// Allows to filter a query according to different [`Comparison`].
-///
-/// [`Comparison`]: struct.Comparison.html
 #[derive(Clone, Debug)]
 pub struct Filter {
     comparisons: Vec<Comparison>,

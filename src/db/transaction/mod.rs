@@ -73,7 +73,7 @@ mod transaction_output;
 /// The `WRITE` transaction operations muse be document related: `create`, `save`, `delete`, etc. The AQL operations may not work.
 /// On the other hand all `READ` operations as `find`, `get`, etc should all work even with `AQL` queries.
 ///
-/// [`DatabaseConnection`]: ../struct.DatabaseConnection.html
+/// [`DatabaseConnection`]: crate::DatabaseConnection
 #[derive(Debug)]
 pub struct Transaction {
     accessor: TransactionLayer,
@@ -101,8 +101,7 @@ impl Transaction {
     ///
     /// For more options use [`TransactionBuilder`]
     ///
-    /// [`DatabaseConnection`]: ../struct.DatabaseConnection.html
-    /// [`TransactionBuilder`]: struct.TransactionBuilder.html
+    /// [`DatabaseConnection`]: crate::DatabaseConnection
     #[maybe_async::maybe_async]
     pub async fn new(db_connection: &DatabaseConnection) -> Result<Self, Error> {
         TransactionBuilder::new().build(db_connection).await
@@ -368,7 +367,7 @@ impl Transaction {
     /// Retrieves the database connection of the transaction which implements [`DatabaseAccess`].
     /// This connection can be used exactly the same way was the classic database connection.
     ///
-    /// [`DatabaseAccess`]: ../trait.DatabaseAccess.html
+    /// [`DatabaseAccess`]: crate::DatabaseAccess
     #[must_use]
     #[inline]
     pub const fn database_connection(&self) -> &TransactionDatabaseConnection {

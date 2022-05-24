@@ -32,8 +32,6 @@ use crate::query::Filter;
 /// let comparison = compare!("statement");
 /// # }
 /// ```
-///
-/// [`Comparison`]: struct.Comparison.html
 #[macro_export]
 macro_rules! compare {
     ($value:expr) => {
@@ -54,8 +52,6 @@ macro_rules! compare {
 }
 
 /// Builder for [`Comparison`]
-///
-/// [`Comparison`]: struct.Comparison.html
 #[derive(Clone, Debug)]
 pub struct ComparisonBuilder {
     is_field: bool,
@@ -64,7 +60,7 @@ pub struct ComparisonBuilder {
 
 /// Struct representing one AQL comparison in a [`Query`].
 ///
-/// [`Query`]: struct.Query.html
+/// [`Query`]: crate::query::Query
 #[derive(Clone, Debug)]
 pub struct Comparison {
     is_field: bool,
@@ -285,7 +281,7 @@ impl ComparisonBuilder {
     /// assert_eq!(query.aql_str(), r#"FOR a in User FILTER a.username == "felix" return a"#);
     /// ```
     ///
-    /// [`equals_str`]: struct.ComparisonBuilder.html#method.equals_str
+    /// [`equals_str`]: Self::equals_str
     #[inline]
     #[must_use]
     pub fn equals<T>(self, value: T) -> Comparison
@@ -331,7 +327,7 @@ impl ComparisonBuilder {
     /// assert_eq!(query.aql_str(), r#"FOR a in User FILTER a.username != "felix" return a"#);
     /// ```
     ///
-    /// [`different_than_str`]: struct.ComparisonBuilder.html#method.different_than_str
+    /// [`different_than_str`]: Self::different_than_str
     #[inline]
     #[must_use]
     pub fn different_than<T>(self, value: T) -> Comparison
@@ -861,10 +857,6 @@ impl Comparison {
     /// Renders `self` in a valid AQL format.
     /// `collection_id` is simply the collection identifier, it can be any string.
     ///
-    /// # Note
-    ///
-    /// You should not use this method except for debug purpose, use [`Query`]::[`aql_str`] instead
-    ///
     /// # Example
     ///
     /// ```rust
@@ -873,9 +865,6 @@ impl Comparison {
     ///
     /// assert_eq!(comparison.to_aql("i").as_str(), "i.age > 18")
     /// ```
-    ///
-    /// [`Query`]: struct.Query.html
-    /// [`aql_str`]: struct.Query.html#method.aql_str
     #[must_use]
     #[deprecated(since = "0.17.0", note = "use `aql_str` instead")]
     pub fn to_aql(&self, collection_id: &str) -> String {
@@ -885,10 +874,6 @@ impl Comparison {
     /// Renders `self` in a valid AQL format.
     /// `collection_id` is simply the collection identifier, it can be any string.
     ///
-    /// # Note
-    ///
-    /// You should not use this method except for debug purpose, use [`Query`]::[`aql_str`] instead
-    ///
     /// # Example
     ///
     /// ```rust
@@ -897,9 +882,6 @@ impl Comparison {
     ///
     /// assert_eq!(comparison.aql_str("i").as_str(), "i.age > 18")
     /// ```
-    ///
-    /// [`Query`]: struct.Query.html
-    /// [`aql_str`]: struct.Query.html#method.aql_str
     #[must_use]
     pub fn aql_str(&self, collection_id: &str) -> String {
         let id = if self.is_field {

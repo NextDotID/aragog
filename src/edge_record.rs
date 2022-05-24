@@ -10,7 +10,7 @@ use std::ops::{Deref, DerefMut};
 ///
 /// `EdgeRecord` implements `Deref` and `DerefMut` into `T`
 ///
-/// [`Record`]: trait.Record.html
+/// [`Record`]: crate::Record
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EdgeRecord<T> {
     /// The `_from` field of `ArangoDB` edge documents
@@ -23,7 +23,7 @@ pub struct EdgeRecord<T> {
     ///
     /// Note: The data is flattened on save, so you won't have any field named `data` in your database.
     ///
-    /// [`Record`]: trait.Record.html
+    /// [`Record`]: crate::Record
     #[serde(flatten)]
     pub data: T,
 }
@@ -71,13 +71,17 @@ impl<T: Record> EdgeRecord<T> {
     }
 
     /// Retrieves the document `_from` field, storing the target documents `id`.
+    #[allow(clippy::missing_const_for_fn)] // Can't be const in 1.56
     #[must_use]
+    #[inline]
     pub fn id_from(&self) -> &String {
         &self.from
     }
 
     /// Retrieves the document `_to` field, storing the target documents `id`.
+    #[allow(clippy::missing_const_for_fn)] // Can't be const in 1.56
     #[must_use]
+    #[inline]
     pub fn id_to(&self) -> &String {
         &self.to
     }

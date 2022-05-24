@@ -144,7 +144,7 @@ rustdoc:
     PKG_NAME: aragog
   script:
     - cargo --version
-    - cargo rustdoc -p $PKG_NAME --target-dir public/rustdoc
+    - cargo rustdoc -p $PKG_NAME --target-dir public/rustdoc -- -D warnings
   artifacts:
     paths:
       - public

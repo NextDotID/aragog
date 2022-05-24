@@ -59,6 +59,8 @@ pub struct QueryCursor<T> {
 
 impl<T: Record> QueryCursor<T> {
     #[must_use]
+    #[inline]
+    #[allow(clippy::missing_const_for_fn)]
     pub(crate) fn new(
         cursor: Cursor<DatabaseRecord<T>>,
         database: Database,
@@ -83,6 +85,7 @@ impl<T: Record> QueryCursor<T> {
     /// Does the cursor have more batches
     #[must_use]
     #[inline]
+    #[allow(clippy::missing_const_for_fn)]
     pub fn has_more(&self) -> bool {
         self.cursor.more
     }

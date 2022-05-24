@@ -15,7 +15,7 @@ pub struct OperationOptions {
     pub ignore_revs: bool,
     /// Defines if the operation should ignore [`Record`] hooks. By default set to `true`
     ///
-    /// [`Record`]: trait.Record.html
+    /// [`Record`]: crate::Record
     pub ignore_hooks: bool,
 }
 

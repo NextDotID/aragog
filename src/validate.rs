@@ -37,7 +37,7 @@ use std::slice;
 ///     }
 /// }
 /// ```
-/// [`Record`]: trait.Record.html
+/// [`Record`]: crate::Record
 pub trait Validate {
     /// Validates the object field formats, logic or anything.
     ///
@@ -47,9 +47,9 @@ pub trait Validate {
     ///
     /// Will render a complete [`Error`]::[`ValidationError`] on validation failure.
     ///
-    /// [`validations`]: trait.Validate.html#tymethod.validations
-    /// [`Error`]: enum.Error.html
-    /// [`ValidationError`]: enum.Error.html#variant.ValidationError
+    /// [`validations`]: Self::validations
+    /// [`Error`]: crate::Error
+    /// [`ValidationError`]:crate::Error::ValidationError
     fn validate(&self) -> Result<(), Error> {
         let mut errors: Vec<String> = Vec::new();
 
@@ -89,7 +89,7 @@ pub trait Validate {
     ///
     /// `true` if `field` is `Some<T>` on failure, `false` is returned and `errors` stored a new message
     ///
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     fn validate_field_presence<T>(
         field_name: &str,
         field: &Option<T>,
@@ -117,7 +117,7 @@ pub trait Validate {
     ///
     /// `true` if `field` is `None` on failure, `false` is returned and `errors` stored a new message
     ///
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     fn validate_field_absence<T>(
         field_name: &str,
         field: &Option<T>,
@@ -147,8 +147,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     #[allow(dead_code)]
     fn validate_numeric_string(field_path: &str, str: &str, errors: &mut Vec<String>) -> bool {
         for char in str.chars() {
@@ -176,8 +175,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     #[allow(dead_code)]
     fn validate_max_len(
         field_path: &str,
@@ -211,8 +209,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     #[allow(dead_code)]
     fn validate_min_len(
         field_path: &str,
@@ -246,8 +243,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     #[allow(dead_code)]
     fn validate_len(field_path: &str, str: &str, len: usize, errors: &mut Vec<String>) -> bool {
         if str.len() != len {
@@ -276,8 +272,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     /// [`Iter`]: std::slice::Iter
     #[allow(dead_code)]
     fn validate_max_count<T>(
@@ -312,8 +307,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     /// [`Iter`]: std::slice::Iter
     #[allow(dead_code)]
     fn validate_min_count<T>(
@@ -348,8 +342,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     /// [`Iter`]: std::slice::Iter
     #[allow(dead_code)]
     fn validate_count<T>(
@@ -384,8 +377,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     #[allow(dead_code)]
     fn validate_regex(field_path: &str, str: &str, regex: &str, errors: &mut Vec<String>) -> bool {
         let reg = match Regex::new(regex) {
@@ -419,8 +411,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     #[allow(dead_code)]
     fn validate_greater_than<T: PartialOrd + Display>(
         field_path: &str,
@@ -454,8 +445,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     #[allow(dead_code)]
     fn validate_greater_or_equal_to<T: PartialOrd + Display>(
         field_path: &str,
@@ -489,8 +479,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     #[allow(dead_code)]
     fn validate_lesser_than<T: PartialOrd + Display>(
         field_path: &str,
@@ -524,8 +513,7 @@ pub trait Validate {
     /// On success `true` is returned and `errors` stays unchanged. On failure `false` is returned and a
     /// new error message is added to `errors`
     ///
-    /// [`Validate`]: trait.Validate.html
-    /// [`validations`]: trait.Validate.html#tymethod.validations
+    /// [`validations`]: Self::validations
     #[allow(dead_code)]
     fn validate_lesser_or_equal_to<T: PartialOrd + Display>(
         field_path: &str,

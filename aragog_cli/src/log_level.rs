@@ -30,9 +30,9 @@ impl From<u8> for LogLevel {
 impl Display for LogLevel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let str = match self {
-            LogLevel::Info => "",
-            LogLevel::Debug => "[Debug]",
-            LogLevel::Verbose => "[Trace]",
+            Self::Info => "",
+            Self::Debug => "[Debug]",
+            Self::Verbose => "[Trace]",
         };
         write!(f, "[Aragog]{}", str)
     }

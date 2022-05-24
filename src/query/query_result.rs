@@ -24,8 +24,8 @@ impl<T: Clone + Record> QueryResult<T> {
     ///
     /// Should not panic
     ///
-    /// [`Error`]: enum.Error.html
-    /// [`NotFound`]: enum.Error.html#variant.NotFound
+    /// [`Error`]: crate::Error
+    /// [`NotFound`]: crate::Error::NotFound
     pub fn uniq(self) -> Result<DatabaseRecord<T>, Error> {
         if self.is_empty() || self.len() > 1 {
             log::error!(

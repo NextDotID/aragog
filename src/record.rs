@@ -10,7 +10,7 @@ use crate::{DatabaseAccess, DatabaseConnection, DatabaseRecord, Error};
 /// Trait for structures that can be stored in Database.
 /// The trait must be implemented to be used as a record in [`DatabaseRecord`]
 ///
-/// [`DatabaseRecord`]: struct.DatabaseRecord.html
+/// [`DatabaseRecord`]: crate::DatabaseRecord
 #[maybe_async::maybe_async]
 pub trait Record: DeserializeOwned + Serialize + Clone {
     /// returns the associated Collection
@@ -20,8 +20,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// Finds a document in database from its unique key.
     /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`find`]
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`find`]: struct.DatabaseRecord.html#method.find
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`find`]: crate::DatabaseRecord::find
     async fn find<D>(key: &str, db_accessor: &D) -> Result<DatabaseRecord<Self>, Error>
     where
         D: DatabaseAccess + ?Sized,
@@ -32,8 +32,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// Finds all documents in database matching a `Query`.
     /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`get`]
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`get`]: struct.DatabaseRecord.html#method.get
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`get`]: crate::DatabaseRecord::get
     async fn get<D>(query: &Query, db_accessor: &D) -> Result<QueryResult<Self>, Error>
     where
         D: DatabaseAccess + ?Sized,
@@ -44,8 +44,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// Finds all documents in database matching a `Query` in batches.
     /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`get_in_batches`]
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`get_in_batches`]: struct.DatabaseRecord.html#method.get_in_batches
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`get_in_batches`]: crate::DatabaseRecord::get_in_batches
     async fn get_in_batches<D>(
         query: &Query,
         db_accessor: &D,
@@ -60,8 +60,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// Returns true if there are any document in database matching a `Query`.
     /// Simple wrapper for [`DatabaseRecord`]<`T`>::[`exists`]
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`exists`]: struct.DatabaseRecord.html#method.exists
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`exists`]: crate::DatabaseRecord::exists
     #[must_use]
     async fn exists<D>(query: &Query, db_accessor: &D) -> bool
     where
@@ -99,8 +99,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     /// assert_eq!(created_user.name, "Patrick".to_owned());
     /// # }
     /// ```
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`create`]: struct.DatabaseRecord.html#method.create
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`create`]: crate::DatabaseRecord::create
     async fn create<D>(record: Self, db_accessor: &D) -> Result<DatabaseRecord<Self>, Error>
     where
         D: DatabaseAccess + ?Sized,
@@ -133,8 +133,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// Define hooks manually or with macros (see the book)
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`create`]: struct.DatabaseRecored.html#method.create
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`create`]: crate::DatabaseRecord::create
     async fn before_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
@@ -144,8 +144,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// Define hooks manually or with macros (see the book)
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`save`]: struct.DatabaseRecored.html#method.save
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`save`]: crate::DatabaseRecord::save
     async fn before_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
@@ -155,8 +155,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// Define hooks manually or with macros (see the book)
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`delete`]: struct.DatabaseRecored.html#method.delete
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`delete`]: crate::DatabaseRecord::delete
     async fn before_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
@@ -166,8 +166,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// Define hooks manually or with macros (see the book)
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`create`]: struct.DatabaseRecored.html#method.create
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`create`]: crate::DatabaseRecord::create
     async fn after_create_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
@@ -177,8 +177,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// Define hooks manually or with macros (see the book)
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`save`]: struct.DatabaseRecored.html#method.save
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`save`]: crate::DatabaseRecord::save
     async fn after_save_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;
@@ -188,8 +188,8 @@ pub trait Record: DeserializeOwned + Serialize + Clone {
     ///
     /// Define hooks manually or with macros (see the book)
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
-    /// [`delete`]: struct.DatabaseRecored.html#method.delete
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
+    /// [`delete`]: crate::DatabaseRecord::delete
     async fn after_delete_hook<D>(&mut self, db_accessor: &D) -> Result<(), Error>
     where
         D: DatabaseAccess + ?Sized;

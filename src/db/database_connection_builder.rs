@@ -210,7 +210,7 @@ impl DatabaseConnectionBuilder {
     ///
     /// If you set `ignore_hooks` here, every [`DatabaseRecord`] operation will skip hooks.
     ///
-    /// [`DatabaseRecord`]: struct.DatabaseRecord.html
+    /// [`DatabaseRecord`]: crate::DatabaseRecord
     #[must_use]
     #[inline]
     pub fn with_operation_options(mut self, options: OperationOptions) -> Self {
