@@ -70,10 +70,7 @@ pub trait Validate {
     /// Runs all validations and returns a `false` if they failed, on success `true` is returned
     #[must_use]
     fn is_valid(&self) -> bool {
-        match self.validate() {
-            Ok(()) => true,
-            Err(_err) => false,
-        }
+        self.validate().is_ok()
     }
 
     /// Helper function to simply check the presence of a field. This function is usually used inside the
