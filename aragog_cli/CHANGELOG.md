@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Removed deprecated calls to `clap`
+* `arangors_lite` 0.2.0
 
 ## 0.5.1
 

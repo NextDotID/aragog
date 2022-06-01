@@ -4,7 +4,7 @@ use serde_json::Value;
 use std::fmt::{self, Display, Formatter};
 
 use crate::db::database_service;
-use crate::db::database_service::{query_records, query_records_in_batches};
+use crate::db::database_service::{query_records, query_records_in_batches, raw_query_records};
 use crate::query::{Query, QueryCursor, QueryResult};
 use crate::{DatabaseAccess, EdgeRecord, Error, OperationOptions, Record};
 use std::ops::{Deref, DerefMut};
@@ -664,7 +664,7 @@ impl<T: Record> DatabaseRecord<T> {
     where
         D: DatabaseAccess + ?Sized,
     {
-        Self::aql_get(&query.aql_str(), db_accessor).await
+        query_records(db_accessor, query).await
     }
 
     /// Retrieves all records from the database matching the associated conditions in batches.
@@ -724,7 +724,7 @@ impl<T: Record> DatabaseRecord<T> {
     where
         D: DatabaseAccess + ?Sized,
     {
-        query_records_in_batches(db_accessor, &query.aql_str(), batch_size).await
+        query_records_in_batches(db_accessor, query, batch_size).await
     }
 
     /// Retrieves all records from the database matching the associated conditions.
@@ -775,7 +775,7 @@ impl<T: Record> DatabaseRecord<T> {
     where
         D: DatabaseAccess + ?Sized,
     {
-        query_records(db_accessor, query).await
+        raw_query_records(db_accessor, query).await
     }
 
     /// Creates a new outbound graph `Query` with `self` as a start vertex
@@ -938,12 +938,8 @@ impl<T: Record> DatabaseRecord<T> {
     where
         D: DatabaseAccess + ?Sized,
     {
-        let aql_string = query.aql_str();
-        let aql_query = AqlQuery::builder()
-            .query(&aql_string)
-            .batch_size(1)
-            .count(true)
-            .build();
+        let aql = query.aql_str();
+        let aql_query = AqlQuery::new(&aql).batch_size(1).count(true);
         match db_accessor
             .database()
             .aql_query_batch::<Value>(aql_query)

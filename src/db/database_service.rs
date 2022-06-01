@@ -1,6 +1,6 @@
 use crate::db::database_record_dto::DatabaseRecordDto;
 use crate::error::ArangoHttpError;
-use crate::query::{QueryCursor, QueryResult};
+use crate::query::{Query, QueryCursor, QueryResult};
 use crate::{DatabaseAccess, DatabaseRecord, Error, OperationOptions, Record};
 use arangors_lite::{AqlOptions, AqlQuery};
 use std::convert::TryInto;
@@ -103,7 +103,7 @@ where
 }
 
 #[maybe_async::maybe_async]
-pub async fn query_records<T, D>(db_accessor: &D, aql: &str) -> Result<QueryResult<T>, Error>
+pub async fn raw_query_records<T, D>(db_accessor: &D, aql: &str) -> Result<QueryResult<T>, Error>
 where
     T: Record,
     D: DatabaseAccess + ?Sized,
@@ -121,34 +121,54 @@ where
 }
 
 #[maybe_async::maybe_async]
+pub async fn query_records<T, D>(db_accessor: &D, query: &Query) -> Result<QueryResult<T>, Error>
+where
+    T: Record,
+    D: DatabaseAccess + ?Sized,
+{
+    let aql = query.aql_str();
+    log::debug!(
+        "Querying {} records through AQL: `{}`",
+        T::COLLECTION_NAME,
+        aql
+    );
+    let mut aql_query = AqlQuery::new(&aql);
+    for (var, val) in &query.bind_vars {
+        aql_query = aql_query.bind_var(var, val.clone());
+    }
+    let query_result = match db_accessor.database().aql_query(aql_query).await {
+        Ok(value) => value,
+        Err(error) => return Err(Error::from(error)),
+    };
+    Ok(query_result.into())
+}
+
+#[maybe_async::maybe_async]
 pub async fn query_records_in_batches<T, D>(
     db_accessor: &D,
-    aql: &str,
+    query: &Query,
     batch_size: u32,
 ) -> Result<QueryCursor<T>, Error>
 where
     T: Record,
     D: DatabaseAccess + ?Sized,
 {
+    let aql = query.aql_str();
     log::debug!(
         "Querying {} records through AQL with {} batch size: `{}`",
         T::COLLECTION_NAME,
         batch_size,
         aql
     );
-    let query = AqlQuery::builder()
-        .query(aql)
-        .count(true)
+    let mut aql_query = AqlQuery::new(&aql)
         .batch_size(batch_size)
-        .options(AqlOptions::builder().full_count(true).build())
-        .build();
-    let cursor = match db_accessor.database().aql_query_batch(query).await {
+        .options(AqlOptions::builder().full_count(true).build());
+    for (var, val) in &query.bind_vars {
+        aql_query = aql_query.bind_var(var, val.clone());
+    }
+    let cursor = match db_accessor.database().aql_query_batch(aql_query).await {
         Ok(value) => value,
         Err(error) => return Err(Error::from(error)),
     };
-    Ok(QueryCursor::new(
-        cursor,
-        db_accessor.database().clone(),
-        aql.to_string(),
-    ))
+    Ok(QueryCursor::new(cursor, db_accessor.database().clone()))
 }

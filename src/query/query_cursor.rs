@@ -52,7 +52,6 @@ use crate::{DatabaseRecord, Record};
 pub struct QueryCursor<T> {
     pub(crate) cursor: Cursor<DatabaseRecord<T>>,
     pub(crate) database: Database,
-    pub(crate) query: String,
     #[cfg(feature = "blocking")]
     pending_result: Option<QueryResult<T>>,
 }
@@ -61,17 +60,12 @@ impl<T: Record> QueryCursor<T> {
     #[must_use]
     #[inline]
     #[allow(clippy::missing_const_for_fn)]
-    pub(crate) fn new(
-        cursor: Cursor<DatabaseRecord<T>>,
-        database: Database,
-        query: String,
-    ) -> Self {
+    pub(crate) fn new(cursor: Cursor<DatabaseRecord<T>>, database: Database) -> Self {
         Self {
             #[cfg(feature = "blocking")]
             pending_result: Some(cursor.result.clone().into()),
             cursor,
             database,
-            query,
         }
     }
 
@@ -88,13 +82,6 @@ impl<T: Record> QueryCursor<T> {
     #[allow(clippy::missing_const_for_fn)]
     pub fn has_more(&self) -> bool {
         self.cursor.more
-    }
-
-    /// Get the current cursor AQL query
-    #[must_use]
-    #[inline]
-    pub fn query(&self) -> &str {
-        &self.query
     }
 
     /// Total number of documents that matched the search condition

@@ -67,7 +67,7 @@ pub trait DatabaseAccess: Sync {
     /// [`DatabaseRecord`]: crate::DatabaseRecord
     /// [`get`]: crate::DatabaseRecord::get
     async fn query(&self, query: &Query) -> Result<QueryResult<UndefinedRecord>, Error> {
-        query_records(self, query.aql_str().as_str()).await
+        query_records(self, query).await
     }
 
     /// Runs an AQL query using batches and returns a cursor on the found documents as undefined records.
@@ -87,6 +87,6 @@ pub trait DatabaseAccess: Sync {
         query: &Query,
         batch_size: u32,
     ) -> Result<QueryCursor<UndefinedRecord>, Error> {
-        query_records_in_batches(self, query.aql_str().as_str(), batch_size).await
+        query_records_in_batches(self, query, batch_size).await
     }
 }

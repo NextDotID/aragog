@@ -7,6 +7,7 @@
 * Rustdoc links update
 * rust 1.61 clippy fixes
 * `inline` and `must_use` attributes
+* `arangors_lite` 0.2.0
 
 ### DatabaseRecord
 
