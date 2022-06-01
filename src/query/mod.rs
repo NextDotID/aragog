@@ -6,6 +6,8 @@ use crate::query::utils::{string_from_array, OptionalQueryString};
 use crate::undefined_record::UndefinedRecord;
 use crate::{DatabaseAccess, Error, Record};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
 use std::fmt::{self, Display, Formatter};
 pub use {
     comparison::Comparison, comparison::ComparisonBuilder, filter::Filter,
@@ -99,6 +101,8 @@ pub struct Query {
     distinct: bool,
     sub_query: Option<String>,
     item_identifier: usize,
+    /// bind parameters to substitute in query string
+    pub bind_vars: HashMap<String, Value>,
 }
 
 impl Query {
@@ -126,7 +130,27 @@ impl Query {
             distinct: false,
             sub_query: None,
             item_identifier: 0,
+            bind_vars: HashMap::default(),
         }
+    }
+
+    /// Binds `var` attribute to be substituted by `value` in the query string
+    #[must_use]
+    #[inline]
+    pub fn bind_var(mut self, var: &str, value: impl Into<Value>) -> Self {
+        self.bind_vars.insert(var.to_owned(), value.into());
+        self
+    }
+
+    /// Tries to bind `var` attribute to be substituted by `value` in the query string
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `value` can't be converted to a [`serde_json::Value`]
+    pub fn try_bind_var(mut self, var: &str, value: impl serde::Serialize) -> Result<Self, Error> {
+        self.bind_vars
+            .insert(var.to_owned(), serde_json::to_value(value)?);
+        Ok(self)
     }
 
     /// Creates a new outbound traversing `Query` though a `edge_collection`.

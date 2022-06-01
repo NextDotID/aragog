@@ -56,7 +56,7 @@ aragog-macros = { path = "aragog_macros", version = "0.7.3", optional = true }
 
 # ArangoDB driver
 [dependencies.arangors_lite]
-version = "0.1"
+version = "0.2"
 features = ["rocksdb"]
 default-features = false
 

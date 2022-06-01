@@ -159,6 +159,14 @@ impl From<ClientError> for Error {
     }
 }
 
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Self {
+        Self::UnprocessableEntity {
+            source: Box::new(err),
+        }
+    }
+}
+
 impl Default for Error {
     fn default() -> Self {
         Self::InternalError { message: None }
