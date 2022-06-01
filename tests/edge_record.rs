@@ -144,10 +144,7 @@ async fn edge_can_be_created_with_a_simple_link() -> Result<(), String> {
     .unwrap();
     common::expect_assert_eq(record.id_from(), dish.id())?;
     common::expect_assert_eq(record.id_to(), order.id())?;
-    common::expect_assert_eq(
-        record.from_collection_name().as_str(),
-        Dish::COLLECTION_NAME,
-    )?;
+    common::expect_assert_eq(record.from_collection_name(), Dish::COLLECTION_NAME)?;
     common::expect_assert_eq(record.to_collection_name().as_str(), Order::COLLECTION_NAME)?;
     let from: DatabaseRecord<Dish> = record.from_record(&connection).await.unwrap();
     assert_eq!(from.id(), record.id_from());
@@ -212,7 +209,7 @@ fn edge_validated_format() -> Result<(), String> {
             description: "part of".to_string(),
         },
     );
-    common::expect_assert(edge.is_ok())?;
+    assert!(edge.is_ok());
     let edge = EdgeRecord::new(
         "Dish/".to_string(),
         "Dish/234".to_string(),
@@ -220,7 +217,7 @@ fn edge_validated_format() -> Result<(), String> {
             description: "part of".to_string(),
         },
     );
-    common::expect_assert(edge.is_err())?;
+    assert!(edge.is_err());
     let edge = EdgeRecord::new(
         "Dish//123".to_string(),
         "Dish/234".to_string(),
@@ -228,15 +225,15 @@ fn edge_validated_format() -> Result<(), String> {
             description: "part of".to_string(),
         },
     );
-    common::expect_assert(edge.is_err())?;
+    assert!(edge.is_err());
     let edge = EdgeRecord::new(
-        "Dish/dish".to_string(),
+        "Dish/custom_key".to_string(),
         "Dish/234".to_string(),
         PartOf {
             description: "part of".to_string(),
         },
     );
-    common::expect_assert(edge.is_err())?;
+    assert!(edge.is_ok());
     let edge = EdgeRecord::new(
         "/123".to_string(),
         "Dish/234".to_string(),
@@ -244,6 +241,6 @@ fn edge_validated_format() -> Result<(), String> {
             description: "part of".to_string(),
         },
     );
-    common::expect_assert(edge.is_err())?;
+    assert!(edge.is_err());
     Ok(())
 }

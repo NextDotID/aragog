@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+* `EdgeRecord` `Validate` implementation no longer checks if `from` and `to` fields have a numeric key
+
 ### Miscellaneous
 
 * Rustdoc links update
@@ -28,6 +32,7 @@
 * (**BREAKING**) `DatabaseRecord::get`, `DatabaseRecord::get_in_batches` and `DatabaseRecord::exists` now take a borrowed `Query` parameter
 * (**BREAKING**) `Record::get`, `Record::get_in_batches` and `Record::exists` now take a borrowed `Query` parameter
 * (**BREAKING**) `DatabaseAccess::query` and `DatabaseAccess::query_in_batches` now take a borrowed `Query` parameter
+* (**BREAKING**) `EdgeRecord::id_from` and `EdgeRecord::id_to` now return a string slice
 
 ## 0.16.1
 

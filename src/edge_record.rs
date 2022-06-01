@@ -57,7 +57,7 @@ impl<T: Record> EdgeRecord<T> {
         D: DatabaseAccess + ?Sized,
         R: Record,
     {
-        DatabaseRecord::find(self.key_from().as_str(), db_access).await
+        DatabaseRecord::find(self.key_from(), db_access).await
     }
 
     /// Retrieves the `to` document from the database
@@ -67,7 +67,7 @@ impl<T: Record> EdgeRecord<T> {
         D: DatabaseAccess + ?Sized,
         R: Record,
     {
-        DatabaseRecord::find(self.key_to().as_str(), db_access).await
+        DatabaseRecord::find(self.key_to(), db_access).await
     }
 
     /// Retrieves the document `_from` field, storing the target documents `id`.
@@ -92,8 +92,8 @@ impl<T: Record> EdgeRecord<T> {
     ///
     /// This method may panic if the `from` value is not formatted correctly.
     #[must_use]
-    pub fn key_from(&self) -> String {
-        self.id_from().split('/').last().unwrap().to_string()
+    pub fn key_from(&self) -> &str {
+        self.id_from().split('/').last().unwrap()
     }
 
     /// Parses the `to` value to retrieve only the `_key` part.
@@ -102,8 +102,8 @@ impl<T: Record> EdgeRecord<T> {
     ///
     /// This method may panic if the `to` value is not formatted correctly.
     #[must_use]
-    pub fn key_to(&self) -> String {
-        self.id_to().split('/').last().unwrap().to_string()
+    pub fn key_to(&self) -> &str {
+        self.id_to().split('/').last().unwrap()
     }
 
     /// Parses the `from` value to retrieve only the collection name part.
@@ -122,22 +122,22 @@ impl<T: Record> EdgeRecord<T> {
     ///
     /// This method may panic if the `from` value is not formatted correctly.
     #[must_use]
-    pub fn from_collection_name(&self) -> String {
-        self.id_from().split('/').next().unwrap().to_string()
+    pub fn from_collection_name(&self) -> &str {
+        self.id_from().split('/').next().unwrap()
     }
 
     fn validate_edge_fields(&self, errors: &mut Vec<String>) {
         let array = [("from", self.id_from()), ("to", self.id_to())];
         for (name, field) in array {
-            let split = field.split('/').collect::<Vec<&str>>();
-            if split.len() != 2 {
-                errors.push(format!(r#"{} "{}" has wrong format"#, name, field));
-            }
-            let left_part = split.first().unwrap();
-            Self::validate_min_len(name, left_part, 2, errors);
-            let right_part = split.last().unwrap();
-            Self::validate_min_len(name, right_part, 2, errors);
-            Self::validate_numeric_string(name, right_part, errors);
+            let vec: Vec<&str> = field.split('/').collect();
+            let [left, right]: [_; 2] = if let Ok(v) = vec.try_into() {
+                v
+            } else {
+                errors.push(format!(r#"{} "{}" is not a valid id"#, name, field));
+                continue;
+            };
+            Self::validate_min_len(name, left, 2, errors);
+            Self::validate_min_len(name, right, 2, errors);
         }
     }
 }
