@@ -18,7 +18,7 @@ use std::ops::{Deref, DerefMut};
 /// `DatabaseRecord` implements `Deref` and `DerefMut` into `T`
 ///
 /// [`Record`]: crate::Record
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct DatabaseRecord<T> {
     /// The Document unique and indexed `_key`
     #[serde(rename = "_key")]
