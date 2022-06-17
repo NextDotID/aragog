@@ -77,15 +77,3 @@ status = "actively-developed"
 members = [
     "aragog_cli"
 ]
-
-[[example]]
-name = "boxed_example"
-
-[[example]]
-name = "graph_example"
-
-[[example]]
-name = "simple_example"
-
-[[example]]
-name = "transaction_example"
