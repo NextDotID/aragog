@@ -1,6 +1,6 @@
 [package]
 name = "aragog_cli"
-version = "0.5.1"
+version = "0.6.0"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -14,7 +14,7 @@ keywords = ["ArangoDB", "Arango", "CLI", "Schema", "Migrations"]
 repository = "https://gitlab.com/qonfucius/aragog/-/tree/master/aragog_cli"
 readme = "README.md"
 homepage = "https://aragog.rs"
-rust-version = "1.56.0"
+rust-version = "1.56.1"
 
 [[bin]]
 name = "aragog"
@@ -43,15 +43,15 @@ thiserror = "1.0"
 exitcode = "1.1"
 
 # CLI lib
-clap_complete = "3.1"
+clap_complete = "3.2"
 
 [dependencies.clap]
-version = "3.1"
+version = "3.2"
 features = ["derive"]
 
 [dependencies.aragog]
 path = ".."
-version = "0.16"
+version = "0.17"
 features = ["blocking", "rustls", "minimal_traits"]
 default-features = false
 

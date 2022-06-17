@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.8.0
 
-* Dropped support of enums for `Record` derive macro
+* (**BREAKING**) Dropped support of enums for `Record` derive macro
 
 ## 0.7.3
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.17.0
 
 ### Fixed
 
@@ -25,6 +25,9 @@
 * Added `Comparison::eq_null`, `Comparison::eq_false` and `Comparison::eq_true`
 * Deprecated `Query::to_aql`, `Filter::to_aql`, `Comparison::to_aql`
 * Added `Query::aql_str`, `Filter::aql_str`, `Comparison::aql_str`
+* Added `Query` binding:
+  * Added `Query::bind_var`
+  * Added `Query::try_bind_var`
 
 ### Breaking
 

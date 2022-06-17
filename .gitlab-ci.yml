@@ -32,7 +32,7 @@ build::1.56.0:
   <<: *cache_pull_template
   needs:
     - build::default
-  image: rust:1.56.0
+  image: rust:1.56.1
   stage: build
   script:
     - cargo build

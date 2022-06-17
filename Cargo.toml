@@ -1,6 +1,6 @@
 [package]
 name = "aragog"
-version = "0.16.1"
+version = "0.17.0"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -15,7 +15,7 @@ readme = "README.md"
 repository = "https://gitlab.com/qonfucius/aragog"
 documentation = "https://docs.rs/aragog"
 homepage = "https://aragog.rs"
-rust-version = "1.56.0"
+rust-version = "1.56.1"
 
 [features]
 default = ["derive", "openssl"]
@@ -52,7 +52,7 @@ maybe-async = "0.2"
 
 # Optional crates
 # The aragog derive macros
-aragog-macros = { path = "aragog_macros", version = "0.7.3", optional = true }
+aragog-macros = { path = "aragog_macros", version = "0.8", optional = true }
 
 # ArangoDB driver
 [dependencies.arangors_lite]
