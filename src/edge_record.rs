@@ -11,7 +11,7 @@ use std::ops::{Deref, DerefMut};
 /// `EdgeRecord` implements `Deref` and `DerefMut` into `T`
 ///
 /// [`Record`]: crate::Record
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct EdgeRecord<T> {
     /// The `_from` field of `ArangoDB` edge documents
     #[serde(rename(serialize = "_from", deserialize = "_from"))]
