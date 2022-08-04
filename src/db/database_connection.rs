@@ -67,7 +67,7 @@ impl DatabaseConnection {
     /// #       &std::env::var("DB_HOST").unwrap_or("http://localhost:8529".to_string()),
     /// #       &std::env::var("DB_NAME").unwrap_or("aragog_test".to_string()),
     /// #       &std::env::var("DB_USER").unwrap_or("test".to_string()),
-    /// #       &std::env::var("DB_PWD").unwrap_or("test".to_string())
+    /// #       &std::env::var("DB_PASSWORD").unwrap_or("test".to_string())
     /// #     )
     ///     // The schema wil silently apply to the database, useful only if you don't use the CLI and migrations
     ///     .apply_schema()
