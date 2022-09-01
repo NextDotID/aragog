@@ -13,7 +13,7 @@ pub struct Menu {
     pub last_dish_updated: Option<Dish>,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record, Validate)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug, Record, Validate)]
 #[before_write(func("validate"))]
 #[before_create(func("increment_menu"), is_async = true, db_access = true)]
 #[before_save(func("last_dish_update"), is_async = true, db_access = true)]

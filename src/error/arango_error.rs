@@ -2,7 +2,7 @@
 use thiserror::Error;
 
 /// Internal Aragog error based on `ArangoDB` error num
-#[derive(Debug, Copy, Clone, Error, PartialEq)]
+#[derive(Debug, Copy, Clone, Error, PartialEq, Eq)]
 pub enum ArangoError {
     /// 1000 - ERROR_ARANGO_ILLEGAL_STATE
     ///

@@ -60,7 +60,7 @@ pub enum MigrationOperation {
 impl MigrationOperation {
     pub fn apply(self, db: &mut VersionedDatabase, silent: bool) -> Result<(), AragogCliError> {
         match self {
-            MigrationOperation::CreateCollection {
+            Self::CreateCollection {
                 name,
                 wait_for_sync,
             } => {
@@ -75,7 +75,7 @@ impl MigrationOperation {
                 item.apply_to_database(db, silent)?;
                 db.schema.collections.push(item);
             }
-            MigrationOperation::CreateEdgeCollection {
+            Self::CreateEdgeCollection {
                 name,
                 wait_for_sync,
             } => {
@@ -90,7 +90,7 @@ impl MigrationOperation {
                 item.apply_to_database(db, silent)?;
                 db.schema.collections.push(item);
             }
-            MigrationOperation::DeleteCollection { name } => {
+            Self::DeleteCollection { name } => {
                 log(
                     format!("Executing delete_collection `{}` operation", name),
                     LogLevel::Verbose,
@@ -103,7 +103,7 @@ impl MigrationOperation {
                     }
                 }
             }
-            MigrationOperation::DeleteEdgeCollection { name } => {
+            Self::DeleteEdgeCollection { name } => {
                 log(
                     format!("Executing delete_edge_collection `{}` operation", name),
                     LogLevel::Verbose,
@@ -116,7 +116,7 @@ impl MigrationOperation {
                     }
                 }
             }
-            MigrationOperation::CreateIndex {
+            Self::CreateIndex {
                 collection,
                 name,
                 settings,
@@ -138,7 +138,7 @@ impl MigrationOperation {
                 item.apply_to_database(db, false)?;
                 db.schema.indexes.push(item);
             }
-            MigrationOperation::DeleteIndex { name, collection } => {
+            Self::DeleteIndex { name, collection } => {
                 log(
                     format!("Executing delete_index `{}` operation", name),
                     LogLevel::Verbose,
@@ -151,7 +151,7 @@ impl MigrationOperation {
                     }
                 }
             }
-            MigrationOperation::CreateGraph {
+            Self::CreateGraph {
                 name,
                 edge_definitions,
                 orphan_collections,
@@ -177,7 +177,7 @@ impl MigrationOperation {
                 item.apply_to_database(db, silent)?;
                 db.schema.graphs.push(item);
             }
-            MigrationOperation::DeleteGraph { name } => {
+            Self::DeleteGraph { name } => {
                 log(
                     format!("Executing delete_graph `{}` operation", name),
                     LogLevel::Verbose,
@@ -190,7 +190,7 @@ impl MigrationOperation {
                     }
                 }
             }
-            MigrationOperation::Aql(aql) => {
+            Self::Aql(aql) => {
                 log("Executing aql operation", LogLevel::Verbose);
                 let res: Vec<Value> = db.aql_str(aql.as_str())?;
                 log(format!("{:?}", res), LogLevel::Verbose);

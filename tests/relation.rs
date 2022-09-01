@@ -6,7 +6,7 @@ use std::borrow::Borrow;
 
 mod common;
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug, Record)]
 pub struct Dish {
     pub name: String,
     pub description: String,
@@ -14,7 +14,7 @@ pub struct Dish {
     pub order_id: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug, Record)]
 pub struct Order {
     pub name: String,
 }

@@ -16,7 +16,7 @@ impl<T> TransactionOutput<T> {
     /// Was the transaction committed
     #[inline]
     pub const fn is_committed(&self) -> bool {
-        matches!(self, TransactionOutput::Committed(_))
+        matches!(self, Self::Committed(_))
     }
 
     /// Was the transaction aborted
@@ -54,8 +54,8 @@ impl<T> TransactionOutput<T> {
     #[inline]
     pub fn err(self) -> Option<Error> {
         match self {
-            TransactionOutput::Committed(_) => None,
-            TransactionOutput::Aborted(err) => Some(err),
+            Self::Committed(_) => None,
+            Self::Aborted(err) => Some(err),
         }
     }
 
@@ -70,8 +70,8 @@ impl<T> TransactionOutput<T> {
     #[inline]
     pub fn expect(self, msg: &str) -> T {
         match self {
-            TransactionOutput::Committed(v) => v,
-            TransactionOutput::Aborted(e) => panic!("{}: {:?}", msg, e),
+            Self::Committed(v) => v,
+            Self::Aborted(e) => panic!("{}: {:?}", msg, e),
         }
     }
 }
