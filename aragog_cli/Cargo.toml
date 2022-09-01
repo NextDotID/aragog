@@ -52,11 +52,11 @@ features = ["derive"]
 [dependencies.aragog]
 path = ".."
 version = "0.17"
-features = ["blocking", "rustls", "minimal_traits"]
+features = ["blocking", "openssl", "minimal_traits"]
 default-features = false
 
 # ArangoDB driver
 [dependencies.arangors_lite]
 version = "0.2"
-features = ["rocksdb", "blocking", "rustls"]
+features = ["rocksdb", "blocking", "openssl"]
 default-features = false

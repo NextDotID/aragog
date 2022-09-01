@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 /// Arango Http error based on the response http code
-#[derive(Debug, Copy, Clone, Error, PartialEq)]
+#[derive(Debug, Copy, Clone, Error, PartialEq, Eq)]
 pub enum ArangoHttpError {
     /// 400 - ERROR_HTTP_BAD_PARAMETER
     ///

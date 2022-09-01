@@ -1,6 +1,6 @@
 use std::fmt::{self, Display};
 
-#[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialOrd, PartialEq, Eq)]
 pub enum LogLevel {
     Info,
     Debug,
