@@ -164,6 +164,8 @@ build::mdbook:
 build::website:
   image: node:lts
   stage: build_doc
+  variables:
+    CUSTOM_DOMAIN: http://localhost
   script:
       - cd docs/aragog-docs
       - npm ci
