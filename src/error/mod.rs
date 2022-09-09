@@ -43,7 +43,7 @@ pub enum Error {
     UnprocessableEntity {
         /// The source error
         #[source]
-        source: Box<dyn std::error::Error>,
+        source: Box<dyn std::error::Error + Send + Sync>,
     },
     /// The ArangoDb Error as returned by the database host
     ///
