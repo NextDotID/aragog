@@ -30,8 +30,8 @@ impl OperationValue {
 impl ToTokens for OperationValue {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            OperationValue::Lit(lit) => lit.to_tokens(tokens),
-            OperationValue::Path(path) => path.to_tokens(tokens),
+            Self::Lit(lit) => lit.to_tokens(tokens),
+            Self::Path(path) => path.to_tokens(tokens),
         }
     }
 }

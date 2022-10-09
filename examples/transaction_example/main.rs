@@ -11,7 +11,7 @@ mod models;
 const DEFAULT_DB_HOST: &str = "http://localhost:8529";
 const DEFAULT_DB_NAME: &str = "aragog_test";
 const DEFAULT_DB_USER: &str = "test";
-const DEFAULT_DB_PWD: &str = "test";
+const DEFAULT_DB_PASSWORD: &str = "test";
 
 #[tokio::main]
 async fn main() {
@@ -24,7 +24,7 @@ async fn main() {
             &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
             &std::env::var("DB_USER").unwrap_or_else(|_| DEFAULT_DB_USER.to_string()),
-            &std::env::var("DB_PWD").unwrap_or_else(|_| DEFAULT_DB_PWD.to_string()),
+            &std::env::var("DB_PASSWORD").unwrap_or_else(|_| DEFAULT_DB_PASSWORD.to_string()),
         )
         .with_auth_mode(AuthMode::default())
         .with_schema_path("examples/transaction_example/schema.yaml")

@@ -8,14 +8,14 @@ use aragog::{DatabaseAccess, DatabaseRecord, Record};
 
 pub mod common;
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug, Record)]
 pub struct User {
     pub name: String,
     pub description: String,
     pub email: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Record)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug, Record)]
 pub struct Dish {
     pub name: String,
     pub price: u16,

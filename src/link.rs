@@ -34,7 +34,7 @@ use crate::{DatabaseAccess, DatabaseRecord, Error, Record};
 /// #       &std::env::var("DB_HOST").unwrap_or("http://localhost:8529".to_string()),
 /// #       &std::env::var("DB_NAME").unwrap_or("aragog_test".to_string()),
 /// #       &std::env::var("DB_USER").unwrap_or("test".to_string()),
-/// #       &std::env::var("DB_PWD").unwrap_or("test".to_string())
+/// #       &std::env::var("DB_PASSWORD").unwrap_or("test".to_string())
 /// #     )
 /// #    .with_schema_path("tests/schema.yaml")
 /// #    .build()

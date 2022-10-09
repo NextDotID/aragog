@@ -1,6 +1,6 @@
 [package]
 name = "aragog-macros"
-version = "0.7.3"
+version = "0.8.0"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
     "Qonfucius team <felix.maneville@qonfucius.team>"
@@ -12,7 +12,7 @@ keywords = ["ArangoDB", "Arango"]
 categories = ["database"]
 repository = "https://gitlab.com/qonfucius/aragog/-/tree/master/aragog_macros"
 homepage = "https://aragog.rs"
-rust-version = "1.56.0"
+rust-version = "1.56.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]

@@ -1,8 +1,5 @@
-use std::fmt::{self, Display, Formatter};
-
 use arangors_lite::ClientError;
-
-use thiserror::private::AsDynError;
+use thiserror::Error;
 pub use {
     arango_error::ArangoError, arango_http_error::ArangoHttpError, database_error::DatabaseError,
 };
@@ -12,10 +9,11 @@ mod arango_http_error;
 mod database_error;
 
 /// Error enum used for the Arango ORM mapped as potential Http errors
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
     /// Unhandled error.
     /// Can be interpreted as a HTTP code `500` internal error.
+    #[error("Internal Error")]
     InternalError {
         /// Optional message (will not be displayed)
         message: Option<String>,
@@ -24,35 +22,43 @@ pub enum Error {
     /// Can be interpreted as a HTTP code `400` bad request.
     ///
     /// [`Validate`]: crate::Validate
+    #[error("Validations failed: `{0}`")]
     ValidationError(String),
     /// An Item (document or collection) could not be found.
     /// Can be interpreted as a HTTP code `404` not found.
+    #[error("{item} {id} not found")]
     NotFound {
         /// The missing item
         item: String,
         /// The missing item identifier
         id: String,
         /// Optional database source error
+        #[source]
         source: Option<DatabaseError>,
     },
     /// An operation failed due to format or data issue.
     ///
     /// Can be interpreted as a HTTP code `422` Unprocessable Entity.
+    #[error("Unprocessable Entity")]
     UnprocessableEntity {
         /// The source error
-        source: Box<dyn std::error::Error>,
+        #[source]
+        source: Box<dyn std::error::Error + Send + Sync>,
     },
     /// The ArangoDb Error as returned by the database host
     ///
     /// Can be interpreted as a HTTP code `500` Internal Error.
-    ArangoError(DatabaseError),
+    #[error("ArangoDB Error")]
+    ArangoError(#[source] DatabaseError),
     /// A database conflict occured
     ///
     /// Can be interpreted as a HTTP code `409` Conflict.
-    Conflict(DatabaseError),
+    #[error("Conflict")]
+    Conflict(#[source] DatabaseError),
     /// Failed to load config or initialize the app.
     ///
     /// Can be interpreted as a HTTP code `500` Internal Error.
+    #[error("Failed to initialize `{item}`: `{message}`")]
     InitError {
         /// Item that failed to init
         item: String,
@@ -61,46 +67,12 @@ pub enum Error {
     },
     /// The operation is refused due to lack of authentication.
     /// Can be interpreted as a HTTP code `401` unauthorized.
-    Unauthorized(Option<DatabaseError>),
+    #[error("Unauthorized")]
+    Unauthorized(#[source] Option<DatabaseError>),
     /// The operation is refused and authentication cannot resolve it.
     /// Can be interpreted as a HTTP code `403` forbidden.
-    Forbidden(Option<DatabaseError>),
-}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Error::InternalError { .. } => "Internal Error".to_string(),
-                Error::ValidationError(str) => format!("Validations failed: `{}`", str),
-                Error::NotFound { item, id, .. } => format!("{} {} not found", item, id),
-                Error::UnprocessableEntity { .. } => "Unprocessable Entity".to_string(),
-                Error::ArangoError(_) => "ArangoDB Error".to_string(),
-                Error::Conflict(_) => "Conflict".to_string(),
-                Error::InitError { item, message, .. } =>
-                    format!("Failed to initialize `{}`: `{}`", item, message),
-                Error::Unauthorized(_) => "Unauthorized".to_string(),
-                Error::Forbidden(_) => "Forbidden".to_string(),
-            }
-        )
-    }
-}
-
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            Error::InternalError { .. } | Error::ValidationError(_) | Error::InitError { .. } => {
-                None
-            }
-            Error::UnprocessableEntity { source } => Some(source.as_ref()),
-            Error::ArangoError(e) | Error::Conflict(e) => Some(e),
-            Error::Unauthorized(source)
-            | Error::Forbidden(source)
-            | Error::NotFound { source, .. } => source.as_ref().map(AsDynError::as_dyn_error),
-        }
-    }
+    #[error("Forbidden")]
+    Forbidden(#[source] Option<DatabaseError>),
 }
 
 impl Error {

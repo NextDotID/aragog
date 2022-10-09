@@ -34,7 +34,7 @@ async fn works_with_correct_parameters() {
             &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
             &std::env::var("DB_USER").unwrap_or_else(|_| DEFAULT_DB_USER.to_string()),
-            &std::env::var("DB_PWD").unwrap_or_else(|_| DEFAULT_DB_PWD.to_string()),
+            &std::env::var("DB_PASSWORD").unwrap_or_else(|_| DEFAULT_DB_PASSWORD.to_string()),
         )
         .with_schema_path("./tests/schema.yaml")
         .apply_schema()
@@ -103,7 +103,7 @@ async fn operation_options() {
             &std::env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string()),
             &std::env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string()),
             &std::env::var("DB_USER").unwrap_or_else(|_| DEFAULT_DB_USER.to_string()),
-            &std::env::var("DB_PWD").unwrap_or_else(|_| DEFAULT_DB_PWD.to_string()),
+            &std::env::var("DB_PASSWORD").unwrap_or_else(|_| DEFAULT_DB_PASSWORD.to_string()),
         )
         .with_schema_path("./tests/schema.yaml")
         .apply_schema()
