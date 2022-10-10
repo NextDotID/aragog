@@ -1,13 +1,12 @@
-use std::collections::HashMap;
-
-use arangors_lite::{Connection, Database};
-
 use crate::db::database_collection::DatabaseCollection;
 use crate::db::database_connection_builder::{
     DatabaseConnectionBuilder, DatabaseSchemaOption, DbCredentialsOption,
 };
 use crate::schema::{DatabaseSchema, SchemaDatabaseOperation};
 use crate::{DatabaseAccess, Error, OperationOptions};
+use arangors_lite::{Connection, Database};
+use std::collections::HashMap;
+use std::marker::Copy;
 
 /// Struct containing `ArangoDB` connections and information to access the database, collections and documents
 #[derive(Clone, Debug)]
