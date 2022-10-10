@@ -184,6 +184,12 @@ impl DatabaseConnection {
         let info = self.database.info().await?;
         return Ok(info.name == name.to_string());
     }
+
+    /// Get Self
+    #[maybe_async::maybe_async]
+    pub async fn share(self) -> Self {
+        self
+    }
 }
 
 impl DatabaseAccess for DatabaseConnection {
