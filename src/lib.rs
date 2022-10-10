@@ -497,7 +497,7 @@ pub extern crate async_trait;
 #[doc(hidden)]
 pub use aragog_macros::*;
 
-pub use arangors_lite::Database;
+pub use arangors_lite::{AqlQuery, Database};
 #[cfg(not(feature = "minimal_traits"))]
 pub use {authorize_action::AuthorizeAction, new::New, update::Update};
 pub use {
