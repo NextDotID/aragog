@@ -177,6 +177,13 @@ impl DatabaseConnection {
         let vec = self.database().list_transactions().await?;
         Ok(vec.len())
     }
+
+    /// Return the check result of db_name
+    #[maybe_async::maybe_async]
+    pub async fn check_database(&self, name: &str) -> Result<bool, Error> {
+        let info = self.database.info().await?;
+        return Ok(info.name == name.to_string());
+    }
 }
 
 impl DatabaseAccess for DatabaseConnection {
