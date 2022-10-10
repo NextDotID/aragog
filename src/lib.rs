@@ -502,9 +502,10 @@ pub use arangors_lite::Database;
 pub use {authorize_action::AuthorizeAction, new::New, update::Update};
 pub use {
     db::database_access::DatabaseAccess, db::database_connection::AuthMode,
-    db::database_connection::DatabaseConnection, db::database_record::DatabaseRecord,
-    db::operation_options::OperationOptions, db::transaction, edge_record::EdgeRecord,
-    error::Error, foreign_link::ForeignLink, link::Link, record::Record,
+    db::database_connection::DatabaseConnection,
+    db::database_connection_builder::DatabaseConnectionBuilder,
+    db::database_record::DatabaseRecord, db::operation_options::OperationOptions, db::transaction,
+    edge_record::EdgeRecord, error::Error, foreign_link::ForeignLink, link::Link, record::Record,
     undefined_record::UndefinedRecord, validate::Validate,
 };
 
