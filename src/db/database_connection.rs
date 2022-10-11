@@ -115,14 +115,14 @@ impl DatabaseConnection {
         db_password: &str,
         auth_mode: AuthMode,
     ) -> Result<Database, Error> {
-        log::info!("Connecting to database server on {} ...", db_host);
+        log::debug!("Connecting to database server on {} ...", db_host);
         let db_connection = match auth_mode {
             AuthMode::Basic => {
                 Connection::establish_basic_auth(db_host, db_user, db_password).await?
             }
             AuthMode::Jwt => Connection::establish_jwt(db_host, db_user, db_password).await?,
         };
-        log::info!("Connecting to database {} ...", db_name);
+        log::debug!("Connecting to database {} ...", db_name);
         Ok(db_connection.db(db_name).await?)
     }
 
@@ -158,7 +158,7 @@ impl DatabaseConnection {
         database: &Database,
         schema: DatabaseSchema,
     ) -> Result<HashMap<String, DatabaseCollection>, Error> {
-        log::info!(
+        log::debug!(
             "Loading Schema with version {}",
             schema.version.unwrap_or(0)
         );
