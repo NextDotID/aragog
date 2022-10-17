@@ -3,12 +3,20 @@ name = "aragog"
 version = "0.17.0"
 authors = [
     "Felix de Maneville: <felix.maneville@gmail.com>",
-    "Qonfucius team <felix.maneville@qonfucius.team>"
+    "Qonfucius team <felix.maneville@qonfucius.team>",
 ]
 edition = "2021"
 description = "A simple lightweight object-document mapper for ArangoDB"
 keywords = ["ArangoDB", "Arango", "ORM", "ODM", "OGM"]
-exclude =  ["tests", ".gitlab-ci.yml", ".gitignore", "examples", "book", "docs", "book.toml"]
+exclude = [
+    "tests",
+    ".gitlab-ci.yml",
+    ".gitignore",
+    "examples",
+    "book",
+    "docs",
+    "book.toml",
+]
 categories = ["web-programming", "database"]
 license = "MIT"
 readme = "README.md"
@@ -21,12 +29,20 @@ rust-version = "1.56.1"
 default = ["derive", "openssl"]
 openssl = ["arangors_lite/openssl"]
 rustls = ["arangors_lite/rustls"]
-blocking = ["arangors_lite/blocking", "maybe-async/is_sync", "aragog-macros/blocking"]
+blocking = [
+    "arangors_lite/blocking",
+    "maybe-async/is_sync",
+    "aragog-macros/blocking",
+]
 entreprise = ["arangors_lite/enterprise"]
 derive = ["aragog-macros"]
 minimal_traits = []
 
 [dependencies]
+# GraphQL
+async-graphql = { version = "4", features = ["uuid", "chrono"] }
+async-graphql-warp = "*"
+
 # Used for string validation toolbox, not used otherwise
 regex = "1.5"
 
@@ -68,12 +84,10 @@ env_logger = "0.9"
 
 [dev-dependencies.tokio]
 version = "1"
-features = [ "macros", "rt-multi-thread"]
+features = ["macros", "rt-multi-thread"]
 
 [badges.maintenance]
 status = "actively-developed"
 
 [workspace]
-members = [
-    "aragog_cli"
-]
+members = ["aragog_cli"]
