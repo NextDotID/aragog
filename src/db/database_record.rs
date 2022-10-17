@@ -12,7 +12,7 @@ use async_graphql::{
     from_value,
     parser::types::Field,
     registry::{MetaType, MetaTypeId, Registry},
-    to_value, ContextSelectionSet, InputType, InputValueResult, OutputType, Positioned,
+    to_value, ContextSelectionSet, InputType, InputValueResult, Object, OutputType, Positioned,
     ServerResult, Value,
 };
 
@@ -1017,7 +1017,7 @@ impl<T: Record> DerefMut for DatabaseRecord<T> {
 #[async_trait::async_trait]
 impl OutputType for DatabaseRecord<EdgeRecord<serde_json::Value>> {
     fn type_name() -> Cow<'static, str> {
-        Cow::Borrowed("DatabaseRecord")
+        Cow::Borrowed("DatabaseEdgeRecord")
     }
 
     fn create_type_info(registry: &mut Registry) -> String {
@@ -1048,11 +1048,77 @@ impl InputType for DatabaseRecord<EdgeRecord<serde_json::Value>> {
     type RawValueType = DatabaseRecord<EdgeRecord<serde_json::Value>>;
 
     fn type_name() -> Cow<'static, str> {
-        Cow::Borrowed("DatabaseRecord")
+        Cow::Borrowed("DatabaseEdgeRecord")
     }
 
     fn create_type_info(registry: &mut Registry) -> String {
         registry.create_input_type::<DatabaseRecord<EdgeRecord<serde_json::Value>>, _>(
+            MetaTypeId::Scalar,
+            |_| MetaType::Scalar {
+                name: <Self as InputType>::type_name().to_string(),
+                description: Some("A scalar that can represent any JSON value."),
+                is_valid: |_| true,
+                visible: None,
+                inaccessible: false,
+                tags: Default::default(),
+                specified_by_url: None,
+            },
+        )
+    }
+
+    fn parse(value: Option<Value>) -> InputValueResult<Self> {
+        Ok(from_value(value.unwrap_or_default())?)
+    }
+
+    fn to_value(&self) -> Value {
+        // Value::String(self.to_string())
+        Value::String(serde_json::to_string(&self).unwrap())
+    }
+
+    fn as_raw_value(&self) -> Option<&Self::RawValueType> {
+        Some(&self)
+    }
+}
+
+#[async_trait::async_trait]
+impl OutputType for DatabaseRecord<serde_json::Value> {
+    fn type_name() -> Cow<'static, str> {
+        Cow::Borrowed("DatabaseRecord")
+    }
+
+    fn create_type_info(registry: &mut Registry) -> String {
+        registry.create_output_type::<DatabaseRecord<serde_json::Value>, _>(
+            MetaTypeId::Scalar,
+            |_| MetaType::Scalar {
+                name: <Self as OutputType>::type_name().to_string(),
+                description: Some("A scalar that can represent any JSON value."),
+                is_valid: |_| true,
+                visible: None,
+                inaccessible: false,
+                tags: Default::default(),
+                specified_by_url: None,
+            },
+        )
+    }
+
+    async fn resolve(
+        &self,
+        _ctx: &ContextSelectionSet<'_>,
+        _field: &Positioned<Field>,
+    ) -> ServerResult<Value> {
+        Ok(to_value(&self).ok().unwrap_or_default())
+    }
+}
+
+impl InputType for DatabaseRecord<serde_json::Value> {
+    type RawValueType = DatabaseRecord<serde_json::Value>;
+
+    fn type_name() -> Cow<'static, str> {
+        Cow::Borrowed("DatabaseRecord")
+    }
+
+    fn create_type_info(registry: &mut Registry) -> String {
+        registry.create_input_type::<DatabaseRecord<serde_json::Value>, _>(
             MetaTypeId::Scalar,
             |_| MetaType::Scalar {
                 name: <Self as InputType>::type_name().to_string(),
